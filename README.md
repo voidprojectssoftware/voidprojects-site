@@ -1,2 +1,2 @@
-# voidprojects-site
-Website for Void Projects #Swag
+# Project Void Website
+This is the project void website.
