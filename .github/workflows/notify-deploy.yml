@@ -1,0 +1,30 @@
+# Tells the PRIVATE infra repo to (re)deploy the site whenever main changes.
+# This public repo carries no hosting detail — it only fires a repository_dispatch
+# (site-updated) that voidprojects-site-infra's deploy workflow listens for. A merged
+# PR produces a push to main, so this covers PR merges and direct pushes alike.
+# Auth: a fine-grained PAT (secret INFRA_DISPATCH_TOKEN) scoped to the infra repo with
+# Contents: write — GITHUB_TOKEN cannot reach across repositories.
+name: notify-deploy
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: notify-deploy
+  cancel-in-progress: true
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger infra deploy
+        run: |
+          curl -fsS -X POST \
+            -H "Authorization: Bearer ${{ secrets.INFRA_DISPATCH_TOKEN }}" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/voidprojectssoftware/voidprojects-site-infra/dispatches \
+            -d '{"event_type":"site-updated","client_payload":{"sha":"${{ github.sha }}"}}'
