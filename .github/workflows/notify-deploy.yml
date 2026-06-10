@@ -1,0 +1,26 @@
+# Tells the PRIVATE infra repo to (re)deploy the site whenever main changes.
+# This public repo carries no hosting detail — it only fires a repository_dispatch
+# (site-updated) that voidprojects-site-infra's deploy workflow listens for. A merged
+# PR produces a push to main, so this covers PR merges and direct pushes alike.
+#
+# Thin caller for terraform-platform's reusable notify-repo workflow, which owns the
+# auth (org-owned GitHub App) and the dispatch API call. `secrets: inherit` passes the
+# org-level VOIDPROJECTS_DEPLOY_APP_ID / VOIDPROJECTS_DEPLOY_PRIVATE_KEY through — no
+# per-repo secrets.
+name: notify-deploy
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: notify-deploy
+  cancel-in-progress: true
+
+jobs:
+  notify:
+    uses: voidprojectssoftware/terraform-platform/.github/workflows/notify-repo.yml@v1
+    secrets: inherit
+    with:
+      target-repo: voidprojects-site-infra
+      event-type: site-updated
