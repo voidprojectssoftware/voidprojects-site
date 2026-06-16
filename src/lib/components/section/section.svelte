@@ -1,7 +1,7 @@
 <script>
-	let { children } = $props();
+	let { children, ...rest } = $props();
 </script>
 
-<section class="flex flex-1 flex-col items-center justify-center gap-3">
+<section class="flex h-[calc(100dvh-4rem)] flex-col {rest.class ?? ''}">
 	{@render children()}
 </section>

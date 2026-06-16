@@ -10,9 +10,9 @@
 	}
 </script>
 
-<header class="sticky top-0 z-1 bg-background pt-4">
+<header class="sticky top-0 z-1 h-16 bg-background pt-4">
 	<div class="flex flex-row items-center justify-between">
-		<div class="flex flex-row items-center justify-center gap-4">
+		<div class="flex flex-row items-center justify-center gap-6">
 			<a href="/blog" class="text-lg hover:opacity-60">Blog</a>
 			<a href="/team" class="text-lg hover:opacity-60">Meet The Team</a>
 		</div>
