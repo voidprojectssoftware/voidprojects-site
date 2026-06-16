@@ -7,6 +7,6 @@
 
 <svelte:head><link rel="icon" href={favicon} /></svelte:head>
 
-<div class="w-screen">
+<div class="mx-35 flex flex-col">
 	{@render children()}
 </div>

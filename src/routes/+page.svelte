@@ -1,18 +1,20 @@
 <script>
-	import github from '$lib/assets/github.svg';
-	import { Button } from '$lib/components/ui/button/index.js';
+	import { Header } from '$lib/components/header/index.js';
+	import * as Card from '$lib/components/shadcn/ui/card/index.js';
+	import { Button } from '$lib/components/shadcn/ui/button/index.js';
 </script>
 
-<div class="flex h-screen items-center justify-center">
-	<div class="flex flex-col gap-2">
-		<span class="text-center text-5xl font-semibold">Void Projects</span>
-		<span class="text-center">Software for the next decade.</span>
-		<div class="flex flex-row justify-center">
+<Header></Header>
+<main class="flex h-screen flex-col">
+	<section class="flex flex-1 flex-col items-center justify-center gap-3">
+		<div class="flex flex-col items-center gap-4 pb-30">
+			<h1 class="text-6xl font-bold">Void Projects</h1>
+			<p class="text-2xl">Software for accelerating the use of agentic systems.</p>
 			<Button
-				variant="outline"
+				class="text-2xl"
 				onclick={() => window.open('https://github.com/voidprojectssoftware')}
-				>Github<img src={github} height={32} width={32} alt="GitHub Logo" /></Button
+				>Visit Our Github</Button
 			>
 		</div>
-	</div>
-</div>
+	</section>
+</main>
