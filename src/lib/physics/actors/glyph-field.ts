@@ -1,9 +1,14 @@
 import Matter from 'matter-js';
+import type { Actor, StepCtx } from '../actor.js';
+import type { PhysicsStage } from '../stage.js';
+import { cursorPull } from '../behaviors.js';
 
-const { Engine, Bodies, Body, Composite, Render, Query } = Matter;
+const { Bodies, Body } = Matter;
 
-/** Tunable knobs for how the drift "feels". All have sensible defaults. */
-export type DriftConfig = {
+/** Tunable knobs for how the glyph drift "feels". All have sensible defaults. */
+export type GlyphConfig = {
+	/** Fraction of total page scroll before the title drifts apart. */
+	driftThreshold: number;
 	/** Duration of the eased return-to-home tween, in ms. */
 	returnMs: number;
 	/** Bounciness of each body. 1 = perpetual, lower = settles. */
@@ -11,16 +16,12 @@ export type DriftConfig = {
 	/**
 	 * Mass per unit area (Matter's density). Every glyph shares this density, so
 	 * mass = density × glyph area — a wide "W" outweighs a skinny "i" and shoves
-	 * it harder on impact. Raise it to make collisions hit with more momentum;
-	 * the absolute value barely matters, only the ratios between glyphs do.
+	 * it harder on impact.
 	 */
 	density: number;
-	/** World gravity. 0 = floats in space; ~1 makes bodies fall and pile up. */
-	gravity: number;
 	/**
 	 * Per-step velocity damping (Matter's frictionAir). 0 = frictionless space, so
-	 * any nudge drifts forever; raise it to bleed momentum each step so glyphs
-	 * settle and resist being shoved around — the main lever for "weight" feel.
+	 * any nudge drifts forever; raise it to bleed momentum each step.
 	 */
 	frictionAir: number;
 	/** Base outward speed (px/step) every glyph gets when drift starts. */
@@ -29,34 +30,21 @@ export type DriftConfig = {
 	speedJitter: number;
 	/** Max tumble; each glyph gets a random angular velocity in ±this. */
 	spinRate: number;
-	/** Off-screen wall thickness that keeps bodies inside the viewport. */
-	wallThickness: number;
-	/**
-	 * Faint pull toward the cursor: velocity (px/step) added toward the mouse each
-	 * step, for every non-dragged glyph while the pointer is over the page. It's a
-	 * steady acceleration, so it accumulates over time — keep it tiny (~0.002).
-	 * Compare against baseSpeed (0.1): a value of 0.002 takes ~1s of pulling to
-	 * build a drift comparable to the launch. 0 disables it.
-	 */
+	/** Faint pull toward the cursor: velocity (px/step) added toward the mouse each step. */
 	mousePull: number;
-	/**
-	 * Radius (px) of the cursor's influence. Glyphs farther than this feel nothing;
-	 * inside it the pull falls off with the square of distance, so only glyphs close
-	 * to the cursor are tugged meaningfully.
-	 */
+	/** Radius (px) of the cursor's influence; falls off with the square of distance. */
 	mousePullRadius: number;
 };
 
-export const DRIFT_DEFAULTS: DriftConfig = {
+export const GLYPH_DEFAULTS: GlyphConfig = {
+	driftThreshold: 0.02,
 	returnMs: 1400,
 	restitution: 0.3, // a soft, weighty knock rather than a lively bounce
 	density: 0.001, // Matter's own default; mass then scales with glyph area
-	gravity: 0,
 	frictionAir: 0, // frictionless space — once freed, glyphs drift forever
 	baseSpeed: 0.14, // outward push at release — a real shove, then a perpetual drift
 	speedJitter: 0.04,
 	spinRate: 0.0025, // barely-there tumble
-	wallThickness: 200,
 	mousePull: 0.0012, // faint lean toward the cursor (px/step added per step)
 	mousePullRadius: 200 // only glyphs within this many px of the cursor are tugged
 };
@@ -64,16 +52,10 @@ export const DRIFT_DEFAULTS: DriftConfig = {
 /** Max random wobble (deg) added to each glyph's outward drift direction. */
 const SPREAD_JITTER_DEG = 40;
 
-/** Pointer travel (px) before a press-and-hold turns into a drag (vs. a click). */
-const DRAG_THRESHOLD = 4;
-
-/** Cap on throw speed (px/step) so a wild flick can't fling a glyph offscreen instantly. */
-const MAX_THROW_SPEED = 45;
-
 type Drifter = {
 	el: HTMLElement;
 	body: Matter.Body | null;
-	/** Home center in viewport coords, captured when the world is built. */
+	/** Home center in viewport coords, captured when the bodies are built. */
 	hx: number;
 	hy: number;
 	/** Body size. */
@@ -167,48 +149,32 @@ function setStretch(
 }
 
 /**
- * Drives a set of DOM elements as rigid bodies that drift apart "in space"
- * and ease back home, using a Matter.js world. Framework-agnostic: register
- * elements, then call {@link start} / {@link return_} as scroll dictates.
- *
- * Lifecycle is a three-mode state machine: `idle` parks the RAF loop,
- * `drifting` steps the physics, `returning` tweens each body back to home.
+ * The title/subtitle glyphs as drifting rigid bodies that spread apart "in space"
+ * on scroll, follow and get thrown by the cursor, ease back home, and warp (suck)
+ * into the GitHub button. An {@link Actor} on a {@link PhysicsStage}: it owns its
+ * glyph bodies and their DOM, while the stage owns the engine, walls, loop, and
+ * grab/throw.
  */
-export class DriftField {
-	private readonly cfg: DriftConfig;
+export class GlyphField implements Actor {
+	private readonly cfg: GlyphConfig;
 	private readonly drifters: Drifter[] = [];
-	private engine: Matter.Engine | null = null;
+	private stage: PhysicsStage | null = null;
 	private worldBuilt = false;
 
 	private mode: Mode = 'idle';
 	private returnStart = 0;
-	private rafId = 0;
 
 	private readonly reduceMotion: boolean;
-	private readonly frame: (now: number) => void;
 
 	/**
 	 * Notified whenever the field starts owning the glyphs (`true`, on drift/warp)
 	 * or hands them back at rest (`false`). Lets a companion effect (e.g. a cursor
 	 * nudge) cleanly take turns on the same elements' transforms. Fires
-	 * synchronously before the world is measured, so the listener can clear its
+	 * synchronously before the bodies are measured, so the listener can clear its
 	 * own transforms first.
 	 */
 	onActiveChange?: (active: boolean) => void;
 	private active = false;
-
-	// Optional Matter wireframe overlay, toggled from the console for debugging.
-	private debugEnabled = false;
-	private render: Matter.Render | null = null;
-	private debugCanvas: HTMLCanvasElement | null = null;
-
-	// Pointer interaction (cursor pull + grab-to-throw), all in viewport coords.
-	private readonly pointer = { x: 0, y: 0, active: false };
-	private readonly pointerVel = { x: 0, y: 0 };
-	private pendingGrab: Matter.Body | null = null; // pressed a glyph, not yet dragging
-	private dragBody: Matter.Body | null = null; // actively dragged glyph
-	private readonly grabStart = { x: 0, y: 0 };
-	private readonly dragOffset = { x: 0, y: 0 };
 
 	// Warp (suck-into-button) animation state.
 	private readonly warpCenter = { x: 0, y: 0 };
@@ -221,25 +187,22 @@ export class DriftField {
 	private warpHoldStart = 0;
 	private warpRestoreStart = 0;
 
-	constructor(config: Partial<DriftConfig> = {}) {
-		this.cfg = { ...DRIFT_DEFAULTS, ...config };
+	constructor(config: Partial<GlyphConfig> = {}) {
+		this.cfg = { ...GLYPH_DEFAULTS, ...config };
 		this.reduceMotion =
 			typeof window !== 'undefined' &&
 			window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-		this.frame = this.step.bind(this);
-
-		if (typeof window !== 'undefined' && !this.reduceMotion) {
-			window.addEventListener('pointermove', this.onPointerMove, { passive: true });
-			window.addEventListener('pointerdown', this.onPointerDown, { passive: true });
-			window.addEventListener('pointerup', this.onPointerUp, { passive: true });
-			window.addEventListener('pointercancel', this.onPointerUp, { passive: true });
-			document.addEventListener('mouseleave', this.onPointerLeave, { passive: true });
+		if (typeof document !== 'undefined' && !this.reduceMotion) {
 			document.addEventListener('visibilitychange', this.onVisibilityChange);
 		}
 	}
 
+	mount(stage: PhysicsStage) {
+		this.stage = stage;
+	}
+
 	/**
-	 * Tag an element as a drifting rigid body. Returns a cleanup function that
+	 * Tag an element as a drifting glyph. Returns a cleanup function that
 	 * unregisters it (suitable as a Svelte action `destroy`).
 	 */
 	register(el: HTMLElement): () => void {
@@ -263,29 +226,26 @@ export class DriftField {
 		};
 	}
 
-	/** Emit the active-state change (idempotent). Fired before the world is measured. */
-	private setActive(active: boolean) {
-		if (active === this.active) return;
-		this.active = active;
-		this.onActiveChange?.(active);
+	onScroll(progress: number) {
+		if (progress > this.cfg.driftThreshold) this.start();
+		else this.return_();
 	}
 
-	/** Kick the bodies apart. Builds the world on first call, re-impulses thereafter. */
+	/** Kick the bodies apart. Builds them on first call, re-impulses thereafter. */
 	start() {
 		if (this.reduceMotion || this.mode === 'drifting' || this.mode === 'warping') return;
-		this.setActive(true); // hand off transforms before buildWorld reads home positions
-		if (!this.worldBuilt)
-			this.buildWorld(); // fresh start from rest
-		else this.seedVelocities(); // resuming mid-return: re-impulse in place
+		this.setActive(true); // hand off transforms before we read home positions
+		if (!this.worldBuilt) this.buildBodies();
+		else this.seedVelocities();
 		this.mode = 'drifting';
-		this.ensureLoop();
+		this.stage?.wake();
 	}
 
 	/** Begin easing every body back to its home position. */
 	// Named `return_` because `return` is a reserved word.
 	return_() {
 		if (this.reduceMotion || this.mode !== 'drifting') return;
-		this.clearGrab(); // drop any held glyph; the tween owns the bodies now
+		this.stage?.clearGrab(); // drop any held glyph; the tween owns the bodies now
 		for (const d of this.drifters) {
 			if (d.body) {
 				d.sx = d.body.position.x - d.hx;
@@ -297,14 +257,13 @@ export class DriftField {
 		}
 		this.returnStart = performance.now();
 		this.mode = 'returning';
-		this.ensureLoop();
+		this.stage?.wake();
 	}
 
 	/**
 	 * Suck every glyph into `targetEl`, fire `onArrive` once they land, hold the
-	 * empty title for a beat, then fade them back in to home. Plays a flourish
-	 * before navigating. If reduced motion is set, `onArrive` fires immediately
-	 * with no animation.
+	 * empty title for a beat, then burst them back in to home. If reduced motion is
+	 * set, `onArrive` fires immediately with no animation.
 	 */
 	warp(targetEl: HTMLElement, onArrive: () => void) {
 		if (this.mode === 'warping') return;
@@ -312,17 +271,16 @@ export class DriftField {
 			onArrive();
 			return;
 		}
-		this.clearGrab();
-		this.setActive(true); // hand off transforms before buildWorld reads home positions
+		this.stage?.clearGrab();
+		this.setActive(true); // hand off transforms before we read home positions
 
-		// A live physics world is required so the glyphs collide on their way in.
-		if (!this.worldBuilt) this.buildWorld();
+		// A live set of bodies is required so the glyphs collide on their way in.
+		if (!this.worldBuilt) this.buildBodies();
 
 		const target = this.drifters.find((d) => d.el === targetEl) ?? null;
 
 		// Pinpoint sits at the top-centre of the button. Freeze the button and make it
-		// a sensor so glyphs pass straight through it to the point instead of piling
-		// up against its underside.
+		// a sensor so glyphs pass straight through it to the point.
 		if (target?.body) {
 			this.warpCenter.x = target.body.position.x;
 			this.warpCenter.y = target.body.bounds.min.y;
@@ -354,57 +312,92 @@ export class DriftField {
 		this.warpPhase = 'pulling';
 		this.warpStart = performance.now();
 		this.mode = 'warping';
-		this.ensureLoop();
+		this.stage?.wake();
 	}
 
-	/** Tear down the world and cancel the loop. Call on unmount. */
-	destroy() {
-		if (this.rafId) cancelAnimationFrame(this.rafId);
-		this.rafId = 0;
-		this.disableDebug();
-		this.destroyWorld();
-		if (typeof window !== 'undefined') {
-			window.removeEventListener('pointermove', this.onPointerMove);
-			window.removeEventListener('pointerdown', this.onPointerDown);
-			window.removeEventListener('pointerup', this.onPointerUp);
-			window.removeEventListener('pointercancel', this.onPointerUp);
-			document.removeEventListener('mouseleave', this.onPointerLeave);
-			document.removeEventListener('visibilitychange', this.onVisibilityChange);
+	isBusy(): boolean {
+		return this.mode !== 'idle';
+	}
+
+	step(ctx: StepCtx) {
+		if (this.mode === 'drifting') {
+			// Faint lean toward the cursor for every glyph that isn't being dragged.
+			if (ctx.pointer.active && this.cfg.mousePull > 0) {
+				for (const d of this.drifters) {
+					if (!d.body || d.body === ctx.draggedBody) continue;
+					cursorPull(d.body, ctx.pointer, this.cfg.mousePull, this.cfg.mousePullRadius);
+				}
+			}
+		} else if (this.mode === 'warping' && this.warpPhase === 'pulling') {
+			// Accelerate every loose glyph toward the pinpoint, with a velocity bleed so
+			// the arcs spiral inward; the solver then resolves the pile-up at the entrance.
+			const cx = this.warpCenter.x;
+			const cy = this.warpCenter.y;
+			for (const d of this.drifters) {
+				if (d === this.warpTargetDrifter || d.absorbed || !d.body) continue;
+				const dx = cx - d.body.position.x;
+				const dy = cy - d.body.position.y;
+				const dist = Math.hypot(dx, dy) || 1;
+				Body.setVelocity(d.body, {
+					x: (d.body.velocity.x + (dx / dist) * WARP_PULL) * WARP_DAMP,
+					y: (d.body.velocity.y + (dy / dist) * WARP_PULL) * WARP_DAMP
+				});
+			}
 		}
 	}
 
-	/**
-	 * Show a Matter wireframe overlay of the live bodies, walls, velocities, and
-	 * collisions. Bodies only exist while drifting, so the overlay appears once
-	 * you scroll the title into drift and clears when it settles home. Meant to
-	 * be driven from the console.
-	 */
-	enableDebug() {
-		this.debugEnabled = true;
-		if (this.engine) this.startDebugRender();
+	sync(ctx: StepCtx) {
+		if (this.mode === 'drifting') {
+			for (const d of this.drifters) {
+				if (!d.body) continue;
+				const dx = d.body.position.x - d.hx;
+				const dy = d.body.position.y - d.hy;
+				const deg = (d.body.angle * 180) / Math.PI;
+				setTransform(d.el, dx, dy, deg);
+			}
+		} else if (this.mode === 'returning') {
+			const t = Math.min(1, (ctx.now - this.returnStart) / this.cfg.returnMs);
+			const k = 1 - easeInExpo(t); // 1 -> 0, slow then fast
+			for (const d of this.drifters) {
+				const dx = d.sx * k;
+				const dy = d.sy * k;
+				const deg = d.sr * k;
+				setTransform(d.el, dx, dy, deg);
+				if (d.body) {
+					// keep the body glued to the tween so physics can resume cleanly
+					Body.setPosition(d.body, { x: d.hx + dx, y: d.hy + dy });
+					Body.setAngle(d.body, (deg * Math.PI) / 180);
+					Body.setVelocity(d.body, { x: 0, y: 0 });
+					Body.setAngularVelocity(d.body, 0);
+				}
+			}
+			if (t >= 1) {
+				for (const d of this.drifters) setTransform(d.el, 0, 0, 0);
+				this.destroyBodies();
+				this.mode = 'idle';
+				this.setActive(false); // back at rest — let the nudge field take over
+			}
+		} else if (this.mode === 'warping') {
+			this.stepWarp(ctx.now);
+		}
 	}
 
-	/** Hide and tear down the wireframe overlay. */
-	disableDebug() {
-		this.debugEnabled = false;
-		this.stopDebugRender();
+	dispose() {
+		if (typeof document !== 'undefined') {
+			document.removeEventListener('visibilitychange', this.onVisibilityChange);
+		}
+		this.destroyBodies();
 	}
 
-	private buildWorld() {
-		const engine = Engine.create();
-		engine.gravity.x = 0;
-		engine.gravity.y = this.cfg.gravity;
+	/** Emit the active-state change (idempotent). Fired before the bodies are measured. */
+	private setActive(active: boolean) {
+		if (active === this.active) return;
+		this.active = active;
+		this.onActiveChange?.(active);
+	}
 
-		const W = window.innerWidth;
-		const H = window.innerHeight;
-		const t = this.cfg.wallThickness;
-		Composite.add(engine.world, [
-			Bodies.rectangle(W / 2, -t / 2, W + 2 * t, t, { isStatic: true }), // top
-			Bodies.rectangle(W / 2, H + t / 2, W + 2 * t, t, { isStatic: true }), // bottom
-			Bodies.rectangle(-t / 2, H / 2, t, H + 2 * t, { isStatic: true }), // left
-			Bodies.rectangle(W + t / 2, H / 2, t, H + 2 * t, { isStatic: true }) // right
-		]);
-
+	private buildBodies() {
+		if (!this.stage) return;
 		for (const d of this.drifters) {
 			const rect = d.el.getBoundingClientRect(); // read once, at home (no active transform)
 			d.hx = rect.left + rect.width / 2;
@@ -419,13 +412,10 @@ export class DriftField {
 				frictionStatic: 0
 			});
 			d.body = body;
-			Composite.add(engine.world, body);
+			this.stage.addBody(body, { grabbable: true });
 		}
-
-		this.engine = engine;
 		this.seedVelocities();
 		this.worldBuilt = true;
-		if (this.debugEnabled) this.startDebugRender();
 	}
 
 	private seedVelocities() {
@@ -461,99 +451,12 @@ export class DriftField {
 		}
 	}
 
-	private destroyWorld() {
-		this.clearGrab();
-		this.stopDebugRender(); // detaches from the engine we're about to clear
-		if (this.engine) {
-			Composite.clear(this.engine.world, false);
-			Engine.clear(this.engine);
+	private destroyBodies() {
+		for (const d of this.drifters) {
+			if (d.body) this.stage?.removeBody(d.body);
+			d.body = null;
 		}
-		this.engine = null;
 		this.worldBuilt = false;
-		for (const d of this.drifters) d.body = null;
-	}
-
-	private startDebugRender() {
-		if (this.render || !this.engine) return;
-		const canvas = document.createElement('canvas');
-		canvas.style.cssText =
-			'position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:9999;opacity:0.75';
-		document.body.appendChild(canvas);
-		this.debugCanvas = canvas;
-		this.render = Render.create({
-			canvas,
-			engine: this.engine,
-			options: {
-				width: window.innerWidth,
-				height: window.innerHeight,
-				wireframes: true,
-				showVelocity: true,
-				showCollisions: true,
-				showAngleIndicator: true,
-				showIds: true
-			}
-		});
-		Render.run(this.render);
-	}
-
-	private stopDebugRender() {
-		if (this.render) {
-			Render.stop(this.render);
-			this.render = null;
-		}
-		if (this.debugCanvas) {
-			this.debugCanvas.remove();
-			this.debugCanvas = null;
-		}
-	}
-
-	private ensureLoop() {
-		if (this.rafId || this.reduceMotion) return;
-		this.rafId = requestAnimationFrame(this.frame);
-	}
-
-	private step(now: number) {
-		if (this.mode === 'drifting') {
-			this.applyPointerForces(); // cursor pull + held-glyph follow, before the solver
-			if (this.engine) Engine.update(this.engine, 1000 / 60); // fixed step = stable solver
-			for (const d of this.drifters) {
-				if (!d.body) continue;
-				const dx = d.body.position.x - d.hx;
-				const dy = d.body.position.y - d.hy;
-				const deg = (d.body.angle * 180) / Math.PI;
-				setTransform(d.el, dx, dy, deg);
-			}
-		} else if (this.mode === 'returning') {
-			const t = Math.min(1, (now - this.returnStart) / this.cfg.returnMs);
-			const k = 1 - easeInExpo(t); // 1 -> 0, slow then fast
-			for (const d of this.drifters) {
-				const dx = d.sx * k;
-				const dy = d.sy * k;
-				const deg = d.sr * k;
-				setTransform(d.el, dx, dy, deg);
-				if (d.body) {
-					// keep the body glued to the tween so physics can resume cleanly
-					Body.setPosition(d.body, { x: d.hx + dx, y: d.hy + dy });
-					Body.setAngle(d.body, (deg * Math.PI) / 180);
-					Body.setVelocity(d.body, { x: 0, y: 0 });
-					Body.setAngularVelocity(d.body, 0);
-				}
-			}
-			if (t >= 1) {
-				for (const d of this.drifters) setTransform(d.el, 0, 0, 0);
-				this.destroyWorld();
-				this.mode = 'idle';
-				this.setActive(false); // back at rest — let the nudge field take over
-			}
-		} else if (this.mode === 'warping') {
-			this.stepWarp(now);
-		}
-
-		if (this.mode === 'idle') {
-			this.rafId = 0;
-			return;
-		} // park loop until next scroll
-		this.rafId = requestAnimationFrame(this.frame);
 	}
 
 	private stepWarp(now: number) {
@@ -565,21 +468,8 @@ export class DriftField {
 		const tdeg = tgt?.body ? (tgt.body.angle * 180) / Math.PI : 0;
 
 		if (this.warpPhase === 'pulling') {
-			// Accelerate every loose glyph toward the pinpoint, with a velocity bleed so
-			// the arcs spiral inward, then let the solver resolve the pile-up as they
-			// collide rushing the entrance.
-			for (const d of this.drifters) {
-				if (d === tgt || d.absorbed || !d.body) continue;
-				const dx = cx - d.body.position.x;
-				const dy = cy - d.body.position.y;
-				const dist = Math.hypot(dx, dy) || 1;
-				Body.setVelocity(d.body, {
-					x: (d.body.velocity.x + (dx / dist) * WARP_PULL) * WARP_DAMP,
-					y: (d.body.velocity.y + (dy / dist) * WARP_PULL) * WARP_DAMP
-				});
-			}
-			if (this.engine) Engine.update(this.engine, 1000 / 60);
-
+			// Forces were applied in step(); the stage stepped the solver. Now read where
+			// each glyph landed and resolve absorption / the squeeze through the throat.
 			let allIn = true;
 			for (const d of this.drifters) {
 				if (d === tgt) {
@@ -596,7 +486,8 @@ export class DriftField {
 				if (dist < WARP_ABSORB) {
 					// Swallowed: remove it so the point clears for the glyphs behind it.
 					d.absorbed = true;
-					if (this.engine) Composite.remove(this.engine.world, d.body);
+					this.stage?.removeBody(d.body);
+					d.body = null;
 					setWarp(d.el, cx - d.hx, cy - d.hy, 0, 0, 0);
 					continue;
 				}
@@ -758,7 +649,7 @@ export class DriftField {
 		this.warpTargetDrifter = null;
 		this.warpArrived = false;
 		this.onWarpArrive = null;
-		this.destroyWorld();
+		this.destroyBodies();
 		this.mode = 'idle';
 		this.setActive(false); // back at rest — let the nudge field take over
 	}
@@ -776,84 +667,6 @@ export class DriftField {
 			else setWarp(d.el, cx - d.hx, cy - d.hy, 0, 0, 0);
 		}
 	}
-
-	private applyPointerForces() {
-		// Faint lean toward the cursor for every glyph that isn't being held. Nudge
-		// velocity directly (px/step) rather than via applyForce — Matter scales
-		// forces by deltaTime², which makes "force" units wildly unintuitive here.
-		if (this.pointer.active && this.cfg.mousePull > 0) {
-			const radius = this.cfg.mousePullRadius;
-			for (const d of this.drifters) {
-				const body = d.body;
-				if (!body || body === this.dragBody) continue;
-				const dx = this.pointer.x - body.position.x;
-				const dy = this.pointer.y - body.position.y;
-				const dist = Math.hypot(dx, dy);
-				if (dist === 0 || dist > radius) continue; // outside the cursor's reach
-				// Quadratic falloff: full strength at the cursor, nothing at the edge.
-				const falloff = (1 - dist / radius) ** 2;
-				const pull = this.cfg.mousePull * falloff;
-				Body.setVelocity(body, {
-					x: body.velocity.x + (dx / dist) * pull,
-					y: body.velocity.y + (dy / dist) * pull
-				});
-			}
-		}
-
-		// Held glyph chases the cursor; its motion shoves neighbours and becomes the throw.
-		if (this.dragBody) {
-			const tx = this.pointer.x + this.dragOffset.x;
-			const ty = this.pointer.y + this.dragOffset.y;
-			Body.setVelocity(this.dragBody, {
-				x: tx - this.dragBody.position.x,
-				y: ty - this.dragBody.position.y
-			});
-		}
-	}
-
-	private readonly onPointerMove = (e: PointerEvent) => {
-		this.pointerVel.x = e.clientX - this.pointer.x;
-		this.pointerVel.y = e.clientY - this.pointer.y;
-		this.pointer.x = e.clientX;
-		this.pointer.y = e.clientY;
-		this.pointer.active = true;
-
-		// Promote a press into a drag once it travels past the click threshold.
-		if (this.pendingGrab && !this.dragBody) {
-			const moved = Math.hypot(e.clientX - this.grabStart.x, e.clientY - this.grabStart.y);
-			if (moved > DRAG_THRESHOLD) {
-				this.dragBody = this.pendingGrab;
-				this.pendingGrab = null;
-				this.dragOffset.x = this.dragBody.position.x - e.clientX;
-				this.dragOffset.y = this.dragBody.position.y - e.clientY;
-				document.body.style.userSelect = 'none';
-			}
-		}
-	};
-
-	private readonly onPointerDown = (e: PointerEvent) => {
-		if (this.mode !== 'drifting') return; // bodies only exist while drifting
-		const point = { x: e.clientX, y: e.clientY };
-		this.pointer.x = point.x;
-		this.pointer.y = point.y;
-		this.pointer.active = true;
-		const bodies = this.drifters.map((d) => d.body).filter((b): b is Matter.Body => b !== null);
-		const hit = Query.point(bodies, point)[0];
-		if (!hit) return;
-		// Defer the real grab until the pointer moves, so a plain click still reaches
-		// whatever is underneath (e.g. the GitHub button) instead of being swallowed.
-		this.pendingGrab = hit;
-		this.grabStart.x = point.x;
-		this.grabStart.y = point.y;
-	};
-
-	private readonly onPointerUp = () => {
-		this.releaseDrag();
-	};
-
-	private readonly onPointerLeave = () => {
-		this.pointer.active = false;
-	};
 
 	// A warp opens GitHub in a new tab. If the user switches to it mid-warp,
 	// requestAnimationFrame pauses and the animation would otherwise freeze, then
@@ -875,27 +688,7 @@ export class DriftField {
 			this.warpHoldStart = Number.POSITIVE_INFINITY; // don't count down while hidden
 		} else if (this.warpPhase === 'holding') {
 			this.warpHoldStart = performance.now(); // back on the page — begin the fade-in beat
-			this.ensureLoop();
+			this.stage?.wake();
 		}
 	};
-
-	/** Release a held glyph, flinging it with the recent pointer velocity (capped). */
-	private releaseDrag() {
-		if (this.dragBody) {
-			const speed = Math.hypot(this.pointerVel.x, this.pointerVel.y);
-			const scale = speed > MAX_THROW_SPEED ? MAX_THROW_SPEED / speed : 1;
-			Body.setVelocity(this.dragBody, {
-				x: this.pointerVel.x * scale,
-				y: this.pointerVel.y * scale
-			});
-		}
-		this.clearGrab();
-	}
-
-	/** Drop grab/drag state without applying a throw. */
-	private clearGrab() {
-		this.pendingGrab = null;
-		this.dragBody = null;
-		if (typeof document !== 'undefined') document.body.style.userSelect = '';
-	}
 }

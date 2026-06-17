@@ -40,12 +40,16 @@ type Nudgee = {
 };
 
 const SETTLE_EPS = 0.05; // below this displacement+velocity (and no pointer) we park the loop
+/** Fixed integration step (ms) so the spring feels identical at any display refresh rate. */
+const NUDGE_STEP = 1000 / 60;
+/** Cap on integration steps per frame, so a stall can't queue an unbounded catch-up. */
+const MAX_NUDGE_SUBSTEPS = 5;
 
 /**
  * Makes registered elements react subtly to the cursor: as the pointer passes
  * near one it gets shoved away a little, then a spring eases it back home. It's
  * a self-contained companion to (and deliberately mutually exclusive with) the
- * DriftField — call {@link disable} when something else takes over the same
+ * GlyphField drift — call {@link disable} when something else takes over the same
  * elements' transforms, {@link enable} when they're back at rest.
  *
  * Framework-agnostic: register elements, then enable/disable as state dictates.
@@ -54,10 +58,15 @@ export class NudgeField {
 	private readonly cfg: NudgeConfig;
 	private readonly nudgees: Nudgee[] = [];
 	private readonly reduceMotion: boolean;
-	private readonly frame: () => void;
+	private readonly frame: (now: number) => void;
 
 	private enabled = false;
 	private rafId = 0;
+
+	// Fixed-timestep accumulator, mirroring the physics stage: the spring integrates at a
+	// constant 60Hz regardless of how often rAF fires. `lastTime === 0` means uninitialised.
+	private lastTime = 0;
+	private accumulator = 0;
 
 	private readonly pointer = { x: 0, y: 0, active: false };
 
@@ -99,6 +108,8 @@ export class NudgeField {
 		this.enabled = false;
 		if (this.rafId) cancelAnimationFrame(this.rafId);
 		this.rafId = 0;
+		this.lastTime = 0; // reset the fixed-step clock so a later enable() starts fresh
+		this.accumulator = 0;
 		window.removeEventListener('pointermove', this.onPointerMove);
 		window.removeEventListener('pointerup', this.onPointerEnd);
 		window.removeEventListener('pointercancel', this.onPointerEnd);
@@ -128,10 +139,45 @@ export class NudgeField {
 		this.rafId = requestAnimationFrame(this.frame);
 	}
 
-	private step() {
-		const { radius, push, stiffness, damping, mass, maxOffset } = this.cfg;
-		let busy = this.pointer.active;
+	private step(now: number) {
+		// Integrate the spring at a fixed 60Hz, running however many steps the real elapsed
+		// time bought (clamped), so the feel is identical on a 60Hz, 144Hz, or throttled
+		// display instead of settling faster the higher the refresh rate.
+		if (this.lastTime === 0) this.lastTime = now;
+		let elapsed = now - this.lastTime;
+		this.lastTime = now;
+		if (elapsed > MAX_NUDGE_SUBSTEPS * NUDGE_STEP) elapsed = MAX_NUDGE_SUBSTEPS * NUDGE_STEP;
+		this.accumulator += elapsed;
 
+		let steps = 0;
+		while (this.accumulator >= NUDGE_STEP && steps < MAX_NUDGE_SUBSTEPS) {
+			this.integrate();
+			this.accumulator -= NUDGE_STEP;
+			steps++;
+		}
+
+		// Write transforms and decide whether to keep running, once per rendered frame.
+		let busy = this.pointer.active;
+		for (const n of this.nudgees) {
+			n.el.style.transform = `translate3d(${n.ox}px, ${n.oy}px, 0)`;
+			if (Math.abs(n.ox) + Math.abs(n.oy) + Math.abs(n.vx) + Math.abs(n.vy) > SETTLE_EPS) {
+				busy = true;
+			}
+		}
+
+		// Park once everything has settled and the pointer has left; pointermove wakes us.
+		if (!busy) {
+			this.rafId = 0;
+			this.lastTime = 0; // forget the clock so the next wake doesn't bank the idle gap
+			this.accumulator = 0;
+			return;
+		}
+		this.rafId = requestAnimationFrame(this.frame);
+	}
+
+	/** One fixed 60Hz spring step: cursor shove + spring-home, integrated and clamped. */
+	private integrate() {
+		const { radius, push, stiffness, damping, mass, maxOffset } = this.cfg;
 		for (const n of this.nudgees) {
 			// Sum the forces: a spring pulling home, plus a cursor shove that falls off
 			// to nothing at `radius`.
@@ -162,19 +208,7 @@ export class NudgeField {
 				n.ox *= s;
 				n.oy *= s;
 			}
-
-			n.el.style.transform = `translate3d(${n.ox}px, ${n.oy}px, 0)`;
-			if (Math.abs(n.ox) + Math.abs(n.oy) + Math.abs(n.vx) + Math.abs(n.vy) > SETTLE_EPS) {
-				busy = true;
-			}
 		}
-
-		// Park once everything has settled and the pointer has left; pointermove wakes us.
-		if (!busy) {
-			this.rafId = 0;
-			return;
-		}
-		this.rafId = requestAnimationFrame(this.frame);
 	}
 
 	private readonly onPointerMove = (e: PointerEvent) => {
