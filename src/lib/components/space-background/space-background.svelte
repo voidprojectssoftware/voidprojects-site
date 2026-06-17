@@ -1,60 +1,78 @@
 <!--
-	Fixed, full-viewport space backdrop behind all page content.
+	Fixed, full-viewport night sky behind all page content.
 
-	Rather than the usual blurry coloured gradient blobs (which read as generic),
-	this leans on a canvas particle starfield for depth and life: stars are tiered
-	by depth, so near stars are larger/brighter/parallax more and far stars are
-	tiny and faint. Each star twinkles and drifts slowly, and the whole field
-	parallaxes against the pointer, which is what makes foreground content read as
-	floating. A single restrained glow and a faint grain finish it. Starfield is
-	dark-mode only; light mode keeps a clean background.
+	Instead of procedurally faking stars, this renders the real naked-eye sky
+	(~9k stars from the HYG catalog) as seen from a chosen spot on Earth, right
+	now. Each star's catalogue position (RA/Dec) is converted to where it sits in
+	the local sky, then projected through a virtual camera looking out in a fixed
+	direction. The sky drifts in real time as the Earth turns, plus a faint mouse
+	parallax. Real constellations emerge on their own. Dark-mode only.
+
+	Dev console (when dark): `skyView.list()`, `skyView.setVantage(i)`,
+	`skyView.useMyLocation()`.
 -->
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import catalog from '$lib/sky/star-catalog.json';
+	import { lstHours, ciToRgb, type GeoLocation } from '$lib/sky/astro.js';
 
 	let canvas: HTMLCanvasElement;
 
-	// All the knobs in one place — tweak these to taste.
+	const DEFAULT_LABEL = 'Our Sky - Memphis, TN';
+	let skyLabel = $state(DEFAULT_LABEL);
+	let locating = $state(false);
+	// assigned in onMount once the sky's setLocation is available
+	let requestLocation = $state<() => void>(() => {});
+
+	// Reverse-geocode coords to a "City, REGION" string via BigDataCloud's free,
+	// keyless client endpoint. Sends the coordinates to bigdatacloud.net.
+	async function nearestPlace(lat: number, lon: number): Promise<string> {
+		const url = `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`;
+		const res = await fetch(url);
+		if (!res.ok) throw new Error('geocode failed');
+		const d = await res.json();
+		const city = d.city || d.locality || d.principalSubdivision || 'Your location';
+		const region = (d.principalSubdivisionCode || '').split('-')[1] || d.countryCode || '';
+		return region ? `${city}, ${region}` : city;
+	}
+
+	// All the knobs in one place.
 	const CONFIG = {
-		density: 2400, // lower divisor = more stars (per px² of viewport)
-		depthSkew: 2.6, // higher = far more tiny/distant stars, fewer near ones
-		baseSize: 0.5, // radius of the most distant stars (px)
-		sizeGrowth: 1.3, // extra radius for the nearest stars
-		minAlpha: 0.16, // brightness floor (distant stars)
-		alphaGrowth: 0.5, // extra brightness for the nearest stars
-		parallax: 4, // max px the field shifts with the pointer (at depth 1)
-		twinkle: 0.32, // twinkle depth, 0 = none .. 1 = full blink
-		clusterCount: 5, // number of star clumps
-		clusterFraction: 0.42, // share of stars that belong to clumps (rest are scattered)
-		clusterSpread: 90, // px spread of a clump
-		galaxyCount: 3 // faint nebula/galaxy hazes (a subset of clusters get one)
+		// A couple of fixed vantage points (great dark-sky sites). Geolocation can
+		// override these at runtime, see `useGeolocation` / the skyView console API.
+		vantages: [
+			{ name: 'Memphis, TN', lat: 35.1495, lon: -90.049 },
+			{ name: 'Mauna Kea, Hawaii', lat: 19.8207, lon: -155.4681 },
+			{ name: 'Atacama, Chile', lat: -24.6272, lon: -70.4039 }
+		] as GeoLocation[],
+		defaultVantage: 0,
+		useGeolocation: false, // flip on (or call skyView.useMyLocation()) to prompt
+
+		lookAzimuth: 180, // compass direction the camera faces (deg; 180 = due south)
+		lookAltitude: 52, // how high it looks (deg above horizon)
+		fov: 96, // field of view (deg)
+
+		magLimit: 6.5, // hide stars fainter than this (data goes to 6.5)
+		sizeBase: 0.35, // radius of the faintest stars (px)
+		sizePerMag: 0.27, // extra radius per magnitude brighter
+		alphaFloor: 0.16, // dimmest stars
+		twinkle: 0.28, // 0 = none .. 1 = full blink
+		parallax: 4, // max px the field shifts with the pointer
+		timeScale: 1 // 1 = real time; raise to speed up the sky's rotation
 	};
 
 	type Star = {
-		x: number;
-		y: number;
-		depth: number; // 0 far .. 1 near
-		r: number;
+		ra: number; // hours
+		sinDec: number;
+		cosDec: number;
+		size: number;
 		alpha: number;
+		fill: string; // "rgb(r,g,b)"
 		twPhase: number;
 		twSpeed: number;
-		color: string;
 	};
 
-	type Galaxy = {
-		x: number;
-		y: number;
-		r: number;
-		squash: number; // <1 = elongated
-		rot: number;
-		color: string; // "r,g,b"
-		alpha: number;
-	};
-
-	// Mostly white, with the occasional cool/warm/violet pinprick for variety.
-	const PALETTE = ['#ffffff', '#ffffff', '#ffffff', '#cfd8ff', '#e7d8ff', '#fff4d6'];
-	// Subtle, desaturated haze tints for the galaxy patches.
-	const GALAXY_TINTS = ['126,96,196', '78,116,184', '150,96,168'];
+	const DEG = Math.PI / 180;
 
 	onMount(() => {
 		const ctx = canvas.getContext('2d');
@@ -65,15 +83,24 @@
 
 		let w = 0;
 		let h = 0;
-		let stars: Star[] = [];
-		let galaxies: Galaxy[] = [];
 		let raf = 0;
 		let running = false;
 
-		// rough normal distribution in ~[-1.5, 1.5], for clumping stars around a center
-		const gauss = () => Math.random() + Math.random() + Math.random() - 1.5;
+		// active observer location + cached trig
+		let location = CONFIG.vantages[CONFIG.defaultVantage];
+		let sinLat = Math.sin(location.lat * DEG);
+		let cosLat = Math.cos(location.lat * DEG);
+		const setLocation = (loc: GeoLocation) => {
+			location = loc;
+			sinLat = Math.sin(loc.lat * DEG);
+			cosLat = Math.cos(loc.lat * DEG);
+		};
 
-		// pointer parallax, eased toward the target each frame
+		// real (or sped-up) clock
+		const epoch = Date.now();
+		let startPerf = 0;
+
+		// pointer parallax, eased toward target
 		let px = 0;
 		let py = 0;
 		let targetX = 0;
@@ -81,57 +108,25 @@
 
 		const isDark = () => document.documentElement.classList.contains('dark');
 
-		const makeStar = (x: number, y: number): Star => {
-			// depthSkew pushes most stars toward "far" (small + faint), so the field
-			// reads as deep distance rather than a swarm of near specks.
-			const depth = Math.pow(Math.random(), CONFIG.depthSkew);
-			return {
-				x,
-				y,
-				depth,
-				r: CONFIG.baseSize + depth * depth * CONFIG.sizeGrowth,
-				alpha: CONFIG.minAlpha + depth * CONFIG.alphaGrowth,
+		// Decode the flat [ra, dec, mag, ci, ...] catalogue into ready-to-draw stars.
+		const flat = catalog.stars as number[];
+		const stars: Star[] = [];
+		for (let i = 0; i < flat.length; i += 4) {
+			const mag = flat[i + 2];
+			if (mag > CONFIG.magLimit) continue;
+			const dec = flat[i + 1] * DEG;
+			const m = CONFIG.magLimit - mag; // 0 (faint) .. ~8 (brightest)
+			stars.push({
+				ra: flat[i],
+				sinDec: Math.sin(dec),
+				cosDec: Math.cos(dec),
+				size: CONFIG.sizeBase + m * CONFIG.sizePerMag,
+				alpha: Math.min(0.97, CONFIG.alphaFloor + (m / 8) * 0.82),
+				fill: `rgb(${ciToRgb(flat[i + 3])})`,
 				twPhase: Math.random() * Math.PI * 2,
-				twSpeed: 0.4 + Math.random() * 1.4,
-				color: PALETTE[(Math.random() * PALETTE.length) | 0]
-			};
-		};
-
-		const buildStars = () => {
-			const count = Math.round((w * h) / CONFIG.density);
-
-			// cluster/galaxy centers
-			const centers = Array.from({ length: CONFIG.clusterCount }, () => ({
-				x: Math.random() * w,
-				y: Math.random() * h
-			}));
-
-			galaxies = centers.slice(0, CONFIG.galaxyCount).map((c, i) => ({
-				x: c.x,
-				y: c.y,
-				r: 140 + Math.random() * 160,
-				squash: 0.45 + Math.random() * 0.35,
-				rot: Math.random() * Math.PI,
-				color: GALAXY_TINTS[i % GALAXY_TINTS.length],
-				alpha: 0.05 + Math.random() * 0.03
-			}));
-
-			const clustered = Math.round(count * CONFIG.clusterFraction);
-			stars = [];
-
-			// clumped stars: gaussian scatter around a random center
-			for (let i = 0; i < clustered; i++) {
-				const c = centers[(Math.random() * centers.length) | 0];
-				const x = c.x + gauss() * CONFIG.clusterSpread;
-				const y = c.y + gauss() * CONFIG.clusterSpread;
-				stars.push(makeStar(x, y));
-			}
-
-			// scattered field stars filling the rest of the sky
-			for (let i = clustered; i < count; i++) {
-				stars.push(makeStar(Math.random() * w, Math.random() * h));
-			}
-		};
+				twSpeed: 0.4 + Math.random() * 1.4
+			});
+		}
 
 		const resize = () => {
 			w = window.innerWidth;
@@ -141,58 +136,77 @@
 			canvas.style.width = `${w}px`;
 			canvas.style.height = `${h}px`;
 			ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-			buildStars();
 		};
 
 		const draw = (now: number) => {
+			if (!startPerf) startPerf = now;
 			ctx.clearRect(0, 0, w, h);
+
 			px += (targetX - px) * 0.04;
 			py += (targetY - py) * 0.04;
+			const offX = px * CONFIG.parallax;
+			const offY = py * CONFIG.parallax;
 
-			// faint galaxy/nebula hazes, drawn behind the stars (they barely parallax)
-			for (const g of galaxies) {
-				const gx = g.x + px * 3;
-				const gy = g.y + py * 3;
-				const grad = ctx.createRadialGradient(gx, gy, 0, gx, gy, g.r);
-				grad.addColorStop(0, `rgba(${g.color},${g.alpha})`);
-				grad.addColorStop(1, `rgba(${g.color},0)`);
-				ctx.globalAlpha = 1;
-				ctx.fillStyle = grad;
-				ctx.save();
-				ctx.translate(gx, gy);
-				ctx.rotate(g.rot);
-				ctx.scale(1, g.squash);
-				ctx.beginPath();
-				ctx.arc(0, 0, g.r, 0, Math.PI * 2);
-				ctx.fill();
-				ctx.restore();
-			}
+			// local sidereal time for the current (optionally sped-up) instant
+			const date = new Date(epoch + (now - startPerf) * CONFIG.timeScale);
+			const lst = lstHours(date, location.lon);
 
+			// virtual camera basis in (north, east, up)
+			const a0 = CONFIG.lookAzimuth * DEG;
+			const t0 = CONFIG.lookAltitude * DEG;
+			const cosT = Math.cos(t0);
+			const fN = cosT * Math.cos(a0);
+			const fE = cosT * Math.sin(a0);
+			const fU = Math.sin(t0);
+			// right = normalize(Z × f); horizontal, so its up-component is 0
+			const rN = -fE / cosT;
+			const rE = fN / cosT;
+			// up = f × right
+			const uN = -fU * rE;
+			const uE = fU * rN;
+			const uU = fN * rE - fE * rN;
+
+			const scale = Math.max(w, h) / 2 / Math.tan((CONFIG.fov / 2) * DEG);
+			const cx = w / 2;
+			const cy = h / 2;
 			const twAmt = CONFIG.twinkle;
+
 			for (const s of stars) {
-				const shift = s.depth * CONFIG.parallax; // deeper stars parallax more
-				const sx = s.x + px * shift;
-				const sy = s.y + py * shift;
+				const ha = (lst - s.ra) * 15 * DEG; // hour angle
+				const cosDcosH = s.cosDec * Math.cos(ha);
+				const u = cosLat * cosDcosH + sinLat * s.sinDec; // sin(altitude)
+				if (u <= 0) continue; // below the horizon
+
+				const sN = sinLat * cosDcosH - cosLat * s.sinDec;
+				const n = -sN;
+				const e = -s.cosDec * Math.sin(ha);
+
+				const zf = n * fN + e * fE + u * fU; // depth along view direction
+				if (zf <= 0.05) continue; // behind / too far off-axis
+
+				const xf = n * rN + e * rE;
+				const yf = n * uN + e * uE + u * uU;
+				const sx = cx + (xf / zf) * scale + offX;
+				const sy = cy - (yf / zf) * scale + offY;
+				if (sx < -40 || sx > w + 40 || sy < -40 || sy > h + 40) continue;
 
 				const tw = reduce
 					? 1
 					: 1 - twAmt + twAmt * (0.5 + 0.5 * Math.sin(now * 0.001 * s.twSpeed + s.twPhase));
-				const a = s.alpha * tw;
 
-				// faint bloom on only the brightest few near stars
-				if (s.depth > 0.85) {
-					ctx.globalAlpha = a * 0.2;
-					ctx.fillStyle = s.color;
+				// faint bloom on the brightest few
+				if (s.size > 1.7) {
+					ctx.globalAlpha = s.alpha * tw * 0.18;
+					ctx.fillStyle = s.fill;
 					ctx.beginPath();
-					ctx.arc(sx, sy, s.r * 2.4, 0, Math.PI * 2);
+					ctx.arc(sx, sy, s.size * 2.4, 0, Math.PI * 2);
 					ctx.fill();
 				}
 
-				// round dot core
-				ctx.globalAlpha = a;
-				ctx.fillStyle = s.color;
+				ctx.globalAlpha = s.alpha * tw;
+				ctx.fillStyle = s.fill;
 				ctx.beginPath();
-				ctx.arc(sx, sy, s.r, 0, Math.PI * 2);
+				ctx.arc(sx, sy, s.size, 0, Math.PI * 2);
 				ctx.fill();
 			}
 
@@ -205,14 +219,13 @@
 			running = true;
 			raf = requestAnimationFrame(draw);
 		};
-
 		const stop = () => {
 			running = false;
 			if (raf) cancelAnimationFrame(raf);
 			raf = 0;
 		};
 
-		// Only animate when the starfield is actually visible (dark + tab focused).
+		// Only animate when visible (dark + tab focused).
 		const sync = () => {
 			if (isDark() && !document.hidden) start();
 			else {
@@ -221,22 +234,63 @@
 			}
 		};
 
-		const onPointer = (e: PointerEvent) => {
-			targetX = e.clientX / w - 0.5;
-			targetY = e.clientY / h - 0.5;
+		const onPointer = (ev: PointerEvent) => {
+			targetX = ev.clientX / w - 0.5;
+			targetY = ev.clientY / h - 0.5;
+		};
+
+		const useMyLocation = () => {
+			if (!navigator.geolocation) return;
+			navigator.geolocation.getCurrentPosition(
+				(pos) =>
+					setLocation({ name: 'Your location', lat: pos.coords.latitude, lon: pos.coords.longitude }),
+				() => {
+					/* denied or unavailable — keep the fixed vantage */
+				},
+				{ enableHighAccuracy: false, timeout: 8000, maximumAge: 600000 }
+			);
+		};
+
+		// Bottom-left label flow: prompt for location, swap the sky, then relabel
+		// with the nearest city. On denial/failure we keep the "Our Sky" default.
+		requestLocation = () => {
+			if (!navigator.geolocation || locating) return;
+			locating = true;
+			navigator.geolocation.getCurrentPosition(
+				async (pos) => {
+					const { latitude, longitude } = pos.coords;
+					setLocation({ name: 'Your location', lat: latitude, lon: longitude });
+					try {
+						skyLabel = `Your Sky - ${await nearestPlace(latitude, longitude)}`;
+					} catch {
+						skyLabel = 'Your Sky';
+					}
+					locating = false;
+				},
+				() => {
+					locating = false; // denied — keep the default vantage + label
+				},
+				{ enableHighAccuracy: false, timeout: 8000, maximumAge: 600000 }
+			);
 		};
 
 		resize();
+		if (CONFIG.useGeolocation) useMyLocation();
 		sync();
+
+		// Console helpers for switching vantage / opting into geolocation.
+		const win = window as typeof window & { skyView?: Record<string, unknown> };
+		win.skyView = {
+			list: () => CONFIG.vantages.map((v, i) => `${i}: ${v.name}`),
+			setVantage: (i: number) => CONFIG.vantages[i] && setLocation(CONFIG.vantages[i]),
+			useMyLocation
+		};
 
 		window.addEventListener('resize', resize);
 		window.addEventListener('pointermove', onPointer, { passive: true });
 		document.addEventListener('visibilitychange', sync);
 		const themeObserver = new MutationObserver(sync);
-		themeObserver.observe(document.documentElement, {
-			attributes: true,
-			attributeFilter: ['class']
-		});
+		themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
 
 		return () => {
 			stop();
@@ -244,6 +298,7 @@
 			window.removeEventListener('pointermove', onPointer);
 			document.removeEventListener('visibilitychange', sync);
 			themeObserver.disconnect();
+			delete win.skyView;
 		};
 	});
 </script>
@@ -253,6 +308,16 @@
 	<canvas bind:this={canvas} class="absolute inset-0 hidden h-full w-full dark:block"></canvas>
 	<div class="grain absolute inset-0"></div>
 </div>
+
+<button
+	type="button"
+	onclick={() => requestLocation()}
+	disabled={locating}
+	title="Use my location"
+	class="fixed bottom-4 left-4 z-10 hidden cursor-pointer text-xs tracking-wide text-foreground/25 transition-opacity hover:text-foreground/60 disabled:cursor-progress dark:sm:block"
+>
+	{locating ? 'Locating…' : skyLabel}
+</button>
 
 <style>
 	/* flat deep-space backdrop */
