@@ -48,14 +48,20 @@
 		};
 
 		window.addEventListener('scroll', onScroll, { passive: true });
+
+		// Console-driven debug overlay: `driftDebug()` to show, `driftDebug(false)` to hide.
+		const w = window as typeof window & { driftDebug?: (on?: boolean) => void };
+		w.driftDebug = (on = true) => (on ? field.enableDebug() : field.disableDebug());
+		console.info('[drift] run driftDebug() in the console to overlay the physics wireframe');
+
 		return () => {
 			window.removeEventListener('scroll', onScroll);
+			delete w.driftDebug;
 			field.destroy();
 		};
 	});
 </script>
 
-<div class="isolate">
 <header class="sticky top-0 z-2 h-16 bg-background/10 px-35 pt-4 backdrop-blur-lg">
 	<div class="flex flex-row items-center justify-between">
 		<div
@@ -91,14 +97,14 @@
 		class="sticky top-16 h-[calc(100dvh-4rem)] items-center justify-center gap-3 overflow-clip"
 	>
 		<div class="flex flex-col items-center gap-4">
-			<h1 class="text-8xl font-bold" aria-label={heroTitle}>
+			<h1 class="text-8xl font-bold select-none" aria-label={heroTitle}>
 				{#each titleChars as ch}<span
 						use:drift
 						aria-hidden="true"
 						style="display:inline-block;white-space:pre">{ch === ' ' ? '\u00A0' : ch}</span
 					>{/each}
 			</h1>
-			<p class="text-2xl" aria-label={heroSubtitle}>
+			<p class="text-2xl select-none" aria-label={heroSubtitle}>
 				{#each subtitleChars as ch}<span
 						use:drift
 						aria-hidden="true"
