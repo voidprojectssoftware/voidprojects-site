@@ -23,7 +23,7 @@
 {#if show}
 	<div
 		role="status"
-		class="fixed right-4 bottom-4 z-50 flex max-w-sm items-start gap-3 rounded-xl border bg-card p-4 text-card-foreground shadow-lg"
+		class="fixed right-4 bottom-4 z-2 flex max-w-sm items-start gap-3 rounded-xl border bg-card p-4 text-card-foreground shadow-lg"
 	>
 		<TriangleAlert size={20} class="mt-0.5 shrink-0 text-primary" />
 		<div class="flex flex-col gap-1 text-sm">

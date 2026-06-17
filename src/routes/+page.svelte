@@ -5,12 +5,14 @@
 	import { Sun, Moon } from '@lucide/svelte';
 	import { DriftField } from '$lib/drift/index.js';
 	import { ReducedMotionNotice } from '$lib/components/reduced-motion-notice/index.js';
+	import { Feature } from '$lib/components/feature/index.js';
+	import { ScrollReveal } from '$lib/components/scroll-reveal/index.js';
 
 	let heroRef = $state<HTMLElement | null>(null);
-	let secondRef = $state<HTMLElement | null>(null);
 
 	let dark = $state(false);
 	let scrolled = $state(false);
+	let progress = $state(0);
 
 	function toggleDark() {
 		dark = !dark;
@@ -23,8 +25,11 @@
 	const heroSubtitle = 'Software for accelerating the use of agentic systems.';
 	const subtitleChars = [...heroSubtitle];
 
-	// Fraction of secondRef that must scroll into view before the title drifts apart.
+	// Fraction of total page scroll before the title drifts apart.
 	const DRIFT_THRESHOLD = 0.02;
+
+	// Fraction of total page scroll before the card slides in.
+	const CARD_REVEAL_THRESHOLD = 0.3;
 
 	const field = new DriftField();
 
@@ -34,14 +39,8 @@
 	onMount(() => {
 		const onScroll = () => {
 			scrolled = window.scrollY > 0;
-			if (!heroRef || !secondRef) return;
-			const progress = Math.max(
-				0,
-				Math.min(
-					1,
-					(window.innerHeight - secondRef.getBoundingClientRect().top) / window.innerHeight
-				)
-			);
+			const scrollable = document.documentElement.scrollHeight - window.innerHeight;
+			progress = scrollable > 0 ? Math.max(0, Math.min(1, window.scrollY / scrollable)) : 0;
 
 			if (progress > DRIFT_THRESHOLD) field.start();
 			else field.return_();
@@ -119,8 +118,23 @@
 				>
 			</div>
 		</div>
+		<ScrollReveal {progress} threshold={CARD_REVEAL_THRESHOLD}>
+			<Feature
+				title="Constellation"
+				desc="Transform disjointed, amorphic systems into accessible graphs of knowledge."
+			/>
+		</ScrollReveal>
+		<ScrollReveal {progress} threshold={CARD_REVEAL_THRESHOLD + 0.3} class="z-2">
+			<Feature
+				title="Protostar"
+				desc="Shareable, private, and internal agent skills that get better as you use them."
+			/>
+		</ScrollReveal>
+		<ScrollReveal {progress} threshold={CARD_REVEAL_THRESHOLD + 0.6} class="z-3">
+			<Feature title="Wormhole" desc="Query a teammate's local notes in your favorite agent harness." />
+		</ScrollReveal>
 	</Section>
-	<div bind:this={secondRef} class="h-[5000px]"></div>
+	<div class="h-1250"></div>
 </main>
 
 <ReducedMotionNotice />

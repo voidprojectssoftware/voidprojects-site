@@ -4,7 +4,7 @@
 	let { title, desc } = $props();
 </script>
 
-<Card.Root class="w-1/3">
+<Card.Root class="w-1/2">
 	<Card.Header>
 		<Card.Title class="text-xl">{title}</Card.Title>
 		<Card.Description class="text-lg">{desc}</Card.Description>
