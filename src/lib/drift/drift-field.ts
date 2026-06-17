@@ -103,8 +103,17 @@ const WARP_DAMP = 0.93; // velocity bleed so orbits spiral inward instead of loo
 const WARP_THROAT = 90; // px; inside this a glyph stops colliding and is squeezed into the point
 const WARP_ABSORB = 26; // px; within this a glyph is swallowed and removed, freeing the point
 const WARP_MAX_MS = 2600; // safety cap before forcing the restore
-const WARP_FLASH_MS = 340; // button flash + squeeze-out once the glyphs are in
+const WARP_FLASH_MS = 520; // space warps open, quasar flares, then collapses to a point
+const WARP_EXPAND_FRAC = 0.42; // first slice of the flash expands; the rest collapses
 const WARP_OUT_MS = 550; // ease the glyphs (and button) back out to home
+
+// Bipolar "quasar" jets that lance out to either side as space warps open — the
+// sci-fi space-jump tell. Core is a hot violet tied to the brand --primary; the
+// halo is a cyan outer flare for the pop.
+const QUASAR_CORE = 'rgba(196, 162, 255, 0.95)';
+const QUASAR_HALO = 'rgba(120, 214, 255, 0.7)';
+const QUASAR_REACH = 78; // px the jets extend from each side at full flare
+const QUASAR_BLUR = 16; // px base blur of a jet, grown with the flare
 
 function setTransform(el: HTMLElement, dx: number, dy: number, deg: number) {
 	el.style.transform = `translate3d(${dx}px, ${dy}px, 0) rotate(${deg}deg)`;
@@ -585,11 +594,12 @@ export class DriftField {
 		}
 
 		if (this.warpPhase === 'collapsing') {
-			// The glyphs are in; now the button itself warps out — a bright flash, then it
-			// squeezes to a line and pinches to nothing as the new tab opens.
+			// The glyphs are in; now the button itself warps out like a space jump — space
+			// stretches open and two quasar jets lance out to either side, then the whole
+			// thing snaps back through the point as the new tab opens.
 			const f = clamp01((now - this.warpCollapseStart) / WARP_FLASH_MS);
 
-			// Open the link right as the flash fires.
+			// Open the link right as the warp fires.
 			if (!this.warpArrived) {
 				this.warpArrived = true;
 				const cb = this.onWarpArrive;
@@ -603,24 +613,38 @@ export class DriftField {
 			}
 
 			if (tgt) {
-				let sx: number, sy: number, bright: number, op: number;
-				if (f < 0.45) {
-					const k = f / 0.45; // flash up and collapse to a bright slit
-					sx = 1;
-					sy = 1 - 0.95 * k;
-					bright = 1 + 6 * k;
+				let sx: number, sy: number, bright: number, flare: number, op: number;
+				if (f < WARP_EXPAND_FRAC) {
+					// Expand: space warps open around the button and the jets flare out.
+					const k = easeOutCubic(f / WARP_EXPAND_FRAC);
+					sx = 1 + 0.26 * k; // stretch along the jet axis a touch more than across
+					sy = 1 + 0.12 * k;
+					bright = 1 + 2.6 * k;
+					flare = k;
 					op = 1;
 				} else {
-					const k = (f - 0.45) / 0.55; // slit pinches to a point and fades
-					sx = 1 - k;
-					sy = 0.05;
-					bright = 7 - 5 * k;
+					// Collapse: everything snaps inward through the pinpoint and blows out
+					// bright as it vanishes.
+					const k = easeInExpo((f - WARP_EXPAND_FRAC) / (1 - WARP_EXPAND_FRAC));
+					sx = 1.26 * (1 - k * k); // sideways lingers a beat so the jets snap in last
+					sy = 1.12 * (1 - k);
+					bright = 3.6 + 4 * k;
+					flare = 1 - k;
 					op = 1 - k * k;
 				}
-				const glow = 26 * (1 - Math.abs(f - 0.4) / 0.4);
+				// Brightest white core right at the turn from expand to collapse.
+				const core = 34 * (1 - Math.abs(f - WARP_EXPAND_FRAC) / WARP_EXPAND_FRAC);
+				const reach = QUASAR_REACH * flare;
+				const blur = QUASAR_BLUR + 24 * flare;
 				tgt.el.style.transform = `translate3d(${tox}px, ${toy}px, 0) rotate(${tdeg}deg) scale(${sx}, ${sy})`;
 				tgt.el.style.opacity = `${op}`;
-				tgt.el.style.filter = `brightness(${bright}) drop-shadow(0 0 ${Math.max(0, glow)}px rgba(255,255,255,0.9))`;
+				tgt.el.style.filter =
+					`brightness(${bright}) ` +
+					`drop-shadow(${reach}px 0 ${blur}px ${QUASAR_CORE}) ` +
+					`drop-shadow(${-reach}px 0 ${blur}px ${QUASAR_CORE}) ` +
+					`drop-shadow(${reach * 1.85}px 0 ${blur * 1.5}px ${QUASAR_HALO}) ` +
+					`drop-shadow(${-reach * 1.85}px 0 ${blur * 1.5}px ${QUASAR_HALO}) ` +
+					`drop-shadow(0 0 ${Math.max(0, core)}px rgba(255, 255, 255, 0.95))`;
 			}
 
 			if (f >= 1) {
