@@ -4,6 +4,7 @@
 	import { Section } from '$lib/components/section/index.js';
 	import { ChevronDown } from '@lucide/svelte';
 	import { DriftField } from '$lib/drift/index.js';
+	import { NudgeField } from '$lib/nudge/index.js';
 	import { ReducedMotionNotice } from '$lib/components/reduced-motion-notice/index.js';
 	import { Feature } from '$lib/components/feature/index.js';
 	import { ScrollReveal } from '$lib/components/scroll-reveal/index.js';
@@ -17,7 +18,7 @@
 	const heroTitle = 'Void Projects';
 	const titleChars = [...heroTitle];
 
-	const heroSubtitle = 'Software for accelerating the use of agentic systems.';
+	const heroSubtitle = 'AI-centric projects from a developer collective.';
 	const subtitleChars = [...heroSubtitle];
 
 	// Fraction of total page scroll before the title drifts apart.
@@ -28,8 +29,26 @@
 
 	const field = new DriftField();
 
+	// Subtle cursor-repel-with-spring-back at rest. It and the drift take turns on
+	// the same glyphs: drift owns them while free-floating/warping, the nudge owns
+	// them at rest. DriftField fires onActiveChange right as it takes/hands back.
+	// Subtle and heavy: a small, short-reaching shove with high inertia and a soft
+	// spring, so the glyphs lean away sluggishly and drift back rather than snapping.
+	const nudgeField = new NudgeField({
+		radius: 85,
+		push: 0.32,
+		stiffness: 0.05,
+		damping: 0.9,
+		mass: 7,
+		maxOffset: 7
+	});
+	field.onActiveChange = (active) => (active ? nudgeField.disable() : nudgeField.enable());
+
 	// Svelte action — tag any element that should become a drifting rigid body.
 	const drift = (el: HTMLElement) => ({ destroy: field.register(el) });
+
+	// Svelte action — tag any element that should react to the cursor at rest.
+	const nudge = (el: HTMLElement) => ({ destroy: nudgeField.register(el) });
 
 	const GITHUB_URL = 'https://github.com/voidprojectssoftware';
 
@@ -80,6 +99,9 @@
 
 		window.addEventListener('scroll', onScroll, { passive: true });
 
+		// At rest the glyphs react to the cursor; drift takes over on scroll/warp.
+		nudgeField.enable();
+
 		// Console-driven debug overlay: `driftDebug()` to show, `driftDebug(false)` to hide.
 		const w = window as typeof window & { driftDebug?: (on?: boolean) => void };
 		w.driftDebug = (on = true) => (on ? field.enableDebug() : field.disableDebug());
@@ -89,6 +111,7 @@
 			window.removeEventListener('scroll', onScroll);
 			delete w.driftDebug;
 			field.destroy();
+			nudgeField.destroy();
 		};
 	});
 </script>
@@ -119,6 +142,7 @@
 			<h1 class="text-5xl font-bold select-none sm:text-7xl lg:text-8xl" aria-label={heroTitle}>
 				{#each titleChars as ch, i (i)}<span
 						use:drift
+						use:nudge
 						aria-hidden="true"
 						style="display:inline-block;white-space:pre">{ch === ' ' ? '\u00A0' : ch}</span
 					>{/each}
@@ -126,6 +150,7 @@
 			<p class="px-2 text-center text-lg select-none sm:text-2xl" aria-label={heroSubtitle}>
 				{#each subtitleChars as ch, i (i)}<span
 						use:drift
+						use:nudge
 						aria-hidden="true"
 						style="display:inline-block;white-space:pre">{ch === ' ' ? '\u00A0' : ch}</span
 					>{/each}

@@ -27,3 +27,6 @@ vite.config.ts.timestamp-*
 
 # Raw star-catalogue source CSV (large, downloaded on demand; see src/lib/sky/README.md)
 /data
+
+# Playwright CLI scratch snapshots/logs (from local browser verification)
+.playwright-cli/

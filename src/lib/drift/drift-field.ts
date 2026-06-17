@@ -187,6 +187,16 @@ export class DriftField {
 	private readonly reduceMotion: boolean;
 	private readonly frame: (now: number) => void;
 
+	/**
+	 * Notified whenever the field starts owning the glyphs (`true`, on drift/warp)
+	 * or hands them back at rest (`false`). Lets a companion effect (e.g. a cursor
+	 * nudge) cleanly take turns on the same elements' transforms. Fires
+	 * synchronously before the world is measured, so the listener can clear its
+	 * own transforms first.
+	 */
+	onActiveChange?: (active: boolean) => void;
+	private active = false;
+
 	// Optional Matter wireframe overlay, toggled from the console for debugging.
 	private debugEnabled = false;
 	private render: Matter.Render | null = null;
@@ -253,9 +263,17 @@ export class DriftField {
 		};
 	}
 
+	/** Emit the active-state change (idempotent). Fired before the world is measured. */
+	private setActive(active: boolean) {
+		if (active === this.active) return;
+		this.active = active;
+		this.onActiveChange?.(active);
+	}
+
 	/** Kick the bodies apart. Builds the world on first call, re-impulses thereafter. */
 	start() {
 		if (this.reduceMotion || this.mode === 'drifting' || this.mode === 'warping') return;
+		this.setActive(true); // hand off transforms before buildWorld reads home positions
 		if (!this.worldBuilt)
 			this.buildWorld(); // fresh start from rest
 		else this.seedVelocities(); // resuming mid-return: re-impulse in place
@@ -295,6 +313,7 @@ export class DriftField {
 			return;
 		}
 		this.clearGrab();
+		this.setActive(true); // hand off transforms before buildWorld reads home positions
 
 		// A live physics world is required so the glyphs collide on their way in.
 		if (!this.worldBuilt) this.buildWorld();
@@ -524,6 +543,7 @@ export class DriftField {
 				for (const d of this.drifters) setTransform(d.el, 0, 0, 0);
 				this.destroyWorld();
 				this.mode = 'idle';
+				this.setActive(false); // back at rest — let the nudge field take over
 			}
 		} else if (this.mode === 'warping') {
 			this.stepWarp(now);
@@ -740,6 +760,7 @@ export class DriftField {
 		this.onWarpArrive = null;
 		this.destroyWorld();
 		this.mode = 'idle';
+		this.setActive(false); // back at rest — let the nudge field take over
 	}
 
 	/** Park every glyph hidden at the pinpoint (used during the hold beat). */

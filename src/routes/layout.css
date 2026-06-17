@@ -128,5 +128,9 @@
 	}
 	html {
 		@apply font-sans;
+		/* Touch: only let the page pan vertically (keep pinch-zoom for a11y), so a
+		   left/right finger drag doesn't slide the page horizontally. */
+		touch-action: pan-y pinch-zoom;
+		overscroll-behavior-x: none;
 	}
 }
