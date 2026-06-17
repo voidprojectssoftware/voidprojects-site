@@ -93,6 +93,12 @@ type Mode = 'idle' | 'drifting' | 'returning' | 'warping';
 const easeInExpo = (t: number) => (t <= 0 ? 0 : Math.pow(2, 10 * (t - 1)));
 /** ease-out cubic: decelerates — used for the glyphs popping back out. */
 const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
+/** ease-out-back: shoots past the target then settles — the "jump back in" pop. */
+const easeOutBack = (t: number) => {
+	const c1 = 1.70158;
+	const c3 = c1 + 1;
+	return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
+};
 
 const clamp01 = (t: number) => (t < 0 ? 0 : t > 1 ? 1 : t);
 
@@ -105,7 +111,9 @@ const WARP_ABSORB = 26; // px; within this a glyph is swallowed and removed, fre
 const WARP_MAX_MS = 2600; // safety cap before forcing the restore
 const WARP_FLASH_MS = 520; // space warps open, quasar flares, then collapses to a point
 const WARP_EXPAND_FRAC = 0.42; // first slice of the flash expands; the rest collapses
-const WARP_OUT_MS = 550; // ease the glyphs (and button) back out to home
+const WARP_HOLD_MS = 600; // empty-title pause after the warp before the glyphs return
+const WARP_OUT_MS = 800; // flash, then burst the glyphs back out from the point to home
+const WARP_IN_FLASH_FRAC = 0.4; // first slice of the return is the flash; the rest bursts out
 
 // Bipolar "quasar" jets that lance out to either side as space warps open — the
 // sci-fi space-jump tell. Core is a hot violet tied to the brand --primary; the
@@ -114,6 +122,18 @@ const QUASAR_CORE = 'rgba(196, 162, 255, 0.95)';
 const QUASAR_HALO = 'rgba(120, 214, 255, 0.7)';
 const QUASAR_REACH = 78; // px the jets extend from each side at full flare
 const QUASAR_BLUR = 16; // px base blur of a jet, grown with the flare
+
+/** The bipolar quasar-jet drop-shadow stack, parameterized by flare strength. */
+function quasarFilter(bright: number, reach: number, blur: number, core: number) {
+	return (
+		`brightness(${bright}) ` +
+		`drop-shadow(${reach}px 0 ${blur}px ${QUASAR_CORE}) ` +
+		`drop-shadow(${-reach}px 0 ${blur}px ${QUASAR_CORE}) ` +
+		`drop-shadow(${reach * 1.85}px 0 ${blur * 1.5}px ${QUASAR_HALO}) ` +
+		`drop-shadow(${-reach * 1.85}px 0 ${blur * 1.5}px ${QUASAR_HALO}) ` +
+		`drop-shadow(0 0 ${Math.max(0, core)}px rgba(255, 255, 255, 0.95))`
+	);
+}
 
 function setTransform(el: HTMLElement, dx: number, dy: number, deg: number) {
 	el.style.transform = `translate3d(${dx}px, ${dy}px, 0) rotate(${deg}deg)`;
@@ -186,8 +206,9 @@ export class DriftField {
 	private warpArrived = false;
 	private warpTargetDrifter: Drifter | null = null;
 	private onWarpArrive: (() => void) | null = null;
-	private warpPhase: 'pulling' | 'collapsing' | 'restoring' = 'pulling';
+	private warpPhase: 'pulling' | 'collapsing' | 'holding' | 'restoring' = 'pulling';
 	private warpCollapseStart = 0;
+	private warpHoldStart = 0;
 	private warpRestoreStart = 0;
 
 	constructor(config: Partial<DriftConfig> = {}) {
@@ -203,6 +224,7 @@ export class DriftField {
 			window.addEventListener('pointerup', this.onPointerUp, { passive: true });
 			window.addEventListener('pointercancel', this.onPointerUp, { passive: true });
 			document.addEventListener('mouseleave', this.onPointerLeave, { passive: true });
+			document.addEventListener('visibilitychange', this.onVisibilityChange);
 		}
 	}
 
@@ -261,9 +283,10 @@ export class DriftField {
 	}
 
 	/**
-	 * Suck every glyph into `targetEl`, fire `onArrive` once they land, then pop
-	 * them back out to home. Plays a flourish before navigating. If reduced motion
-	 * is set, `onArrive` fires immediately with no animation.
+	 * Suck every glyph into `targetEl`, fire `onArrive` once they land, hold the
+	 * empty title for a beat, then fade them back in to home. Plays a flourish
+	 * before navigating. If reduced motion is set, `onArrive` fires immediately
+	 * with no animation.
 	 */
 	warp(targetEl: HTMLElement, onArrive: () => void) {
 		if (this.mode === 'warping') return;
@@ -327,6 +350,7 @@ export class DriftField {
 			window.removeEventListener('pointerup', this.onPointerUp);
 			window.removeEventListener('pointercancel', this.onPointerUp);
 			document.removeEventListener('mouseleave', this.onPointerLeave);
+			document.removeEventListener('visibilitychange', this.onVisibilityChange);
 		}
 	}
 
@@ -634,37 +658,75 @@ export class DriftField {
 				}
 				// Brightest white core right at the turn from expand to collapse.
 				const core = 34 * (1 - Math.abs(f - WARP_EXPAND_FRAC) / WARP_EXPAND_FRAC);
-				const reach = QUASAR_REACH * flare;
-				const blur = QUASAR_BLUR + 24 * flare;
 				tgt.el.style.transform = `translate3d(${tox}px, ${toy}px, 0) rotate(${tdeg}deg) scale(${sx}, ${sy})`;
 				tgt.el.style.opacity = `${op}`;
-				tgt.el.style.filter =
-					`brightness(${bright}) ` +
-					`drop-shadow(${reach}px 0 ${blur}px ${QUASAR_CORE}) ` +
-					`drop-shadow(${-reach}px 0 ${blur}px ${QUASAR_CORE}) ` +
-					`drop-shadow(${reach * 1.85}px 0 ${blur * 1.5}px ${QUASAR_HALO}) ` +
-					`drop-shadow(${-reach * 1.85}px 0 ${blur * 1.5}px ${QUASAR_HALO}) ` +
-					`drop-shadow(0 0 ${Math.max(0, core)}px rgba(255, 255, 255, 0.95))`;
+				tgt.el.style.filter = quasarFilter(
+					bright,
+					QUASAR_REACH * flare,
+					QUASAR_BLUR + 24 * flare,
+					core
+				);
 			}
 
 			if (f >= 1) {
 				if (tgt) tgt.el.style.filter = '';
+				this.warpPhase = 'holding';
+				this.warpHoldStart = now;
+			}
+			return;
+		}
+
+		if (this.warpPhase === 'holding') {
+			// The glyphs are gone and the link has opened. Hold the empty title for a
+			// beat so it doesn't snap back the instant the tab opens, then fade in.
+			this.hideWarpGlyphs();
+			if (now - this.warpHoldStart >= WARP_HOLD_MS) {
 				this.warpPhase = 'restoring';
 				this.warpRestoreStart = now;
 			}
 			return;
 		}
 
-		// Restoring — ease each glyph back home, and warp the button back into existence.
-		const e = easeOutCubic(clamp01((now - this.warpRestoreStart) / WARP_OUT_MS));
+		// Restoring — the return "warp in": space flashes back open at the pinpoint,
+		// then every glyph bursts out of that single point and expands into home with
+		// an overshoot, so the title looks like it jumps back in.
+		const f = clamp01((now - this.warpRestoreStart) / WARP_OUT_MS);
+
+		if (f < WARP_IN_FLASH_FRAC) {
+			// Flash: a bright point of light blooms at the pinpoint (jets lance out then
+			// snap back). The glyphs stay hidden inside it, a tiny seed ready to burst.
+			const k = easeOutCubic(f / WARP_IN_FLASH_FRAC);
+			const flare = Math.sin(k * Math.PI); // 0 -> 1 -> 0, peaks mid-flash
+			for (const d of this.drifters) {
+				if (d !== tgt) setWarp(d.el, cx - d.hx, cy - d.hy, 0, 0, 0);
+			}
+			if (tgt) {
+				setWarp(tgt.el, tox, toy, tdeg, 0.2, 1);
+				tgt.el.style.filter = quasarFilter(
+					1 + 4 * flare,
+					QUASAR_REACH * flare,
+					QUASAR_BLUR + 24 * flare,
+					34 * flare
+				);
+			}
+			return;
+		}
+
+		// Burst: fling everything out from the single point to home with an overshoot,
+		// glyphs fading in as they expand.
+		if (tgt) tgt.el.style.filter = '';
+		const e = easeOutBack(clamp01((f - WARP_IN_FLASH_FRAC) / (1 - WARP_IN_FLASH_FRAC)));
 		for (const d of this.drifters) {
 			if (d === tgt) {
-				setWarp(d.el, tox, toy, tdeg, e, e); // grow back from the point it vanished to
+				// Button seeds at 0.2 (where the flash left it) and grows out to home.
+				setWarp(d.el, tox * (1 - e), toy * (1 - e), tdeg * (1 - e), 0.2 + 0.8 * e, 1);
 				continue;
 			}
-			setWarp(d.el, d.sx * (1 - e), d.sy * (1 - e), d.sr * (1 - e), e, e);
+			const ox = cx - d.hx; // every glyph starts at the pinpoint
+			const oy = cy - d.hy;
+			setWarp(d.el, ox * (1 - e), oy * (1 - e), 0, e, clamp01(e * 1.6));
 		}
-		if (e >= 1) this.finishWarp();
+		if (f >= 1) this.finishWarp();
 	}
 
 	private finishWarp() {
@@ -678,6 +740,20 @@ export class DriftField {
 		this.onWarpArrive = null;
 		this.destroyWorld();
 		this.mode = 'idle';
+	}
+
+	/** Park every glyph hidden at the pinpoint (used during the hold beat). */
+	private hideWarpGlyphs() {
+		const tgt = this.warpTargetDrifter;
+		const cx = this.warpCenter.x;
+		const cy = this.warpCenter.y;
+		const tox = tgt ? cx - tgt.hx : 0;
+		const toy = tgt ? cy - tgt.hy : 0;
+		const tdeg = tgt?.body ? (tgt.body.angle * 180) / Math.PI : 0;
+		for (const d of this.drifters) {
+			if (d === tgt) setWarp(d.el, tox, toy, tdeg, 0, 0);
+			else setWarp(d.el, cx - d.hx, cy - d.hy, 0, 0, 0);
+		}
 	}
 
 	private applyPointerForces() {
@@ -756,6 +832,30 @@ export class DriftField {
 
 	private readonly onPointerLeave = () => {
 		this.pointer.active = false;
+	};
+
+	// A warp opens GitHub in a new tab. If the user switches to it mid-warp,
+	// requestAnimationFrame pauses and the animation would otherwise freeze, then
+	// snap home on return. Instead: on leaving, fire any pending arrival, hide the
+	// glyphs, and park in 'holding'; on returning, start the hold timer so the title
+	// fades back in (rather than popping) once they're actually looking at it.
+	private readonly onVisibilityChange = () => {
+		if (typeof document === 'undefined' || this.mode !== 'warping') return;
+		if (document.hidden) {
+			if (!this.warpArrived) {
+				this.warpArrived = true;
+				const cb = this.onWarpArrive;
+				this.onWarpArrive = null;
+				cb?.();
+			}
+			if (this.warpTargetDrifter) this.warpTargetDrifter.el.style.filter = '';
+			this.hideWarpGlyphs();
+			this.warpPhase = 'holding';
+			this.warpHoldStart = Number.POSITIVE_INFINITY; // don't count down while hidden
+		} else if (this.warpPhase === 'holding') {
+			this.warpHoldStart = performance.now(); // back on the page — begin the fade-in beat
+			this.ensureLoop();
+		}
 	};
 
 	/** Release a held glyph, flinging it with the recent pointer velocity (capped). */
