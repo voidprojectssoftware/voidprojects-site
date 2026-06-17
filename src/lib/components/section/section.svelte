@@ -2,6 +2,6 @@
 	let { children, ref = $bindable(null), ...rest } = $props();
 </script>
 
-<section bind:this={ref} class="flex h-[calc(100dvh-4rem)] flex-col {rest.class ?? ''}">
+<section bind:this={ref} class="flex flex-col px-35 backdrop-blur-lg border border-white bg-background/10 shadow-lg pt-4 {rest.class ?? ''}">
 	{@render children()}
 </section>

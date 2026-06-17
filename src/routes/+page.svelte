@@ -5,6 +5,7 @@
 	import { Switch } from '$lib/components/shadcn/ui/switch/index.js';
 	import { Sun, Moon } from '@lucide/svelte';
 	import { Feature } from '$lib/components/feature/index.js';
+	import { Heading } from '$lib/components/heading/index.js';
 
 	let heroRef = $state<HTMLElement | null>(null);
 	let secondRef = $state<HTMLElement | null>(null);
@@ -37,7 +38,7 @@
 	});
 </script>
 
-<header class="sticky top-0 z-2 h-16 bg-background pt-4">
+<header class="sticky top-0 z-2 h-16 bg-background pt-4 px-35">
 	<div class="flex flex-row items-center justify-between">
 		<div class="flex flex-row items-center justify-center gap-6">
 			<span class="text-xl font-bold" hidden={headerLogoInvisible}>Void Projects</span>
@@ -52,7 +53,7 @@
 	</div>
 </header>
 <main class="flex flex-col">
-	<Section bind:ref={heroRef} class="sticky top-16 items-center justify-center gap-3">
+	<Section bind:ref={heroRef} class="sticky top-16 items-center justify-center gap-3 h-[calc(100dvh-4rem)]">
 		<div class="flex flex-col items-center gap-4">
 			<h1 class="text-8xl font-bold">Void Projects</h1>
 			<p class="text-2xl">Software for accelerating the use of agentic systems.</p>
@@ -63,13 +64,11 @@
 			>
 		</div>
 	</Section>
-	<Section bind:ref={secondRef} class="relative z-1 gap-15 bg-background pt-4">
-		<div class="flex flex-col gap-4">
-			<h1 class="text-6xl font-bold">Constellation</h1>
-			<h2 class="text-3xl">
-				Transform disjointed, amorphic systems into accessible graphs of knowledge.
-			</h2>
-		</div>
+	<Section bind:ref={secondRef} class="relative z-1 gap-15">
+		<Heading
+			title="Constellation"
+			desc="Transform disjointed, amorphic systems into accessible graphs of knowledge."
+		/>
 		<div class="flex flex-row gap-5">
 			<Feature
 				title="Understand anything"
@@ -87,14 +86,10 @@
 			system, readable by an agent."
 			/>
 		</div>
-	</Section>
-	<Section class="relative z-1 gap-15 bg-background pt-4">
-		<div class="flex flex-col gap-4">
-			<h1 class="text-6xl font-bold">Protostar</h1>
-			<h2 class="text-3xl">
-				Shareable, private, and internal agent skills that get better as you use them.
-			</h2>
-		</div>
+		<Heading
+			title="Protostar"
+			desc="Shareable, private, and internal agent skills that get better as you use them."
+		/>
 		<div class="flex flex-row gap-5">
 			<Feature title="Shareable" desc="Sync your skills across your enterprise, team, or group." />
 			<Feature
@@ -106,13 +101,11 @@
 				desc="Agents create stronger skills by taking learnings from every individual's unique use of a common skill."
 			/>
 		</div>
-	</Section>
-	<Section class="relative z-1 gap-15 bg-background pt-4">
-		<div class="flex flex-col gap-4">
-			<h1 class="text-6xl font-bold">Wormhole</h1>
-			<h2 class="text-3xl">Query a teammate's local notes in your favorite agent harness.</h2>
-		</div>
-		<div class="flex flex-row gap-5">
+		<Heading
+			title="Wormhole"
+			desc="Query a teammate's local notes in your favorite agent harness."
+		/>
+		<div class="flex flex-row gap-5 pb-25">
 			<Feature
 				title="Knowledge transfer for agents"
 				desc="Read from a teammate's local notes in your favorite agent harness."
