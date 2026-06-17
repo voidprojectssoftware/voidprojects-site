@@ -51,6 +51,11 @@ pass through it. See `stepWarp` and the `warp()` setup.
 only exist while drifting/warping, so scroll a little to populate it. It does not show the
 transform-driven warp collapse (that phase is not physics).
 
+To verify animation changes visually without a human, the `browser-verify` skill drives
+`playwright-cli` to start the dev server, `eval "driftDebug(true)"`, scroll, screenshot the
+hero, and read the console for Matter.js errors. It is not bundled in this repo; get it via
+the protostar CLI (`protostar skills` lists what you have installed).
+
 ## Conventions
 
 - **Components:** `src/lib/components/<name>/<name>.svelte` plus an `index.ts` barrel that
