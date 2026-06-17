@@ -13,7 +13,7 @@
 -->
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import catalog from '$lib/sky/star-catalog.json';
+	import { base } from '$app/paths';
 	import { lstHours, ciToRgb, type GeoLocation } from '$lib/sky/astro.js';
 
 	let canvas: HTMLCanvasElement;
@@ -108,25 +108,44 @@
 
 		const isDark = () => document.documentElement.classList.contains('dark');
 
-		// Decode the flat [ra, dec, mag, ci, ...] catalogue into ready-to-draw stars.
-		const flat = catalog.stars as number[];
-		const stars: Star[] = [];
-		for (let i = 0; i < flat.length; i += 4) {
-			const mag = flat[i + 2];
-			if (mag > CONFIG.magLimit) continue;
-			const dec = flat[i + 1] * DEG;
-			const m = CONFIG.magLimit - mag; // 0 (faint) .. ~8 (brightest)
-			stars.push({
-				ra: flat[i],
-				sinDec: Math.sin(dec),
-				cosDec: Math.cos(dec),
-				size: CONFIG.sizeBase + m * CONFIG.sizePerMag,
-				alpha: Math.min(0.97, CONFIG.alphaFloor + (m / 8) * 0.82),
-				fill: `rgb(${ciToRgb(flat[i + 3])})`,
-				twPhase: Math.random() * Math.PI * 2,
-				twSpeed: 0.4 + Math.random() * 1.4
-			});
-		}
+		// Filled asynchronously from the binary catalogue so it never blocks paint.
+		let stars: Star[] = [];
+
+		// Decode the quantized binary catalogue (see scripts/gen-star-catalog.mjs)
+		// into ready-to-draw stars. 6 bytes per star after a uint32 count header.
+		const loadCatalog = async () => {
+			let dv: DataView;
+			try {
+				const res = await fetch(`${base}/star-catalog.bin`);
+				if (!res.ok) return;
+				dv = new DataView(await res.arrayBuffer());
+			} catch {
+				return; // offline / fetch failed — sky just stays empty
+			}
+			const count = dv.getUint32(0, true);
+			const next: Star[] = [];
+			let o = 4;
+			for (let i = 0; i < count; i++, o += 6) {
+				const mag = dv.getUint8(o + 4) / 28 - 2;
+				if (mag > CONFIG.magLimit) continue;
+				const ra = (dv.getUint16(o, true) / 65535) * 24;
+				const dec = (dv.getInt16(o + 2, true) / 32767) * 90 * DEG;
+				const ci = (dv.getUint8(o + 5) / 255) * 2.4 - 0.4;
+				const m = CONFIG.magLimit - mag; // 0 (faint) .. ~8 (brightest)
+				next.push({
+					ra,
+					sinDec: Math.sin(dec),
+					cosDec: Math.cos(dec),
+					size: CONFIG.sizeBase + m * CONFIG.sizePerMag,
+					alpha: Math.min(0.97, CONFIG.alphaFloor + (m / 8) * 0.82),
+					fill: `rgb(${ciToRgb(ci)})`,
+					twPhase: Math.random() * Math.PI * 2,
+					twSpeed: 0.4 + Math.random() * 1.4
+				});
+			}
+			stars = next;
+			sync();
+		};
 
 		const resize = () => {
 			w = window.innerWidth;
@@ -215,7 +234,7 @@
 		};
 
 		const start = () => {
-			if (running) return;
+			if (running || !stars.length) return;
 			running = true;
 			raf = requestAnimationFrame(draw);
 		};
@@ -276,7 +295,7 @@
 
 		resize();
 		if (CONFIG.useGeolocation) useMyLocation();
-		sync();
+		loadCatalog(); // async; starts the render loop once stars arrive
 
 		// Console helpers for switching vantage / opting into geolocation.
 		const win = window as typeof window & { skyView?: Record<string, unknown> };

@@ -24,3 +24,6 @@ Thumbs.db
 # Vite
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# Raw star-catalogue source CSV (large, downloaded on demand; see src/lib/sky/README.md)
+/data
