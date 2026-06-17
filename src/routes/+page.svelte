@@ -117,14 +117,14 @@
 	>
 		<div class="flex flex-col items-center gap-4">
 			<h1 class="text-5xl font-bold select-none sm:text-7xl lg:text-8xl" aria-label={heroTitle}>
-				{#each titleChars as ch}<span
+				{#each titleChars as ch, i (i)}<span
 						use:drift
 						aria-hidden="true"
 						style="display:inline-block;white-space:pre">{ch === ' ' ? '\u00A0' : ch}</span
 					>{/each}
 			</h1>
 			<p class="px-2 text-center text-lg select-none sm:text-2xl" aria-label={heroSubtitle}>
-				{#each subtitleChars as ch}<span
+				{#each subtitleChars as ch, i (i)}<span
 						use:drift
 						aria-hidden="true"
 						style="display:inline-block;white-space:pre">{ch === ' ' ? '\u00A0' : ch}</span
@@ -164,7 +164,10 @@
 			/>
 		</ScrollReveal>
 		<ScrollReveal {progress} threshold={CARD_REVEAL_THRESHOLD + 0.6} class="z-3">
-			<Feature title="Wormhole" desc="Query a teammate's local notes in your favorite agent harness." />
+			<Feature
+				title="Wormhole"
+				desc="Query a teammate's local notes in your favorite agent harness."
+			/>
 		</ScrollReveal>
 		<div
 			class="absolute bottom-8 left-1/2 flex -translate-x-1/2 flex-col items-center gap-1 transition-opacity duration-300 select-none"
