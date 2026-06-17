@@ -15,6 +15,7 @@
 	import { onMount } from 'svelte';
 	import { base } from '$app/paths';
 	import { lstHours, ciToRgb, type GeoLocation } from '$lib/sky/astro.js';
+	import { decode as decodeCatalog } from '$lib/sky/catalog-format.js';
 
 	let canvas: HTMLCanvasElement;
 
@@ -111,34 +112,29 @@
 		// Filled asynchronously from the binary catalogue so it never blocks paint.
 		let stars: Star[] = [];
 
-		// Decode the quantized binary catalogue (see scripts/gen-star-catalog.mjs)
-		// into ready-to-draw stars. 6 bytes per star after a uint32 count header.
+		// Fetch + decode the binary catalogue (format shared with the generator via
+		// catalog-format.js), then turn each star into a ready-to-draw record.
 		const loadCatalog = async () => {
-			let dv: DataView;
+			let buffer: ArrayBuffer;
 			try {
 				const res = await fetch(`${base}/star-catalog.bin`);
 				if (!res.ok) return;
-				dv = new DataView(await res.arrayBuffer());
+				buffer = await res.arrayBuffer();
 			} catch {
 				return; // offline / fetch failed — sky just stays empty
 			}
-			const count = dv.getUint32(0, true);
 			const next: Star[] = [];
-			let o = 4;
-			for (let i = 0; i < count; i++, o += 6) {
-				const mag = dv.getUint8(o + 4) / 28 - 2;
-				if (mag > CONFIG.magLimit) continue;
-				const ra = (dv.getUint16(o, true) / 65535) * 24;
-				const dec = (dv.getInt16(o + 2, true) / 32767) * 90 * DEG;
-				const ci = (dv.getUint8(o + 5) / 255) * 2.4 - 0.4;
-				const m = CONFIG.magLimit - mag; // 0 (faint) .. ~8 (brightest)
+			for (const c of decodeCatalog(buffer)) {
+				if (c.mag > CONFIG.magLimit) continue;
+				const dec = c.dec * DEG;
+				const m = CONFIG.magLimit - c.mag; // 0 (faint) .. ~8 (brightest)
 				next.push({
-					ra,
+					ra: c.ra,
 					sinDec: Math.sin(dec),
 					cosDec: Math.cos(dec),
 					size: CONFIG.sizeBase + m * CONFIG.sizePerMag,
 					alpha: Math.min(0.97, CONFIG.alphaFloor + (m / 8) * 0.82),
-					fill: `rgb(${ciToRgb(ci)})`,
+					fill: `rgb(${ciToRgb(c.ci)})`,
 					twPhase: Math.random() * Math.PI * 2,
 					twSpeed: 0.4 + Math.random() * 1.4
 				});
@@ -262,7 +258,11 @@
 			if (!navigator.geolocation) return;
 			navigator.geolocation.getCurrentPosition(
 				(pos) =>
-					setLocation({ name: 'Your location', lat: pos.coords.latitude, lon: pos.coords.longitude }),
+					setLocation({
+						name: 'Your location',
+						lat: pos.coords.latitude,
+						lon: pos.coords.longitude
+					}),
 				() => {
 					/* denied or unavailable — keep the fixed vantage */
 				},
@@ -309,7 +309,10 @@
 		window.addEventListener('pointermove', onPointer, { passive: true });
 		document.addEventListener('visibilitychange', sync);
 		const themeObserver = new MutationObserver(sync);
-		themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+		themeObserver.observe(document.documentElement, {
+			attributes: true,
+			attributeFilter: ['class']
+		});
 
 		return () => {
 			stop();

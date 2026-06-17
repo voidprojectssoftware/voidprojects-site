@@ -1,119 +1,212 @@
+// @ts-check
 // Build the star catalogue shipped to the browser.
 //
-// Pipeline:  HYG CSV  ->  trimmed JSON (source of truth)  ->  quantized .bin (shipped)
+//   HYG CSV  ->  trimmed JSON (source of truth)  ->  quantized .bin (shipped)
 //
-// Two ways to run (see src/lib/sky/README.md for the full guide):
+// The binary layout lives in src/lib/sky/catalog-format.js and is shared with the
+// runtime decoder, so this script never hand-rolls byte offsets.
 //
-//   1. Re-quantize from the committed JSON (no download, fast):
-//        node scripts/gen-star-catalog.mjs
+// Usage:
+//   node scripts/gen-star-catalog.mjs                  re-quantize from the JSON
+//   node scripts/gen-star-catalog.mjs --download       fetch the default CSV and rebuild
+//   node scripts/gen-star-catalog.mjs --url <url>      rebuild from a custom CSV URL
+//   node scripts/gen-star-catalog.mjs --csv <path>     rebuild from a local CSV
+//   node scripts/gen-star-catalog.mjs --mag-limit 5.5  change the brightness cutoff
+//   node scripts/gen-star-catalog.mjs --help
 //
-//   2. Rebuild everything from a fresh HYG CSV (to change MAG_LIMIT or catalogue
-//      version). Download the CSV first (it is ~34 MB, do NOT commit it):
-//        curl -L -o data/hyg.csv https://raw.githubusercontent.com/astronexus/HYG-Database/main/hyg/CURRENT/hygdata_v41.csv
-//        node scripts/gen-star-catalog.mjs data/hyg.csv
-//
-// Outputs:
-//   src/lib/sky/star-catalog.json  (intermediate, readable, kept in git as source)
-//   static/star-catalog.bin        (what the app fetches at runtime)
+// See src/lib/sky/README.md for the full guide.
 
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
+import { Command, InvalidArgumentError } from 'commander';
+import { encode } from '../src/lib/sky/catalog-format.js';
 
-// ---- config -----------------------------------------------------------------
-const MAG_LIMIT = 6.5; // keep stars at least this bright (lower = fewer stars, smaller file)
-// -----------------------------------------------------------------------------
+/** @typedef {import('../src/lib/sky/catalog-format.js').Star} Star */
 
+const DEFAULT_MAG_LIMIT = 6.5;
+const DEFAULT_CSV_URL =
+	'https://raw.githubusercontent.com/astronexus/HYG-Database/main/hyg/CURRENT/hygdata_v41.csv';
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const JSON_PATH = join(root, 'src/lib/sky/star-catalog.json');
 const BIN_PATH = join(root, 'static/star-catalog.bin');
-const clamp = (v, lo, hi) => (v < lo ? lo : v > hi ? hi : v);
+const DEFAULT_CACHE = join(root, 'data/hyg.csv'); // git-ignored download location
 
-// minimal CSV splitter that respects double-quoted fields
-function splitCsv(line) {
+// --- CLI ---------------------------------------------------------------------
+
+/** Coerce + validate a magnitude argument. @param {string} value */
+function parseMagLimit(value) {
+	const n = Number(value);
+	if (!Number.isFinite(n)) throw new InvalidArgumentError('must be a number.');
+	return n;
+}
+
+const program = new Command()
+	.name('gen-star-catalog')
+	.description(
+		'Build the star catalogue: HYG CSV -> trimmed JSON (source) -> quantized .bin (shipped).\n' +
+			'With no source flags, re-quantizes the .bin from the committed JSON.'
+	)
+	.option('-d, --download', 'download the CSV (from --url) and rebuild the JSON + .bin')
+	.option('--url <url>', `CSV source URL to download (default: HYG v41)`)
+	.option('--cache <path>', 'where to save the downloaded CSV', DEFAULT_CACHE)
+	.option('--csv <path>', 'rebuild from an already-downloaded local CSV')
+	.option(
+		'-m, --mag-limit <number>',
+		'keep stars at least this bright',
+		parseMagLimit,
+		DEFAULT_MAG_LIMIT
+	)
+	.parse();
+
+const opts =
+	/** @type {{ download?: boolean, url?: string, cache: string, csv?: string, magLimit: number }} */ (
+		program.opts()
+	);
+const magLimit = opts.magLimit;
+// Passing --url implies a download even without -d.
+const wantsDownload = Boolean(opts.download || opts.url);
+
+// --- CSV model ---------------------------------------------------------------
+
+/** Columns we read from the HYG CSV. */
+const COLUMNS = /** @type {const} */ (['id', 'ra', 'dec', 'mag', 'ci']);
+
+/** A typed view of one HYG row (numbers parsed; `id` kept as string). */
+/** @typedef {{ id: string, ra: number, dec: number, mag: number, ci: number }} HygRow */
+
+/** Minimal CSV field splitter that respects double-quoted fields. */
+function splitCsv(/** @type {string} */ line) {
+	/** @type {string[]} */
 	const out = [];
 	let cur = '';
-	let q = false;
+	let quoted = false;
 	for (let i = 0; i < line.length; i++) {
 		const c = line[i];
-		if (q) {
+		if (quoted) {
 			if (c === '"') {
-				if (line[i + 1] === '"') {
-					cur += '"';
-					i++;
-				} else q = false;
+				if (line[i + 1] === '"') ((cur += '"'), i++);
+				else quoted = false;
 			} else cur += c;
-		} else if (c === '"') q = true;
-		else if (c === ',') {
-			out.push(cur);
-			cur = '';
-		} else cur += c;
+		} else if (c === '"') quoted = true;
+		else if (c === ',') (out.push(cur), (cur = ''));
+		else cur += c;
 	}
 	out.push(cur);
 	return out;
 }
 
-// HYG CSV -> flat [ra, dec, mag, ci, ...] and write the JSON source of truth
-function buildJsonFromCsv(csvPath) {
-	const lines = readFileSync(csvPath, 'utf8').split(/\r?\n/);
-	const h = splitCsv(lines[0]);
-	const iId = h.indexOf('id');
-	const iRa = h.indexOf('ra'); // hours
-	const iDec = h.indexOf('dec'); // degrees
-	const iMag = h.indexOf('mag'); // apparent magnitude
-	const iCi = h.indexOf('ci'); // B-V colour index
-	if ([iRa, iDec, iMag, iCi].some((i) => i < 0)) throw new Error('unexpected CSV columns');
+/**
+ * Build a typed row reader bound to a header line. Resolves each needed column's
+ * index once (throwing if any are missing) so the rest of the code accesses
+ * fields by name instead of by magic index.
+ * @param {string} headerLine
+ * @returns {(line: string) => HygRow}
+ */
+function makeRowReader(headerLine) {
+	const header = splitCsv(headerLine);
+	/** @type {Record<(typeof COLUMNS)[number], number>} */
+	const at = /** @type {any} */ ({});
+	for (const name of COLUMNS) {
+		const idx = header.indexOf(name);
+		if (idx < 0) throw new Error(`HYG CSV is missing the "${name}" column`);
+		at[name] = idx;
+	}
+	return (line) => {
+		const f = splitCsv(line);
+		return {
+			id: f[at.id],
+			ra: parseFloat(f[at.ra]),
+			dec: parseFloat(f[at.dec]),
+			mag: parseFloat(f[at.mag]),
+			ci: parseFloat(f[at.ci])
+		};
+	};
+}
 
-	const rows = [];
+// --- sources -----------------------------------------------------------------
+
+/**
+ * Download the CSV to a local path and return that path.
+ * @param {string} url
+ * @param {string} dest
+ * @returns {Promise<string>}
+ */
+async function downloadCsv(url, dest) {
+	console.log(`downloading ${url}`);
+	const res = await fetch(url);
+	if (!res.ok) throw new Error(`download failed: ${res.status} ${res.statusText}`);
+	if (!existsSync(dirname(dest))) mkdirSync(dirname(dest), { recursive: true });
+	const bytes = Buffer.from(await res.arrayBuffer());
+	writeFileSync(dest, bytes);
+	console.log(`saved ${dest} (${(bytes.byteLength / 1e6).toFixed(1)} MB)`);
+	return dest;
+}
+
+/**
+ * Parse + trim a HYG CSV into stars (brightest first) and rewrite the JSON.
+ * @param {string} csvPath
+ * @returns {Star[]}
+ */
+function starsFromCsv(csvPath) {
+	const lines = readFileSync(csvPath, 'utf8').split(/\r?\n/);
+	const readRow = makeRowReader(lines[0]);
+
+	/** @type {Star[]} */
+	const stars = [];
 	for (let i = 1; i < lines.length; i++) {
 		if (!lines[i]) continue;
-		const f = splitCsv(lines[i]);
-		if (f[iId] === '0') continue; // skip the Sun
-		const mag = parseFloat(f[iMag]);
-		if (!isFinite(mag) || mag > MAG_LIMIT) continue;
-		const ra = parseFloat(f[iRa]);
-		const dec = parseFloat(f[iDec]);
-		if (!isFinite(ra) || !isFinite(dec)) continue;
-		let ci = parseFloat(f[iCi]);
-		if (!isFinite(ci)) ci = 0.65;
-		rows.push([+ra.toFixed(4), +dec.toFixed(4), +mag.toFixed(2), +ci.toFixed(2)]);
+		const row = readRow(lines[i]);
+		if (row.id === '0') continue; // skip the Sun
+		if (!Number.isFinite(row.mag) || row.mag > magLimit) continue;
+		if (!Number.isFinite(row.ra) || !Number.isFinite(row.dec)) continue;
+		stars.push({
+			ra: +row.ra.toFixed(4),
+			dec: +row.dec.toFixed(4),
+			mag: +row.mag.toFixed(2),
+			ci: +(Number.isFinite(row.ci) ? row.ci : 0.65).toFixed(2)
+		});
 	}
-	rows.sort((a, b) => a[2] - b[2]); // brightest first
-	const flat = [];
-	for (const r of rows) flat.push(...r);
-	writeFileSync(JSON_PATH, JSON.stringify({ magLimit: MAG_LIMIT, count: rows.length, stars: flat }));
-	console.log(`wrote ${JSON_PATH}: ${rows.length} stars`);
-	return flat;
+	stars.sort((a, b) => a.mag - b.mag);
+
+	const flat = stars.flatMap((s) => [s.ra, s.dec, s.mag, s.ci]);
+	writeFileSync(JSON_PATH, JSON.stringify({ magLimit, count: stars.length, stars: flat }));
+	console.log(`wrote ${JSON_PATH}: ${stars.length} stars (mag <= ${magLimit})`);
+	return stars;
 }
 
-// flat [ra, dec, mag, ci, ...] -> quantized binary (6 bytes/star + 4-byte header)
-function buildBinFromFlat(flat) {
-	const count = flat.length / 4;
-	const buf = Buffer.alloc(4 + count * 6);
-	buf.writeUInt32LE(count, 0);
-	let o = 4;
+/**
+ * Load stars from the committed JSON (flat [ra, dec, mag, ci, ...]).
+ * @returns {Star[]}
+ */
+function starsFromJson() {
+	const flat = /** @type {number[]} */ (JSON.parse(readFileSync(JSON_PATH, 'utf8')).stars);
+	/** @type {Star[]} */
+	const stars = [];
 	for (let i = 0; i < flat.length; i += 4) {
-		buf.writeUInt16LE(clamp(Math.round((flat[i] / 24) * 65535), 0, 65535), o); // ra hours
-		buf.writeInt16LE(clamp(Math.round((flat[i + 1] / 90) * 32767), -32767, 32767), o + 2); // dec deg
-		buf.writeUInt8(clamp(Math.round((flat[i + 2] + 2) * 28), 0, 255), o + 4); // mag
-		buf.writeUInt8(clamp(Math.round(((flat[i + 3] + 0.4) / 2.4) * 255), 0, 255), o + 5); // ci
-		o += 6;
+		stars.push({ ra: flat[i], dec: flat[i + 1], mag: flat[i + 2], ci: flat[i + 3] });
 	}
-	if (!existsSync(dirname(BIN_PATH))) mkdirSync(dirname(BIN_PATH), { recursive: true });
-	writeFileSync(BIN_PATH, buf);
-	console.log(`wrote ${BIN_PATH}: ${count} stars, ${buf.length} bytes`);
+	return stars;
 }
 
-// ---- run --------------------------------------------------------------------
-const csvArg = process.argv[2];
-let flat;
-if (csvArg) {
-	flat = buildJsonFromCsv(csvArg);
+// --- run ---------------------------------------------------------------------
+
+/** @type {Star[]} */
+let stars;
+if (wantsDownload) {
+	const csvPath = await downloadCsv(opts.url ?? DEFAULT_CSV_URL, opts.cache);
+	stars = starsFromCsv(csvPath);
+} else if (opts.csv) {
+	stars = starsFromCsv(opts.csv);
 } else if (existsSync(JSON_PATH)) {
-	console.log('no CSV given; re-quantizing from existing JSON');
-	flat = JSON.parse(readFileSync(JSON_PATH, 'utf8')).stars;
+	console.log('no source flags; re-quantizing from existing JSON');
+	stars = starsFromJson().filter((s) => s.mag <= magLimit);
 } else {
-	console.error('No JSON found and no CSV path given. See header / README for how to fetch the CSV.');
+	console.error('No JSON found and no source given. See src/lib/sky/README.md.');
 	process.exit(1);
 }
-buildBinFromFlat(flat);
+
+if (!existsSync(dirname(BIN_PATH))) mkdirSync(dirname(BIN_PATH), { recursive: true });
+const buffer = encode(stars);
+writeFileSync(BIN_PATH, Buffer.from(buffer));
+console.log(`wrote ${BIN_PATH}: ${stars.length} stars, ${buffer.byteLength} bytes`);
