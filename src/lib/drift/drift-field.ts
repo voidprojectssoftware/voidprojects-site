@@ -17,6 +17,12 @@ export type DriftConfig = {
 	density: number;
 	/** World gravity. 0 = floats in space; ~1 makes bodies fall and pile up. */
 	gravity: number;
+	/**
+	 * Per-step velocity damping (Matter's frictionAir). 0 = frictionless space, so
+	 * any nudge drifts forever; raise it to bleed momentum each step so glyphs
+	 * settle and resist being shoved around — the main lever for "weight" feel.
+	 */
+	frictionAir: number;
 	/** Base outward speed (px/step) every glyph gets when drift starts. */
 	baseSpeed: number;
 	/** Max extra speed added at random on top of baseSpeed (range [0, this)). */
@@ -43,14 +49,15 @@ export type DriftConfig = {
 
 export const DRIFT_DEFAULTS: DriftConfig = {
 	returnMs: 1400,
-	restitution: 0.7, // bouncy enough that glyph-on-glyph hits visibly shove
+	restitution: 0.3, // a soft, weighty knock rather than a lively bounce
 	density: 0.001, // Matter's own default; mass then scales with glyph area
 	gravity: 0,
-	baseSpeed: 0.1, // gentle outward push — a slow drift, not a launch
-	speedJitter: 0.03,
-	spinRate: 0.004, // barely-there tumble
+	frictionAir: 0, // frictionless space — once freed, glyphs drift forever
+	baseSpeed: 0.14, // outward push at release — a real shove, then a perpetual drift
+	speedJitter: 0.04,
+	spinRate: 0.0025, // barely-there tumble
 	wallThickness: 200,
-	mousePull: 0.002, // faint lean toward the cursor (px/step added per step)
+	mousePull: 0.0012, // faint lean toward the cursor (px/step added per step)
 	mousePullRadius: 200 // only glyphs within this many px of the cursor are tugged
 };
 
@@ -356,7 +363,7 @@ export class DriftField {
 				restitution: this.cfg.restitution,
 				density: this.cfg.density, // mass = density × area → bigger glyphs carry more momentum
 				friction: 0,
-				frictionAir: 0,
+				frictionAir: this.cfg.frictionAir,
 				frictionStatic: 0
 			});
 			d.body = body;
