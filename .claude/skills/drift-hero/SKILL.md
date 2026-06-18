@@ -51,7 +51,17 @@ from the TypeScript source, so read `src/lib/physics/` for exact signatures.
 - **`ProjectCard` (`actors/project-card.ts`)** is one heavy, stays-upright card per instance.
   Crosses its `threshold` → tossed up from below into the mess (`uprightTorque` keeps it
   readable); scroll back below → ejected out the bottom. `register(el)` is driven by the
-  `ProjectCard.svelte` component's action. Tunables: `CardConfig` (`CARD_DEFAULTS`).
+  `ProjectCard.svelte` component's action. Exposes `get body()` and fires `onStateChange(state)`
+  (`dormant | active | ejecting`) so the page can hang a card-specific effect off it. Tunables:
+  `CardConfig` (`CARD_DEFAULTS`).
+- **`RelationGraph` (`relation-graph.ts`)** is the Constellation card's effect: a generic,
+  additive graph over `{ body }` nodes. On `activate(spec)` it springs clusters together with
+  real Matter constraints (`stage.addConstraint`) and draws labeled SVG edges that track the
+  live bodies in `sync()`; it never writes any node's transform (the owning actors still do),
+  so there is no handoff. The page wires Constellation's `onStateChange` → `activate`/`deactivate`
+  and builds the spec (per-word letter chains + one hub edge per word + the GitHub button), using
+  `glyphs.bodyFor(el)`. Deactivate runs on `'ejecting'` (hub body still alive) and before a warp.
+  Tunables: `GraphConfig` (`GRAPH_DEFAULTS`). See `docs/physics/how-to/add-a-card-effect.md`.
 - **`behaviors.ts`** holds the reusable per-step forces (`uprightTorque`, `cursorPull`) so
   they aren't duplicated across actors.
 - **Grab/throw constants** (`DRAG_THRESHOLD`, `MAX_THROW_SPEED`, `WALL_THICKNESS`) live on

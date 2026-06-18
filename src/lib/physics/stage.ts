@@ -103,6 +103,21 @@ export class PhysicsStage {
 		if (this.engine) Composite.remove(this.engine.world, body);
 	}
 
+	/**
+	 * Add a constraint (a spring / stiff link between two bodies) to the shared
+	 * world. Like bodies, constraints are resolved by the stage's single
+	 * {@link Engine.update}, so an actor only adds/removes them — the solver does
+	 * the pulling. Used by graph effects to link nodes together.
+	 */
+	addConstraint(constraint: Matter.Constraint) {
+		if (this.engine) Composite.add(this.engine.world, constraint);
+	}
+
+	/** Remove a constraint from the shared world. */
+	removeConstraint(constraint: Matter.Constraint) {
+		if (this.engine) Composite.remove(this.engine.world, constraint);
+	}
+
 	/** Fan a new total-scroll progress (0-1) out to every actor, then run if needed. */
 	setScrollProgress(progress: number) {
 		for (const a of this.actors) a.onScroll(progress);

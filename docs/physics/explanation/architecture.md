@@ -58,6 +58,7 @@ flowchart TD
         behaviors["behaviors.ts<br/>uprightTorque, cursorPull"]
         glyph["actors/glyph-field.ts<br/>GlyphField"]
         card["actors/project-card.ts<br/>ProjectCard"]
+        rgraph["relation-graph.ts<br/>RelationGraph (additive)"]
     end
 
     nudge["src/lib/nudge/<br/>NudgeField (peer, non-Matter)"]
@@ -66,9 +67,12 @@ flowchart TD
     page --> stage
     page --> glyph
     page --> card
+    page --> rgraph
     page -.->|glyphs.onActiveChange| nudge
+    page -.->|card.onStateChange| rgraph
     glyph -. implements .-> actor
     card -. implements .-> actor
+    rgraph -. implements .-> actor
     glyph --> behaviors
     card --> behaviors
     card --- comp
@@ -137,7 +141,9 @@ Several consequences follow, and they are the rules an actor must respect:
 - **`ctx.dtMs` is always `FIXED_DT`, never a variable frame delta.** Forces are tuned against
   that constant step.
 - **World membership goes through the stage.** Adding and removing bodies via the stage (rather
-  than the engine directly) keeps the grab set and the world in sync.
+  than the engine directly) keeps the grab set and the world in sync. Constraints (springs) are
+  the other kind of membership and go through `stage.addConstraint` / `removeConstraint` the same
+  way; the solver resolves them in the same step.
 
 The how-to guides restate these as a checklist at the point of action.
 
@@ -244,6 +250,60 @@ It is not an actor because it runs in the opposite phase (at rest, when the Matt
 even exist), it acts on a different lifecycle, and it is intentionally a cheap clamped spring.
 Modelling it as a stage actor would be a worse fit, not a cleaner one. This is the template for
 any future at-rest effect; see [how to add a peer effect](../how-to/add-a-peer-effect.md).
+
+## Relationship graphs: additive effects over shared bodies
+
+The drift and the nudge are the two original axes. The relationship graph (`RelationGraph` in
+`relation-graph.ts`) is a third kind of thing, and it is worth understanding why it is neither an
+actor that owns bodies nor a peer that runs off to the side. It is an **additive** effect: it
+borrows bodies that already exist on the stage, hangs springs between them, and draws connective
+lines on top, without ever writing those bodies' transforms.
+
+It exists because the Constellation card's special effect spans bodies owned by three different
+actors at once: the glyphs and the GitHub button (owned by `GlyphField`) and the card itself
+(owned by `ProjectCard`). No single actor can reach across that, so the graph is its own actor
+that operates on plain `{ body }` nodes and does not care what any of them are.
+
+Two things make it cheap and non-invasive:
+
+- **The links are real constraints, solved by the existing loop.** A Matter `Constraint` is a
+  spring between two bodies. Added to the shared world (through `stage.addConstraint`, the same
+  way bodies go through `stage.addBody`), it is resolved by the one `Engine.update` the stage
+  already runs. So "pull the letters together" is just the solver doing its job; the graph
+  applies no forces of its own in `step`. Constraints are the second kind of world membership,
+  alongside bodies.
+- **It never owns a transform.** The glyph and card actors still write their own elements'
+  transforms from the same bodies every frame. The graph only adds the springs (which move the
+  bodies) and draws the edges (an SVG overlay whose line endpoints track the live body
+  positions in `sync`). Because it does not touch transforms, there is no handoff to arrange,
+  unlike axis 2.
+
+The trigger is the same decoupled-callback pattern as the nudge handoff, one level up. A card
+announces its state changes through `onStateChange`; the composition root listens and activates
+or deactivates the graph. The card knows nothing about the graph, and the graph knows nothing
+about cards.
+
+```mermaid
+sequenceDiagram
+    participant Scroll
+    participant ProjectCard
+    participant page as +page.svelte
+    participant RelationGraph
+    Scroll->>ProjectCard: progress past threshold -> toss()
+    ProjectCard->>page: onStateChange('active')
+    page->>RelationGraph: activate(spec) - clusters + hub
+    Note over RelationGraph: add constraints, draw + fade in edges
+    Scroll->>ProjectCard: progress below threshold -> eject()
+    ProjectCard->>page: onStateChange('ejecting')
+    page->>RelationGraph: deactivate()
+    Note over RelationGraph: remove constraints, restore damping, drop the overlay
+```
+
+The `deactivate` on `'ejecting'` (not on `'dormant'`) matters: it fires while the card body is
+still alive, so the constraints attached to it are removed before the body is. The same teardown
+runs before a warp, so the springs are gone before the warp grabs the glyphs. This is the
+template for any future card effect; see
+[how to give a card a graph effect](../how-to/add-a-card-effect.md).
 
 ## Reduced motion
 

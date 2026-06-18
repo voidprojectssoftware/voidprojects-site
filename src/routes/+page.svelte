@@ -3,7 +3,13 @@
 	import { Button } from '$lib/components/shadcn/ui/button/index.js';
 	import { Section } from '$lib/components/section/index.js';
 	import { ChevronDown } from '@lucide/svelte';
-	import { PhysicsStage, GlyphField, ProjectCard as ProjectCardActor } from '$lib/physics/index.js';
+	import {
+		PhysicsStage,
+		GlyphField,
+		ProjectCard as ProjectCardActor,
+		RelationGraph
+	} from '$lib/physics/index.js';
+	import type { GraphSpec, GraphLink } from '$lib/physics/index.js';
 	import { NudgeField } from '$lib/nudge/index.js';
 	import { ReducedMotionNotice } from '$lib/components/reduced-motion-notice/index.js';
 	import { ProjectCard } from '$lib/components/project-card/index.js';
@@ -19,6 +25,38 @@
 	const heroSubtitle = 'AI-centric projects from a developer collective.';
 	const subtitleChars = [...heroSubtitle];
 
+	// Per-character word membership, so the Constellation graph can bind the letters
+	// of each word into a chain and hook each word back to the card. Spaces get null
+	// (they stay pure drifters, not graph nodes). Word ids are unique across both
+	// lines so each word is its own cluster.
+	type CharMeta = { word: number; pos: number } | null;
+	function wordMeta(chars: string[], start: number): { meta: CharMeta[]; next: number } {
+		const meta: CharMeta[] = [];
+		let word = start;
+		let pos = 0;
+		let inWord = false;
+		for (const ch of chars) {
+			if (ch === ' ') {
+				meta.push(null);
+				if (inWord) {
+					word++;
+					pos = 0;
+					inWord = false;
+				}
+			} else {
+				inWord = true;
+				meta.push({ word, pos });
+				pos++;
+			}
+		}
+		if (inWord) word++; // count the trailing word
+		return { meta, next: word };
+	}
+	const titleWM = wordMeta(titleChars, 0);
+	const subtitleWM = wordMeta(subtitleChars, titleWM.next);
+	const titleMeta = titleWM.meta;
+	const subtitleMeta = subtitleWM.meta;
+
 	// The shared Matter world. The glyph title and the project cards are actors on
 	// it, so the free-floating glyphs actually collide with the heavy cards.
 	const stage = new PhysicsStage();
@@ -33,18 +71,22 @@
 			actor: new ProjectCardActor({ threshold: 0.3 }),
 			title: 'Constellation',
 			desc: 'Transform disjointed, amorphic systems into accessible graphs of knowledge.',
+			// Private for now: the card shows "Coming soon" instead of a live repo link.
+			repo: null,
 			class: 'top-[18%]'
 		},
 		{
 			actor: new ProjectCardActor({ threshold: 0.5 }),
 			title: 'Protostar',
 			desc: 'Shareable, private, and internal agent skills that get better as you use them.',
+			repo: 'https://github.com/voidprojectssoftware/protostar-cli',
 			class: 'top-[42%]'
 		},
 		{
 			actor: new ProjectCardActor({ threshold: 0.7 }),
 			title: 'Wormhole',
 			desc: "Query a teammate's local notes in your favorite agent harness.",
+			repo: 'https://github.com/voidprojectssoftware/wormhole',
 			class: 'top-[66%]'
 		}
 	];
@@ -71,6 +113,100 @@
 	// Svelte action — tag any element that should react to the cursor at rest.
 	const nudge = (el: HTMLElement) => ({ destroy: nudgeField.register(el) });
 
+	// --- Constellation card effect: the relationship graph ---------------------
+	// When the Constellation card tosses in, pull the scattered glyphs into a graph
+	// centered on it; tear it down when it leaves. RelationGraph is generic over
+	// bodies, so it links the glyphs, the GitHub button, and the card without any of
+	// them knowing about each other — the composition root wires them up here.
+	const graph = new RelationGraph();
+	stage.add(graph);
+
+	// Pin the card and blow the glyphs off it in a direction, so the graph stays clear
+	// of the card and reads well: card on the left with the flow going right on desktop
+	// (room to spread sideways), card at the bottom with the flow going up on mobile.
+	// Both re-evaluated each frame, so they follow resizes and rotation.
+	graph.hubAnchor = (w, h) =>
+		w >= 768
+			? { x: w * 0.22, y: h * 0.5 } // desktop: card on the left
+			: { x: w * 0.5, y: h * 0.8 }; // mobile: card at the bottom
+	graph.flowDirection = (w) =>
+		w >= 768
+			? { x: 1, y: 0 } // desktop: flow right
+			: { x: 0, y: -1 }; // mobile: flow up
+	// Narrow screens stack the words vertically, so pull the spine much tighter there:
+	// shorter rest length and a much stiffer link so it actually holds against the
+	// repulsion instead of stretching tall.
+	graph.linkLengthFor = (w) => (w >= 768 ? 120 : 38);
+	graph.linkStiffnessFor = (w) => (w >= 768 ? 0.006 : 0.07);
+
+	// Element refs per word (indexed by the contiguous word id, then by position),
+	// filled by `driftNode` so the spec can resolve each word's letters to their
+	// live bodies at activation time.
+	const wordEls: HTMLElement[][] = [];
+
+	// Like `drift`, but also files the element under its word so it can become a
+	// graph node. Spaces (meta === null) stay plain drifters, not nodes.
+	const driftNode = (el: HTMLElement, meta: CharMeta) => {
+		const destroy = glyphs.register(el);
+		if (meta) (wordEls[meta.word] ??= [])[meta.pos] = el;
+		return { destroy };
+	};
+
+	// The spine: the relationship between each consecutive pair of words, a
+	// dependency-grammar reading ("language as a graph"). Aligned to word order
+	// (Void, Projects, AI-centric, projects, from, a, developer, collective).
+	const LINK_LABELS = [
+		'modifies', // Void -> Projects
+		'elaborated by', // Projects -> AI-centric
+		'describes', // AI-centric -> projects
+		'extends', // projects -> from
+		'introduces', // from -> a
+		'scopes', // a -> developer
+		'modifies' // developer -> collective
+	];
+	const constellationCard = cards.find((c) => c.title === 'Constellation');
+
+	function buildConstellationSpec(): GraphSpec | null {
+		const clusters: GraphSpec['clusters'] = [];
+		for (const els of wordEls) {
+			if (!els) continue;
+			const nodes = els
+				.map((el) => glyphs.bodyFor(el))
+				.filter((body): body is NonNullable<typeof body> => body != null)
+				.map((body) => ({ body }));
+			if (nodes.length === 0) continue;
+			clusters.push({ nodes, intraLabel: 'precedes' }); // each letter precedes the next
+		}
+		if (clusters.length === 0) return null;
+
+		// One link from the Constellation card out to the V of Void (the first cluster's
+		// anchor), opted in via its hubLabel. No other word ties to the card.
+		clusters[0].hubLabel = 'maps to';
+
+		// Reconnect consecutive clusters into one chain.
+		const links: GraphLink[] = [];
+		for (let i = 0; i < clusters.length - 1; i++) {
+			links.push({ from: i, to: i + 1, label: LINK_LABELS[i] ?? 'relates to' });
+		}
+
+		// The card is the hub (its one link is to Void) and also repels the glyphs.
+		const cardBody = constellationCard?.actor.body;
+		const hub = cardBody ? { body: cardBody } : undefined;
+
+		return { clusters, links, hub };
+	}
+
+	if (constellationCard) {
+		constellationCard.actor.onStateChange = (state) => {
+			if (state === 'active') {
+				const spec = buildConstellationSpec();
+				if (spec) graph.activate(spec);
+			} else if (state === 'ejecting') {
+				graph.deactivate();
+			}
+		};
+	}
+
 	const GITHUB_URL = 'https://github.com/voidprojectssoftware';
 
 	// Open in a background tab (Ctrl/Cmd-click an anchor) so the user stays on this
@@ -95,6 +231,10 @@
 	}
 
 	function warpToGithub(event: MouseEvent) {
+		// Drop the relationship springs first if the graph is live, so they don't fight
+		// the warp as it grabs the glyphs and sucks them into the button.
+		graph.deactivate();
+
 		// The button is a real <a target="_blank">, so a native click always opens the
 		// tab from a genuine user gesture. Touch devices (notably iOS Safari) block both
 		// the deferred open and the synthetic Ctrl/Cmd-click background-tab trick, so let
@@ -177,7 +317,7 @@
 				aria-label={heroTitle}
 			>
 				{#each titleChars as ch, i (i)}<span
-						use:drift
+						use:driftNode={titleMeta[i]}
 						use:nudge
 						aria-hidden="true"
 						style="display:inline-block;white-space:pre">{ch === ' ' ? '\u00A0' : ch}</span
@@ -188,7 +328,7 @@
 				aria-label={heroSubtitle}
 			>
 				{#each subtitleChars as ch, i (i)}<span
-						use:drift
+						use:driftNode={subtitleMeta[i]}
 						use:nudge
 						aria-hidden="true"
 						style="display:inline-block;white-space:pre">{ch === ' ' ? '\u00A0' : ch}</span
@@ -220,7 +360,13 @@
 			</div>
 		</div>
 		{#each cards as card (card.title)}
-			<ProjectCard actor={card.actor} title={card.title} desc={card.desc} class={card.class} />
+			<ProjectCard
+				actor={card.actor}
+				title={card.title}
+				desc={card.desc}
+				repo={card.repo}
+				class={card.class}
+			/>
 		{/each}
 		<div
 			class="absolute bottom-8 left-1/2 flex -translate-x-1/2 flex-col items-center gap-1 transition-opacity duration-300 select-none"

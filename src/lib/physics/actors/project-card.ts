@@ -21,6 +21,13 @@ export type CardConfig = {
 	launchSpread: number;
 	/** Downward speed (px/step) applied on eject so the card falls back out the bottom. */
 	ejectSpeed: number;
+	/**
+	 * Sustained downward acceleration (px/step²) while ejecting. Without it the one-shot
+	 * eject speed decays against frictionAir in zero-g and the card strands mid-screen;
+	 * this keeps it accelerating (toward a terminal speed of ~ejectGravity/frictionAir)
+	 * until it clears the bottom and retires.
+	 */
+	ejectGravity: number;
 	/** Angular spring stiffness keeping the card upright (readable). */
 	uprightStiffness: number;
 	/** Angular spring damping. */
@@ -33,7 +40,8 @@ export const CARD_DEFAULTS: Omit<CardConfig, 'threshold'> = {
 	frictionAir: 0.018, // settles the toss within the viewport instead of drifting forever
 	launchSpeed: 15,
 	launchSpread: 4,
-	ejectSpeed: 13,
+	ejectSpeed: 2,
+	ejectGravity: 0.12, // gentle sustained fall: heavy and sluggish out the bottom (terminal ~7 px/step)
 	uprightStiffness: 0.02, // gentle pull back to 0° so text stays readable while it bobs
 	uprightDamping: 0.9
 };
@@ -54,7 +62,15 @@ export class ProjectCard implements Actor {
 	private el: HTMLElement | null = null;
 
 	private state: State = 'dormant';
-	private body: Matter.Body | null = null;
+	private body_: Matter.Body | null = null;
+
+	/**
+	 * Notified whenever the card changes state ('active' when it tosses in,
+	 * 'ejecting' when it leaves, 'dormant' once retired). Lets the composition
+	 * root trigger a card-specific effect (e.g. activate a {@link RelationGraph}
+	 * when this card appears) without the card knowing the effect exists.
+	 */
+	onStateChange?: (state: State) => void;
 	/** Home center in viewport coords — the transform origin (and the reduced-motion resting spot). */
 	private hx = 0;
 	private hy = 0;
@@ -70,6 +86,18 @@ export class ProjectCard implements Actor {
 
 	mount(stage: PhysicsStage) {
 		this.stage = stage;
+	}
+
+	/** The live Matter body while the card is in the mess, or null while dormant. */
+	get body(): Matter.Body | null {
+		return this.body_;
+	}
+
+	/** Move to a new state and notify any listener (idempotent on a no-op change). */
+	private setState(state: State) {
+		if (state === this.state) return;
+		this.state = state;
+		this.onStateChange?.(state);
 	}
 
 	/** Bind the card's DOM element. Returns a cleanup fn (suitable as a Svelte action `destroy`). */
@@ -96,23 +124,30 @@ export class ProjectCard implements Actor {
 	}
 
 	step() {
-		if (!this.body) return;
+		if (!this.body_) return;
 		// Keep the card readable: spring its rotation back toward upright while it's in
 		// the mess. On the way out we let it tumble freely.
 		if (this.state === 'active') {
-			uprightTorque(this.body, this.cfg.uprightStiffness, this.cfg.uprightDamping);
+			uprightTorque(this.body_, this.cfg.uprightStiffness, this.cfg.uprightDamping);
+		} else if (this.state === 'ejecting') {
+			// Sustain a downward pull so frictionAir + zero-g can't strand the card
+			// mid-screen; it keeps accelerating until it clears the bottom and retires.
+			Body.setVelocity(this.body_, {
+				x: this.body_.velocity.x,
+				y: this.body_.velocity.y + this.cfg.ejectGravity
+			});
 		}
 	}
 
 	sync(ctx: StepCtx) {
-		if (!this.body || !this.el) return;
-		const dx = this.body.position.x - this.hx;
-		const dy = this.body.position.y - this.hy;
-		const deg = (this.body.angle * 180) / Math.PI;
+		if (!this.body_ || !this.el) return;
+		const dx = this.body_.position.x - this.hx;
+		const dy = this.body_.position.y - this.hy;
+		const deg = (this.body_.angle * 180) / Math.PI;
 		this.el.style.transform = `translate3d(${dx}px, ${dy}px, 0) rotate(${deg}deg)`;
 
 		// Ejecting: once the card has fully fallen past the bottom, retire it.
-		if (this.state === 'ejecting' && this.body.position.y - this.h / 2 > ctx.height) {
+		if (this.state === 'ejecting' && this.body_.position.y - this.h / 2 > ctx.height) {
 			this.retire();
 		}
 	}
@@ -149,27 +184,32 @@ export class ProjectCard implements Actor {
 			x: (Math.random() * 2 - 1) * this.cfg.launchSpread,
 			y: -this.cfg.launchSpeed // upward, into the hero
 		});
-		this.body = body;
-		this.state = 'active';
+		this.body_ = body;
 		this.el.style.opacity = '1';
 		this.el.style.pointerEvents = 'auto'; // grabbable now it's in the mess
 		this.stage.addBody(body, { grabbable: true });
+		this.setState('active'); // fire after the body exists so listeners can read it
 		this.stage.wake();
 	}
 
 	/** Drop the upright spring and shove the card down so it falls back out the bottom. */
 	private eject() {
-		if (!this.body || !this.stage) return;
-		this.state = 'ejecting';
-		Body.setVelocity(this.body, { x: this.body.velocity.x, y: this.cfg.ejectSpeed });
+		if (!this.body_ || !this.stage) return;
+		// Fire while the body is still alive so a listener (e.g. a graph effect) can
+		// tear down anything attached to it before it's removed.
+		this.setState('ejecting');
+		// Pass through everything on the way out: as a sensor it still falls but stops
+		// colliding, so it can't get jammed by a glyph pinned between it and a wall.
+		this.body_.isSensor = true;
+		Body.setVelocity(this.body_, { x: this.body_.velocity.x, y: this.cfg.ejectSpeed });
 		this.stage.wake();
 	}
 
 	/** Remove the body and reset to dormant/off-screen. */
 	private retire() {
-		if (this.body) this.stage?.removeBody(this.body);
-		this.body = null;
-		this.state = 'dormant';
+		if (this.body_) this.stage?.removeBody(this.body_);
+		this.body_ = null;
+		this.setState('dormant');
 		if (this.el) {
 			this.el.style.opacity = '0';
 			this.el.style.pointerEvents = 'none'; // dormant: don't block the hero beneath

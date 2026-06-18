@@ -231,6 +231,16 @@ export class GlyphField implements Actor {
 		else this.return_();
 	}
 
+	/**
+	 * The live Matter body backing a registered element, or null if it has none
+	 * yet (the bodies only exist while the field is drifting/warping). Lets a
+	 * separate effect (e.g. a {@link RelationGraph}) borrow a glyph or the GitHub
+	 * button as a graph node without the field having to know about the graph.
+	 */
+	bodyFor(el: HTMLElement): Matter.Body | null {
+		return this.drifters.find((d) => d.el === el)?.body ?? null;
+	}
+
 	/** Kick the bodies apart. Builds them on first call, re-impulses thereafter. */
 	start() {
 		if (this.reduceMotion || this.mode === 'drifting' || this.mode === 'warping') return;
