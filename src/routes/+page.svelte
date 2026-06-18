@@ -138,6 +138,8 @@
 	// repulsion instead of stretching tall.
 	graph.linkLengthFor = (w) => (w >= 768 ? 120 : 38);
 	graph.linkStiffnessFor = (w) => (w >= 768 ? 0.006 : 0.07);
+	// The card-to-V "maps to" edge: pull it in close on mobile like the spine.
+	graph.hubLengthFor = (w) => (w >= 768 ? 330 : 90);
 
 	// Element refs per word (indexed by the contiguous word id, then by position),
 	// filled by `driftNode` so the spec can resolve each word's letters to their

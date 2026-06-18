@@ -228,6 +228,13 @@ export class RelationGraph implements Actor {
 	 */
 	linkStiffnessFor?: (width: number, height: number) => number;
 
+	/**
+	 * Rest length of the anchor-to-hub links, given the viewport size, evaluated when
+	 * the graph activates. Lets a narrow screen pull the hub edge (e.g. card to the V)
+	 * in close like the spine. Falls back to {@link GraphConfig.hubLength}.
+	 */
+	hubLengthFor?: (width: number, height: number) => number;
+
 	private svg: SVGSVGElement | null = null;
 	private group: SVGGElement | null = null;
 	private readonly edges: Edge[] = [];
@@ -258,6 +265,15 @@ export class RelationGraph implements Actor {
 		if (this.reduceMotion || this.active || !this.stage) return;
 
 		this.buildSvg();
+
+		// Viewport-responsive rest lengths, evaluated once at activation.
+		const hasWin = typeof window !== 'undefined';
+		const vw = hasWin ? window.innerWidth : 0;
+		const vh = hasWin ? window.innerHeight : 0;
+		const hubLen = this.hubLengthFor && hasWin ? this.hubLengthFor(vw, vh) : this.cfg.hubLength;
+		const linkLen = this.linkLengthFor && hasWin ? this.linkLengthFor(vw, vh) : this.cfg.linkLength;
+		const linkStiff =
+			this.linkStiffnessFor && hasWin ? this.linkStiffnessFor(vw, vh) : this.cfg.linkStiffness;
 
 		// Each cluster's anchor body, kept by cluster index so the spine links can
 		// connect them (null for any empty cluster, whose links are skipped).
@@ -303,7 +319,7 @@ export class RelationGraph implements Actor {
 			// edge (clip 'b') not its center, so the line meets the card's border.
 			if (spec.hub && cluster.hubLabel !== undefined) {
 				this.addEdge(anchor, spec.hub.body, {
-					length: this.cfg.hubLength,
+					length: hubLen,
 					stiffness: this.cfg.hubStiffness,
 					damping: this.cfg.hubDamping,
 					color: this.cfg.hubColor,
@@ -317,17 +333,7 @@ export class RelationGraph implements Actor {
 		});
 
 		// Spine links: connect clusters to each other (anchor to anchor), the
-		// prominent labeled relationships between words. The rest length can shrink on
-		// narrow screens so the chain doesn't stretch tall.
-		const hasWin = typeof window !== 'undefined';
-		const linkLen =
-			this.linkLengthFor && hasWin
-				? this.linkLengthFor(window.innerWidth, window.innerHeight)
-				: this.cfg.linkLength;
-		const linkStiff =
-			this.linkStiffnessFor && hasWin
-				? this.linkStiffnessFor(window.innerWidth, window.innerHeight)
-				: this.cfg.linkStiffness;
+		// prominent labeled relationships between words (responsive lengths above).
 		for (const link of spec.links ?? []) {
 			const a = anchors[link.from];
 			const b = anchors[link.to];
