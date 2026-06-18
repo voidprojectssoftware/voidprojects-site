@@ -1,6 +1,7 @@
 import Matter from 'matter-js';
 import type { Actor, StepCtx } from './actor.js';
 import type { PhysicsStage } from './stage.js';
+import { brandViolet } from './colors.js';
 
 const { Constraint, Body } = Matter;
 
@@ -151,7 +152,7 @@ export const GRAPH_DEFAULTS: GraphConfig = {
 	hubAnchorDamping: 0.82, // bleed the card's momentum so it glides in without bouncing
 	memberFrictionAir: 0.02,
 	webColor: 'rgba(150, 180, 255, 0.30)',
-	hubColor: 'rgba(196, 162, 255, 0.85)', // brand violet (matches the warp quasar core)
+	hubColor: brandViolet(0.85), // matches the warp quasar core
 	webWidth: 1,
 	hubWidth: 1.5,
 	labelColor: 'rgba(214, 224, 255, 0.92)',

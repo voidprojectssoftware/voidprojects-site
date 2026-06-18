@@ -2,6 +2,7 @@ import Matter from 'matter-js';
 import type { Actor, StepCtx } from '../actor.js';
 import type { PhysicsStage } from '../stage.js';
 import { cursorPull } from '../behaviors.js';
+import { brandViolet } from '../colors.js';
 
 const { Bodies, Body } = Matter;
 
@@ -100,7 +101,7 @@ const WARP_IN_FLASH_FRAC = 0.4; // first slice of the return is the flash; the r
 // Bipolar "quasar" jets that lance out to either side as space warps open — the
 // sci-fi space-jump tell. Core is a hot violet tied to the brand --primary; the
 // halo is a cyan outer flare for the pop.
-const QUASAR_CORE = 'rgba(196, 162, 255, 0.95)';
+const QUASAR_CORE = brandViolet(0.95);
 const QUASAR_HALO = 'rgba(120, 214, 255, 0.7)';
 const QUASAR_REACH = 78; // px the jets extend from each side at full flare
 const QUASAR_BLUR = 16; // px base blur of a jet, grown with the flare

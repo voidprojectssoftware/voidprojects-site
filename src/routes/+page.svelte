@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { Button } from '$lib/components/shadcn/ui/button/index.js';
-	import { Section } from '$lib/components/section/index.js';
+	import { Section } from '$lib/components/voidprojects/section/index.js';
 	import { ChevronDown } from '@lucide/svelte';
 	import {
 		PhysicsStage,
@@ -13,6 +13,7 @@
 	import { NudgeField } from '$lib/nudge/index.js';
 	import { ReducedMotionNotice } from '$lib/components/reduced-motion-notice/index.js';
 	import { ProjectCard } from '$lib/components/project-card/index.js';
+	import { SiteHeader } from '$lib/components/site-header/index.js';
 
 	let heroRef = $state<HTMLElement | null>(null);
 	let githubRef = $state<HTMLElement | null>(null);
@@ -291,22 +292,7 @@
 	});
 </script>
 
-<header class="sticky top-0 z-2 h-16 bg-transparent px-6 pt-4 sm:px-12 lg:px-35">
-	<div class="flex flex-row items-center justify-between">
-		<div
-			class="flex flex-row items-center justify-center gap-3 transition-opacity duration-300 sm:gap-6"
-			class:opacity-0={!scrolled}
-			class:pointer-events-none={!scrolled}
-			aria-hidden={!scrolled}
-		>
-			<span class="text-base font-bold whitespace-nowrap sm:text-xl">Void Projects</span>
-			<a href="/blog" class="text-base whitespace-nowrap hover:opacity-60 sm:text-lg">Blog</a>
-			<a href="/team" class="text-base whitespace-nowrap hover:opacity-60 sm:text-lg"
-				>Meet The Team</a
-			>
-		</div>
-	</div>
-</header>
+<SiteHeader {scrolled} />
 <main class="flex flex-col">
 	<Section
 		bind:ref={heroRef}

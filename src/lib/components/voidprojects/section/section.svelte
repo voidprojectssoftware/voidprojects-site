@@ -6,7 +6,7 @@
 
 <section
 	bind:this={ref}
-	class="flex flex-col px-6 pt-4 sm:px-12 lg:px-35 {glass
+	class="flex flex-col px-6 pt-4 sm:px-page-sm lg:px-page-lg {glass
 		? 'bg-background/10 shadow-lg backdrop-blur-lg'
 		: ''} {rest.class ?? ''}"
 >
