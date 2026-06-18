@@ -24,7 +24,9 @@ SvelteKit 5 (runes: `$state`, `$props`, `$derived`), Tailwind v4, shadcn-svelte,
 ## $lib/physics — the shared world and its actors
 
 The physics is split along two seams (see `$lib/physics/`). All framework-agnostic (no
-Svelte inside). See the global skill **matter-js-dom-physics** for the general technique.
+Svelte inside). For the general Matter-as-DOM technique (force-directed graphs, repulsion,
+the SVG edge overlay, frame-rate independence), see the matter-js physics skill available
+via the protostar CLI (`protostar skills` lists what you have installed).
 For the full pattern, see the Diátaxis-organized docs under `docs/physics/`: the
 `explanation/architecture.md` (diagrams, fixed-timestep frame loop, why the nudge is a peer)
 and the `how-to/` guides (add an actor, add a peer effect). Keep them in sync with changes.
@@ -43,11 +45,14 @@ from the TypeScript source, so read `src/lib/physics/` for exact signatures.
   mask that excludes the `FLOOR` wall so they spawn below and eject out the bottom while
   glyphs stay penned in.
 - **`GlyphField` (`actors/glyph-field.ts`)** is the title/subtitle glyphs: drift/return/warp,
-  cursor lean, grab-to-throw. `register(el)` → `use:drift`. Mode machine
-  `idle | drifting | returning | warping`. Fires `onActiveChange(active)` so the NudgeField
-  can take/hand-back the same glyphs' transforms. Tunables: `GlyphConfig` (`GLYPH_DEFAULTS`)
-  plus warp module constants (`WARP_PULL`, `WARP_TANGENT`, `WARP_DAMP`, `WARP_THROAT`,
-  `WARP_ABSORB`, `WARP_*_MS`, `SPREAD_JITTER_DEG`).
+  cursor lean (desktop), touch plow (mobile), grab-to-throw. `register(el)` → `use:drift`. Mode
+  machine `idle | drifting | returning | warping`. Fires `onActiveChange(active)` so the NudgeField
+  can take/hand-back the same glyphs' transforms. While drifting it runs **one** pointer force per
+  frame: a faint `cursorPull` lean toward the mouse, or — when a finger is down (`ctx.touch.active`)
+  — a `cursorPush` plow that shoves the glyphs the finger drags through, so the first scroll swipe
+  separates the letters by hand. Tunables: `GlyphConfig` (`GLYPH_DEFAULTS`, incl. `touchPush`,
+  `touchPushRadius`) plus warp module constants (`WARP_PULL`, `WARP_TANGENT`, `WARP_DAMP`,
+  `WARP_THROAT`, `WARP_ABSORB`, `WARP_*_MS`, `SPREAD_JITTER_DEG`).
 - **`ProjectCard` (`actors/project-card.ts`)** is one heavy, stays-upright card per instance.
   Crosses its `threshold` → tossed up from below into the mess (`uprightTorque` keeps it
   readable); scroll back below → ejected out the bottom. `register(el)` is driven by the
@@ -55,17 +60,14 @@ from the TypeScript source, so read `src/lib/physics/` for exact signatures.
   (`dormant | active | ejecting`) so the page can hang a card-specific effect off it. Tunables:
   `CardConfig` (`CARD_DEFAULTS`).
 - **`RelationGraph` (`relation-graph.ts`)** is the Constellation card's effect: a generic,
-  additive graph over `{ body }` nodes. On `activate(spec)` it springs clusters together with
-  real Matter constraints (`stage.addConstraint`) and draws labeled SVG edges that track the
-  live bodies in `sync()`; it never writes any node's transform (the owning actors still do),
-  so there is no handoff. The page wires Constellation's `onStateChange` → `activate`/`deactivate`
-  and builds the spec (per-word letter chains + one hub edge per word + the GitHub button), using
-  `glyphs.bodyFor(el)`. Deactivate runs on `'ejecting'` (hub body still alive) and before a warp.
-  Tunables: `GraphConfig` (`GRAPH_DEFAULTS`). See `docs/physics/how-to/add-a-card-effect.md`.
-- **`behaviors.ts`** holds the reusable per-step forces (`uprightTorque`, `cursorPull`) so
-  they aren't duplicated across actors.
+  additive node-link graph over `{ body }` nodes. See the dedicated section below for topology,
+  forces, the pulse, and the responsive hooks. Tunables: `GraphConfig` (`GRAPH_DEFAULTS`).
+- **`behaviors.ts`** holds the reusable per-step forces (`uprightTorque`, `cursorPull`,
+  `cursorPush`) so they aren't duplicated across actors.
 - **Grab/throw constants** (`DRAG_THRESHOLD`, `MAX_THROW_SPEED`, `WALL_THICKNESS`) live on
-  the stage, since grab works across every actor's bodies.
+  the stage, since grab works across every actor's bodies. The stage also tracks the finger
+  from `touch*` events into a separate `ctx.touch` (the pointer is cancelled the instant a touch
+  becomes a scroll, so `pointermove` goes stale exactly when the plow needs it).
 
 ## NudgeField — the at-rest cursor spring (separate system)
 
@@ -82,6 +84,35 @@ collide/jostle on the way, arc in (tangential kick + damping spiral), get squeez
 removed at the point. Then the button itself flashes bright and squeezes out of existence
 as the link opens, and everything restores. The button body is made a sensor so glyphs
 pass through it. See `stepWarp` and the `warp()` setup.
+
+## The Constellation card effect (RelationGraph)
+
+When the Constellation card tosses in, `RelationGraph` (`relation-graph.ts`) turns the
+drifting glyphs into a node-link graph; it tears down when the card ejects (on `'ejecting'`,
+while the hub body is still alive) and before a warp. It is a generic, additive actor: it
+borrows the live glyph and card bodies, adds Matter constraints for the edges (via
+`stage.addConstraint`), draws a labeled SVG edge overlay that tracks the bodies in `sync()`,
+and never writes any node's transform (the owning actors still do, so no handoff is needed).
+`+page.svelte` wires it via `ProjectCard.onStateChange` and builds the spec with
+`glyphs.bodyFor(el)`.
+
+- **Topology (built in `+page.svelte`):** each word is a cluster of per-glyph nodes chained in
+  order with a short `precedes` label (character sequence). One opt-in hub link runs from the
+  card to the V of Void (a cluster's `hubLabel`, drawn clipped to the card's border). The spine
+  links consecutive words with dependency-grammar labels (`LINK_LABELS`). The GitHub button is
+  left out of the spec, so it free-floats.
+- **Forces (in `RelationGraph.step()`):** edge springs (constraints), surface-based
+  mass-split repulsion so the cloud fans out, a directional flow that blows the glyphs off the
+  card, and a damped spring pinning the card to its anchor. The old center-pull is off by
+  default. A periodic pulse travels the graph (card to V, down the spine, into a cycling word)
+  and shoves the nodes it passes so they wiggle and settle, with a glowing dot riding along.
+- **Responsive policy lives in `+page.svelte`** as hook functions on the graph, evaluated for
+  the live viewport at a 768px breakpoint: `hubAnchor` (card left on desktop, bottom on
+  mobile), `flowDirection` (right vs up), and `linkLengthFor` / `linkStiffnessFor` /
+  `hubLengthFor` (shorter and stiffer links on mobile so the spine does not stretch tall).
+- **Knobs** are in `GRAPH_DEFAULTS` (spring stiffness/damping, `intraSpread`, `repulsion`/
+  `repulsionRadius`, `flowStrength`/`flowRange`, `hubAnchorStiffness`/`hubAnchorDamping`, the
+  `pulse*` set, colours, label sizes). The how-to is `docs/physics/how-to/add-a-card-effect.md`.
 
 ## driftDebug() console tool
 
@@ -101,6 +132,9 @@ the protostar CLI (`protostar skills` lists what you have installed).
   does `export { default as Name } from './<name>.svelte';`.
 - **Section** has a `glass` prop (default `true`) for the translucent blurred panel; the
   hero passes `glass={false}` so the space background shows through.
+- **ProjectCard.svelte** renders a frosted-glass panel (backdrop blur/brightness over the
+  starfield) with a GitHub repo link, or a "Coming soon" note when `repo` is null. The actor
+  owns the element's transform; the component owns the look.
 - **Dark by default:** `app.html` sets `class="dark"`; `SpaceBackground` renders behind all
   routes via `+layout.svelte`. There is no in-page theme toggle.
 - **Reduced motion:** the whole animation no-ops under `prefers-reduced-motion`, and
@@ -120,13 +154,14 @@ the protostar CLI (`protostar skills` lists what you have installed).
   doesn't bank the idle gap as elapsed time. Forces (`step()`) run once per fixed substep;
   transforms and the wall-clock-timed return/warp tweens (`sync()`) run once per rendered
   frame. **Keep all the px/step tunables as-is** — they are calibrated for a 16.67ms step;
-  changing the step size silently rescales every force. See the global
-  **matter-js-dom-physics** skill's frame-rate-independence section for the rationale.
+  changing the step size silently rescales every force. See the matter-js physics skill
+  (via the protostar CLI) for the frame-rate-independence rationale.
 - **Reduced motion is a hard no-op, and `matchMedia` is read once.** Both `PhysicsStage` and
   `NudgeField` capture `prefers-reduced-motion` in their constructor and never listen for
   `change`, so toggling the OS setting needs a reload. The full no-op is defensible, but the
   premium path is a reduced variant (opacity fade-in of the hero text) rather than a static
-  jump; see the global skill's no-op-vs-reduced note before changing it.
+  jump; see the matter-js physics skill (via the protostar CLI) for the no-op-vs-reduced note
+  before changing it.
 - **No FPS-based auto-downgrade.** Nothing watches for jank on low-power devices and backs
   off; Low Power Mode is undetectable from JS, so delta-correct timing (above) is the only
   defense, not feature detection.
