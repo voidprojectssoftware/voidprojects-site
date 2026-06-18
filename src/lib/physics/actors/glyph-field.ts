@@ -1,7 +1,7 @@
 import Matter from 'matter-js';
 import type { Actor, StepCtx } from '../actor.js';
 import type { PhysicsStage } from '../stage.js';
-import { cursorPull } from '../behaviors.js';
+import { cursorPull, cursorPush, readableUprightTorque } from '../behaviors.js';
 
 const { Bodies, Body } = Matter;
 
@@ -34,6 +34,47 @@ export type GlyphConfig = {
 	mousePull: number;
 	/** Radius (px) of the cursor's influence; falls off with the square of distance. */
 	mousePullRadius: number;
+	/**
+	 * Touch "plow": how hard a dragging finger shoves the glyphs it passes through
+	 * while scrolling on a touch device. The shove is this × falloff × finger speed
+	 * (px/step), so a brisk swipe parts the letters; 0 disables. Touch only — desktop
+	 * keeps the {@link mousePull} lean.
+	 */
+	touchPush: number;
+	/** Radius (px) of the finger's plow influence; falls off with the square of distance. */
+	touchPushRadius: number;
+	/**
+	 * Docks an element tagged via {@link GlyphField.setBottomBias} to a hover spot in
+	 * the bottom-centre of the page — used for the GitHub button, which a scroll-up
+	 * swipe plows to the top of a phone where it strands in zero-g. A damped spring
+	 * eases the body toward the anchor (centre-x, {@link bottomAnchorYFrac} of the
+	 * height). It engages only once {@link GlyphField.setBottomBiasActive} is set (a
+	 * project card is on screen) and only at or below {@link bottomMaxWidth}. While
+	 * docked the body is a sensor so it slides under the card. 0 disables.
+	 */
+	bottomPullStiffness: number;
+	/** Velocity damping for the dock spring (lower = more sluggish glide into place). */
+	bottomPullDamp: number;
+	/** Vertical anchor as a fraction of viewport height (0.91 ≈ within the bottom 15%, hovering above the edge). */
+	bottomAnchorYFrac: number;
+	/** Cap on the dock spring's approach speed (px/step), so it glides in instead of snapping from across the screen. */
+	bottomMaxSpeed: number;
+	/** Max viewport width (px) at which the dock applies — mobile only. */
+	bottomMaxWidth: number;
+	/**
+	 * Readability behaviour for a {@link GlyphField.setBottomBias}-tagged glyph (the
+	 * GitHub button) while drifting, on every screen (see {@link readableUprightTorque}).
+	 * A flick spins it freely, friction scrubs the spin off, and a slight pull settles it
+	 * legible — it is never yanked backwards. {@link uprightStiffness} is that slight
+	 * pull toward the nearest upright; 0 lets it tumble forever.
+	 */
+	uprightStiffness: number;
+	/** Spin friction while turning fast — keep near 1 so a hard flick loops several times before slowing. */
+	uprightSpinFriction: number;
+	/** Firmer friction once it has slowed, so it eases to a clean stop instead of oscillating. */
+	uprightSettleFriction: number;
+	/** Spin speed (rad/step) the friction blends across, from {@link uprightSpinFriction} down to {@link uprightSettleFriction}. */
+	uprightSettleSpeed: number;
 };
 
 export const GLYPH_DEFAULTS: GlyphConfig = {
@@ -46,7 +87,18 @@ export const GLYPH_DEFAULTS: GlyphConfig = {
 	speedJitter: 0.04,
 	spinRate: 0.0025, // barely-there tumble
 	mousePull: 0.0012, // faint lean toward the cursor (px/step added per step)
-	mousePullRadius: 200 // only glyphs within this many px of the cursor are tugged
+	mousePullRadius: 200, // only glyphs within this many px of the cursor are tugged
+	touchPush: 0.024, // finger plow: × falloff × finger-speed → a real shove on a brisk swipe
+	touchPushRadius: 200, // wide reach so one scroll swipe parts the whole word, not just the letters dead-centre
+	bottomPullStiffness: 0.03, // spring easing the GitHub button into its bottom-centre hover spot (only once a card is up)
+	bottomPullDamp: 0.86, // heavy damping so it glides in with barely any overshoot
+	bottomAnchorYFrac: 0.91, // hover within the bottom ~15% of the viewport, above the very edge
+	bottomMaxSpeed: 6, // cap the glide so it doesn't snap from across the screen
+	bottomMaxWidth: 768, // phones/tablets only; desktop leaves the button to drift freely
+	uprightStiffness: 0.0022, // slight pull toward the nearest upright, too weak to fight a real spin
+	uprightSpinFriction: 0.99, // light while spinning fast: a hard flick loops several times
+	uprightSettleFriction: 0.86, // firmer once slowed, so it eases to a clean stop without oscillating
+	uprightSettleSpeed: 0.087 // ≈5°/step; above this the spin coasts, below it the friction firms up
 };
 
 /** Max random wobble (deg) added to each glyph's outward drift direction. */
@@ -164,6 +216,11 @@ export class GlyphField implements Actor {
 	private mode: Mode = 'idle';
 	private returnStart = 0;
 
+	/** Elements docked toward the bottom while drifting (see {@link GlyphConfig.bottomBias}). */
+	private readonly bottomBiasEls = new Set<HTMLElement>();
+	/** Whether the bottom dock is engaged right now (a project card is on screen). */
+	private bottomBiasActive = false;
+
 	private readonly reduceMotion: boolean;
 
 	/**
@@ -239,6 +296,27 @@ export class GlyphField implements Actor {
 	 */
 	bodyFor(el: HTMLElement): Matter.Body | null {
 		return this.drifters.find((d) => d.el === el)?.body ?? null;
+	}
+
+	/**
+	 * Tag (or untag) a registered glyph to be pulled toward the bottom of the
+	 * viewport while drifting on a narrow screen (see {@link GlyphConfig.bottomBias}).
+	 * Used for the GitHub button, which a scroll-up swipe tends to plow up to the top.
+	 */
+	setBottomBias(el: HTMLElement, on = true) {
+		if (on) this.bottomBiasEls.add(el);
+		else this.bottomBiasEls.delete(el);
+	}
+
+	/**
+	 * Engage or release the bottom dock (see {@link GlyphConfig.bottomBias}). The page
+	 * drives this from the project cards' state changes so the GitHub button is pulled
+	 * under the card only once a card is on screen, not before.
+	 */
+	setBottomBiasActive(active: boolean) {
+		if (active === this.bottomBiasActive) return;
+		this.bottomBiasActive = active;
+		this.stage?.wake();
 	}
 
 	/** Kick the bodies apart. Builds them on first call, re-impulses thereafter. */
@@ -331,11 +409,70 @@ export class GlyphField implements Actor {
 
 	step(ctx: StepCtx) {
 		if (this.mode === 'drifting') {
-			// Faint lean toward the cursor for every glyph that isn't being dragged.
-			if (ctx.pointer.active && this.cfg.mousePull > 0) {
+			const touch = ctx.touch;
+			const fingerSpeed = Math.hypot(touch.vx, touch.vy);
+			if (touch.active && this.cfg.touchPush > 0 && fingerSpeed > 0.5) {
+				// Touch: the dragging finger plows through the glyphs, shoving aside the
+				// ones it passes — so the first scroll separates the letters by hand.
+				for (const d of this.drifters) {
+					if (!d.body || d.body === ctx.draggedBody) continue;
+					cursorPush(d.body, touch, fingerSpeed, this.cfg.touchPush, this.cfg.touchPushRadius);
+				}
+			} else if (!touch.active && ctx.pointer.active && this.cfg.mousePull > 0) {
+				// Desktop: every glyph not being dragged leans faintly toward the cursor.
 				for (const d of this.drifters) {
 					if (!d.body || d.body === ctx.draggedBody) continue;
 					cursorPull(d.body, ctx.pointer, this.cfg.mousePull, this.cfg.mousePullRadius);
+				}
+			}
+
+			// The tagged glyph (the GitHub button) gets two urges while drifting. First, on
+			// every screen, the readability behaviour lets it keep spinning while friction
+			// bleeds the spin off and a slight pull settles it upright — flick it and it
+			// coasts to a readable stop, never yanked backwards. Second, only once a
+			// project card is on screen (bottomBiasActive) and only on a narrow viewport, it
+			// docks to a hover spot in the bottom-centre under the card: it turns into a
+			// sensor so it slips under the card and through the letters, then a damped spring
+			// eases it to the anchor (centre-x, bottomAnchorYFrac of the height). Grabbed, it
+			// is left to the user; off the dock it rejoins the collision world.
+			if (this.bottomBiasEls.size > 0) {
+				const dock =
+					this.bottomBiasActive &&
+					this.cfg.bottomPullStiffness > 0 &&
+					ctx.width <= this.cfg.bottomMaxWidth;
+				for (const d of this.drifters) {
+					if (!d.body || !this.bottomBiasEls.has(d.el)) continue;
+					const body = d.body;
+					if (body === ctx.draggedBody) {
+						if (body.isSensor) body.isSensor = false; // user owns it while grabbed
+						continue;
+					}
+					if (this.cfg.uprightStiffness > 0) {
+						readableUprightTorque(
+							body,
+							this.cfg.uprightStiffness,
+							this.cfg.uprightSpinFriction,
+							this.cfg.uprightSettleFriction,
+							this.cfg.uprightSettleSpeed
+						);
+					}
+					if (!dock) {
+						if (body.isSensor) body.isSensor = false; // rejoin the world
+						continue;
+					}
+					body.isSensor = true; // out of the collision world: slide under the card
+					const ax = ctx.width / 2;
+					const ay = ctx.height * this.cfg.bottomAnchorYFrac;
+					const k = this.cfg.bottomPullStiffness;
+					let vx = (body.velocity.x + (ax - body.position.x) * k) * this.cfg.bottomPullDamp;
+					let vy = (body.velocity.y + (ay - body.position.y) * k) * this.cfg.bottomPullDamp;
+					const sp = Math.hypot(vx, vy);
+					if (sp > this.cfg.bottomMaxSpeed) {
+						const scale = this.cfg.bottomMaxSpeed / sp;
+						vx *= scale;
+						vy *= scale;
+					}
+					Body.setVelocity(body, { x: vx, y: vy });
 				}
 			}
 		} else if (this.mode === 'warping' && this.warpPhase === 'pulling') {

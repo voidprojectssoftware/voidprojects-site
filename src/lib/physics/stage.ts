@@ -47,9 +47,23 @@ export class PhysicsStage {
 	/** Every body added by an actor, with whether the cursor may grab it. */
 	private readonly grabbable = new Set<Matter.Body>();
 
+	// Timed cues: "run this callback after N ms", ticked by the same frame clock as the
+	// physics (so they pause when the loop parks, advance at wall-clock rate, and never
+	// fire under reduced motion). This is the one seam for sequenced "over time" effects
+	// — a composition root schedules a few cues to play a scene out — instead of ad-hoc
+	// setTimeouts scattered around. `fireAt` is in the rAF/performance.now timebase.
+	private readonly cues: { fireAt: number; cb: () => void }[] = [];
+
 	// Pointer interaction (cursor position + grab-to-throw), all in viewport coords.
 	private readonly pointer = { x: 0, y: 0, active: false };
 	private readonly pointerVel = { x: 0, y: 0 };
+
+	// Finger drag during a touch scroll, in viewport coords. Tracked from touch
+	// events because the pointer is cancelled the instant a touch turns into a
+	// scroll, so `pointermove` stops firing. `vx`/`vy` accumulate the finger's
+	// travel within a frame and are zeroed once a solver step consumes them, so the
+	// plow force a glyph actor reads tracks real finger movement, not a stale delta.
+	private readonly touch = { x: 0, y: 0, vx: 0, vy: 0, active: false };
 	private pendingGrab: Matter.Body | null = null; // pressed a body, not yet dragging
 	private dragBody: Matter.Body | null = null; // actively dragged body
 	private readonly grabStart = { x: 0, y: 0 };
@@ -72,6 +86,12 @@ export class PhysicsStage {
 			window.addEventListener('pointerdown', this.onPointerDown, { passive: true });
 			window.addEventListener('pointerup', this.onPointerUp, { passive: true });
 			window.addEventListener('pointercancel', this.onPointerUp, { passive: true });
+			// Touch events keep firing through a scroll (the pointer does not), so they
+			// are how we follow the finger to plow the glyphs as it drags past them.
+			window.addEventListener('touchstart', this.onTouchStart, { passive: true });
+			window.addEventListener('touchmove', this.onTouchMove, { passive: true });
+			window.addEventListener('touchend', this.onTouchEnd, { passive: true });
+			window.addEventListener('touchcancel', this.onTouchEnd, { passive: true });
 			window.addEventListener('resize', this.onResize);
 			document.addEventListener('mouseleave', this.onPointerLeave, { passive: true });
 		}
@@ -130,6 +150,24 @@ export class PhysicsStage {
 		this.rafId = requestAnimationFrame(this.frame);
 	}
 
+	/**
+	 * Run `cb` after `delayMs`, timed by the stage's frame clock (not `setTimeout`), so
+	 * sequenced "over time" effects stay on the same clock as the physics: they pause
+	 * when the loop parks, advance at wall-clock rate across refresh rates, and are
+	 * inert under reduced motion. Returns a cancel function. The stage stays awake while
+	 * any cue is pending. Schedule a few of these to play out a scene.
+	 */
+	schedule(delayMs: number, cb: () => void): () => void {
+		if (this.reduceMotion) return () => {};
+		const cue = { fireAt: performance.now() + delayMs, cb };
+		this.cues.push(cue);
+		this.wake();
+		return () => {
+			const i = this.cues.indexOf(cue);
+			if (i >= 0) this.cues.splice(i, 1);
+		};
+	}
+
 	/** Drop any in-progress grab/drag without throwing. */
 	clearGrab() {
 		this.pendingGrab = null;
@@ -142,6 +180,7 @@ export class PhysicsStage {
 		if (this.rafId) cancelAnimationFrame(this.rafId);
 		this.rafId = 0;
 		this.disableDebug();
+		this.cues.length = 0;
 		for (const a of this.actors) a.dispose();
 		this.actors.length = 0;
 		this.grabbable.clear();
@@ -156,6 +195,10 @@ export class PhysicsStage {
 			window.removeEventListener('pointerdown', this.onPointerDown);
 			window.removeEventListener('pointerup', this.onPointerUp);
 			window.removeEventListener('pointercancel', this.onPointerUp);
+			window.removeEventListener('touchstart', this.onTouchStart);
+			window.removeEventListener('touchmove', this.onTouchMove);
+			window.removeEventListener('touchend', this.onTouchEnd);
+			window.removeEventListener('touchcancel', this.onTouchEnd);
 			window.removeEventListener('resize', this.onResize);
 			document.removeEventListener('mouseleave', this.onPointerLeave);
 		}
@@ -207,12 +250,17 @@ export class PhysicsStage {
 	}
 
 	private step(now: number) {
+		// Fire any scheduled cues whose time has come, on this same frame clock, before
+		// the solver runs so a cue that adds bodies/constraints takes effect this frame.
+		this.fireCues(now);
+
 		const ctx: StepCtx = {
 			now,
 			dtMs: FIXED_DT,
 			width: window.innerWidth,
 			height: window.innerHeight,
 			pointer: this.pointer,
+			touch: this.touch,
 			draggedBody: this.dragBody
 		};
 
@@ -235,12 +283,22 @@ export class PhysicsStage {
 			steps++;
 		}
 
+		// Consume the finger's travel once it has driven a solver step, so a paused
+		// finger (no fresh touchmove) stops plowing. Only clear when a step actually
+		// ran, or a high-refresh frame with no substep would discard the movement.
+		if (steps > 0) {
+			this.touch.vx = 0;
+			this.touch.vy = 0;
+		}
+
 		// Transforms (and the wall-clock-timed return/warp tweens) update once per rendered
 		// frame, so they stay smooth at the display's full refresh rate even on frames that
 		// ran zero solver steps.
 		for (const a of this.actors) a.sync(ctx);
 
-		let busy = false;
+		// Keep the loop alive while any actor is busy or a cue is still pending, so the
+		// frame clock that times the cues keeps advancing until they all fire.
+		let busy = this.cues.length > 0;
 		for (const a of this.actors) if (a.isBusy()) busy = true;
 		if (!busy) {
 			this.rafId = 0; // park until something wakes us
@@ -249,6 +307,20 @@ export class PhysicsStage {
 			return;
 		}
 		this.rafId = requestAnimationFrame(this.frame);
+	}
+
+	/**
+	 * Fire (and remove) every cue whose time has come. Due cues are snapshotted and
+	 * removed before any runs, so a callback may safely schedule or cancel cues.
+	 */
+	private fireCues(now: number) {
+		if (this.cues.length === 0) return;
+		const due = this.cues.filter((c) => now >= c.fireAt);
+		for (const c of due) {
+			const i = this.cues.indexOf(c);
+			if (i >= 0) this.cues.splice(i, 1);
+		}
+		for (const c of due) c.cb();
 	}
 
 	/** The held body tracks the cursor; its motion becomes the throw on release. */
@@ -347,6 +419,39 @@ export class PhysicsStage {
 
 	private readonly onPointerLeave = () => {
 		this.pointer.active = false;
+	};
+
+	// --- Touch tracking for the glyph "plow" -------------------------------------
+	// A finger dragging during a scroll never promotes to a grab (that needs
+	// pointermove, which the scroll cancels), so these only feed the plow force.
+
+	private readonly onTouchStart = (e: TouchEvent) => {
+		const t = e.touches[0];
+		if (!t) return;
+		this.touch.x = t.clientX;
+		this.touch.y = t.clientY;
+		this.touch.vx = 0;
+		this.touch.vy = 0;
+		this.touch.active = true;
+	};
+
+	private readonly onTouchMove = (e: TouchEvent) => {
+		const t = e.touches[0];
+		if (!t) return;
+		// Accumulate travel since the last position; the frame zeroes it once used.
+		this.touch.vx += t.clientX - this.touch.x;
+		this.touch.vy += t.clientY - this.touch.y;
+		this.touch.x = t.clientX;
+		this.touch.y = t.clientY;
+		this.touch.active = true;
+		this.wake();
+	};
+
+	private readonly onTouchEnd = (e: TouchEvent) => {
+		if (e.touches.length > 0) return; // other fingers still down
+		this.touch.active = false;
+		this.touch.vx = 0;
+		this.touch.vy = 0;
 	};
 
 	private readonly onResize = () => {

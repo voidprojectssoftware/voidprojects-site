@@ -198,13 +198,59 @@
 		return { clusters, links, hub };
 	}
 
-	if (constellationCard) {
-		constellationCard.actor.onStateChange = (state) => {
-			if (state === 'active') {
-				const spec = buildConstellationSpec();
-				if (spec) graph.activate(spec);
-			} else if (state === 'ejecting') {
-				graph.deactivate();
+	// The Constellation card's arrival is a little timed scene, played on the stage's
+	// frame clock via `stage.schedule` (one cancellable seam for "over time" effects,
+	// not stray setTimeouts): the card crashes in SOLID and bulldozes the drifting
+	// glyphs around (the chaos); when the graph forms the card stops colliding so the
+	// letters can pull into formation straight through it; once it has settled the card
+	// collides again so it has real presence in the constellation.
+	const SCENE = {
+		graphFormMs: 1100, // card has shoved the glyphs around; now the graph forms + the card opens
+		cardOpenMs: 1600 // how long the card stays non-colliding after that, so the formation settles
+	};
+	let sceneCues: Array<() => void> = []; // cancel handles for the in-flight scene
+	const clearScene = () => {
+		for (const cancel of sceneCues) cancel();
+		sceneCues = [];
+	};
+
+	// The GitHub button docks at the bottom only while a project card is on screen, so
+	// count cards in flight and toggle the dock as the first arrives / last leaves.
+	// Cards go active -> ejecting -> dormant, so count up on 'active', down on
+	// 'ejecting'. The Constellation card additionally plays its arrival scene.
+	let cardsOnScreen = 0;
+	// Latest state per card, by title — the source of truth the introspection hook
+	// (`window.driftState()`) reports, so tests assert on real state, not DOM output.
+	const cardStates: Record<string, string> = {};
+	for (const c of cards) {
+		c.actor.onStateChange = (state) => {
+			cardStates[c.title] = state;
+			if (state === 'active') cardsOnScreen++;
+			else if (state === 'ejecting') cardsOnScreen = Math.max(0, cardsOnScreen - 1);
+			glyphs.setBottomBiasActive(cardsOnScreen > 0);
+
+			if (c === constellationCard) {
+				if (state === 'active') {
+					clearScene();
+					// The card arrives solid (default) and shoves the glyphs around for a beat.
+					sceneCues = [
+						// Then the graph forms and the card opens up (non-colliding) so the letters
+						// can pull into formation through it. The spec is built at fire time, so it
+						// captures where the bodies actually scattered to.
+						stage.schedule(SCENE.graphFormMs, () => {
+							const spec = buildConstellationSpec();
+							if (spec) graph.activate(spec);
+							constellationCard.actor.setColliding(false);
+						}),
+						// Once the formation has settled, the card collides again so it has presence.
+						stage.schedule(SCENE.graphFormMs + SCENE.cardOpenMs, () =>
+							constellationCard.actor.setColliding(true)
+						)
+					];
+				} else if (state === 'ejecting') {
+					clearScene(); // left mid-scene — cancel whatever hasn't played yet
+					graph.deactivate();
+				}
 			}
 		};
 	}
@@ -277,14 +323,43 @@
 		// At rest the glyphs react to the cursor; drift takes over on scroll/warp.
 		nudgeField.enable();
 
+		// On mobile the scroll-up swipe plows the GitHub button to the top, where it
+		// strands in zero-g. Tag it so the field sinks it back toward the bottom.
+		if (githubRef) glyphs.setBottomBias(githubRef);
+
 		// Console-driven debug overlay: `driftDebug()` to show, `driftDebug(false)` to hide.
-		const w = window as typeof window & { driftDebug?: (on?: boolean) => void };
+		// `driftState()` returns a read-only snapshot of the real animation state (card
+		// states, whether the graph has formed, the GitHub dock + its rendered centre),
+		// so it can be inspected from the console and asserted on without scraping the
+		// DOM for incidental output.
+		const w = window as typeof window & {
+			driftDebug?: (on?: boolean) => void;
+			driftState?: () => unknown;
+		};
 		w.driftDebug = (on = true) => (on ? stage.enableDebug() : stage.disableDebug());
-		console.info('[drift] run driftDebug() in the console to overlay the physics wireframe');
+		w.driftState = () => {
+			const r = githubRef?.getBoundingClientRect();
+			const cardBody = constellationCard?.actor.body ?? null;
+			return {
+				cards: cards.map((c) => ({ title: c.title, state: cardStates[c.title] ?? 'dormant' })),
+				graph: { formed: graph.formed },
+				// null = no live body (dormant); otherwise whether it currently collides.
+				constellationColliding: cardBody ? !cardBody.isSensor : null,
+				dock: {
+					active: cardsOnScreen > 0,
+					buttonCenter: r ? { x: r.left + r.width / 2, y: r.top + r.height / 2 } : null
+				}
+			};
+		};
+		console.info(
+			'[drift] run driftDebug() to overlay the physics wireframe, driftState() to read state'
+		);
 
 		return () => {
 			window.removeEventListener('scroll', onScroll);
 			delete w.driftDebug;
+			delete w.driftState;
+			clearScene();
 			stage.destroy();
 			nudgeField.destroy();
 		};

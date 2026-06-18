@@ -38,7 +38,7 @@ export const CARD_DEFAULTS: Omit<CardConfig, 'threshold'> = {
 	density: 0.005, // ~5× a glyph: heavy enough to bully the title text, not get bullied
 	restitution: 0.4,
 	frictionAir: 0.018, // settles the toss within the viewport instead of drifting forever
-	launchSpeed: 15,
+	launchSpeed: 26, // fast enough that it slams up into the drifting glyphs and scatters them
 	launchSpread: 4,
 	ejectSpeed: 2,
 	ejectGravity: 0.12, // gentle sustained fall: heavy and sluggish out the bottom (terminal ~7 px/step)
@@ -91,6 +91,16 @@ export class ProjectCard implements Actor {
 	/** The live Matter body while the card is in the mess, or null while dormant. */
 	get body(): Matter.Body | null {
 		return this.body_;
+	}
+
+	/**
+	 * Toggle whether the card collides with other bodies. Off makes it a sensor, so
+	 * glyphs pass straight through it instead of being shoved aside — the composition
+	 * root uses this to let the freshly-arrived title blow past the card before it
+	 * goes solid. No-op while dormant; the eject sensor swap is independent.
+	 */
+	setColliding(on: boolean) {
+		if (this.body_) this.body_.isSensor = !on;
 	}
 
 	/** Move to a new state and notify any listener (idempotent on a no-op change). */

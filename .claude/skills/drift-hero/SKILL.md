@@ -37,7 +37,10 @@ from the TypeScript source, so read `src/lib/physics/` for exact signatures.
   one RAF loop, the single `Engine.update` per frame, pointer grab/throw, and the debug
   overlay. It knows nothing about glyphs or cards. `+page.svelte` builds one stage, `add()`s
   actors, and calls `stage.setScrollProgress(p)` once per scroll; the stage fans that to
-  every actor. The loop parks when no actor reports `isBusy()`.
+  every actor. The loop parks when no actor reports `isBusy()`. `stage.schedule(ms, cb)` runs a
+  callback later on this same frame clock (returns a cancel fn) — the one seam for sequenced
+  "over time" effects (e.g. a card's arrival scene), instead of stray `setTimeout`s; it pauses
+  with the loop and is inert under reduced motion.
 - **`Actor` (`actor.ts`)** is the contract: `mount/onScroll/step/sync/isBusy/dispose`. Frame
   order is every actor's `step()` (apply forces only — **never** call `Engine.update`, the
   stage owns it because the world is shared) → the stage's solver step → every actor's
@@ -50,20 +53,33 @@ from the TypeScript source, so read `src/lib/physics/` for exact signatures.
   can take/hand-back the same glyphs' transforms. While drifting it runs **one** pointer force per
   frame: a faint `cursorPull` lean toward the mouse, or — when a finger is down (`ctx.touch.active`)
   — a `cursorPush` plow that shoves the glyphs the finger drags through, so the first scroll swipe
-  separates the letters by hand. Tunables: `GlyphConfig` (`GLYPH_DEFAULTS`, incl. `touchPush`,
-  `touchPushRadius`) plus warp module constants (`WARP_PULL`, `WARP_TANGENT`, `WARP_DAMP`,
-  `WARP_THROAT`, `WARP_ABSORB`, `WARP_*_MS`, `SPREAD_JITTER_DEG`).
+  separates the letters by hand. `setBottomBias(el)` tags a glyph (the GitHub button): on every
+  screen `readableUprightTorque` keeps it readable while drifting — it keeps its angular momentum
+  but velocity-aware friction bleeds the spin (light while fast so a flick loops several times,
+  firmer as it slows) plus a slight `sin(angle)` pull toward the nearest upright, so a flick coasts
+  to a readable stop, never yanked backwards. `setBottomBiasActive(on)` additionally docks the same element to a
+  bottom-centre hover spot on a narrow screen — a damped spring eases it to the anchor (centre-x,
+  `bottomAnchorYFrac` of the height, within the bottom 15%), and the body turns into a sensor so it
+  slides under the card. The page drives the engage flag from the cards' state (`onStateChange`
+  count), so the button is pulled down only once a card slides in, not before. Tunables:
+  `GlyphConfig` (`GLYPH_DEFAULTS`, incl. `touchPush`, `touchPushRadius`, `bottomPullStiffness`,
+  `bottomPullDamp`, `bottomAnchorYFrac`, `bottomMaxSpeed`, `bottomMaxWidth`, `uprightStiffness`,
+  `uprightSpinFriction`, `uprightSettleFriction`, `uprightSettleSpeed`) plus warp module constants (`WARP_PULL`, `WARP_TANGENT`,
+  `WARP_DAMP`, `WARP_THROAT`, `WARP_ABSORB`, `WARP_*_MS`, `SPREAD_JITTER_DEG`).
 - **`ProjectCard` (`actors/project-card.ts`)** is one heavy, stays-upright card per instance.
   Crosses its `threshold` → tossed up from below into the mess (`uprightTorque` keeps it
   readable); scroll back below → ejected out the bottom. `register(el)` is driven by the
-  `ProjectCard.svelte` component's action. Exposes `get body()` and fires `onStateChange(state)`
-  (`dormant | active | ejecting`) so the page can hang a card-specific effect off it. Tunables:
-  `CardConfig` (`CARD_DEFAULTS`).
+  `ProjectCard.svelte` component's action. Exposes `get body()` and `setColliding(on)` (off makes
+  it a sensor so glyphs pass through), and fires `onStateChange(state)` (`dormant | active |
+ejecting`) so the page can hang a card-specific effect/scene off it. Tunables: `CardConfig`
+  (`CARD_DEFAULTS`).
 - **`RelationGraph` (`relation-graph.ts`)** is the Constellation card's effect: a generic,
   additive node-link graph over `{ body }` nodes. See the dedicated section below for topology,
   forces, the pulse, and the responsive hooks. Tunables: `GraphConfig` (`GRAPH_DEFAULTS`).
-- **`behaviors.ts`** holds the reusable per-step forces (`uprightTorque`, `cursorPull`,
-  `cursorPush`) so they aren't duplicated across actors.
+- **`behaviors.ts`** holds the reusable per-step forces (`uprightTorque`, `readableUprightTorque`,
+  `cursorPull`, `cursorPush`) so they aren't duplicated across actors. `readableUprightTorque` keeps
+  a glyph's spin but bleeds it with velocity-aware friction (light fast, firm slow) plus a slight
+  `sin(angle)` pull to upright, so a flick coasts to a readable stop without being yanked backwards.
 - **Grab/throw constants** (`DRAG_THRESHOLD`, `MAX_THROW_SPEED`, `WALL_THICKNESS`) live on
   the stage, since grab works across every actor's bodies. The stage also tracks the finger
   from `touch*` events into a separate `ctx.touch` (the pointer is cancelled the instant a touch
@@ -94,7 +110,11 @@ borrows the live glyph and card bodies, adds Matter constraints for the edges (v
 `stage.addConstraint`), draws a labeled SVG edge overlay that tracks the bodies in `sync()`,
 and never writes any node's transform (the owning actors still do, so no handoff is needed).
 `+page.svelte` wires it via `ProjectCard.onStateChange` and builds the spec with
-`glyphs.bodyFor(el)`.
+`glyphs.bodyFor(el)`. The arrival is a timed scene (via `stage.schedule`): the card crashes in
+**solid** and shoves the glyphs around, then ~1.1s later the graph forms and the card goes
+non-colliding (`setColliding(false)`) so the letters pull into formation through it, then ~1.6s
+after that the card goes solid again. The scene is cancelled as a unit if the card leaves mid-way
+(`onStateChange('ejecting')`).
 
 - **Topology (built in `+page.svelte`):** each word is a cluster of per-glyph nodes chained in
   order with a short `precedes` label (character sequence). One opt-in hub link runs from the
@@ -103,23 +123,40 @@ and never writes any node's transform (the owning actors still do, so no handoff
   left out of the spec, so it free-floats.
 - **Forces (in `RelationGraph.step()`):** edge springs (constraints), surface-based
   mass-split repulsion so the cloud fans out, a directional flow that blows the glyphs off the
-  card, and a damped spring pinning the card to its anchor. The old center-pull is off by
-  default. A periodic pulse travels the graph (card to V, down the spine, into a cycling word)
-  and shoves the nodes it passes so they wiggle and settle, with a glowing dot riding along.
+  card, a damped spring pinning the card to its anchor, and a `readableUprightTorque` on each
+  chained letter (the GitHub button's behaviour with a ±`uprightReadableDeg` (~45°) band, so the
+  words read but the letters sit at natural tilts rather than snapping dead vertical). The old
+  center-pull is off by default. A periodic pulse travels the graph (card to V, down the spine,
+  into a cycling word) and shoves the nodes it passes so they wiggle and settle, with a glowing
+  dot riding along.
 - **Responsive policy lives in `+page.svelte`** as hook functions on the graph, evaluated for
   the live viewport at a 768px breakpoint: `hubAnchor` (card left on desktop, bottom on
   mobile), `flowDirection` (right vs up), and `linkLengthFor` / `linkStiffnessFor` /
   `hubLengthFor` (shorter and stiffer links on mobile so the spine does not stretch tall).
 - **Knobs** are in `GRAPH_DEFAULTS` (spring stiffness/damping, `intraSpread`, `repulsion`/
   `repulsionRadius`, `flowStrength`/`flowRange`, `hubAnchorStiffness`/`hubAnchorDamping`, the
-  `pulse*` set, colours, label sizes). The how-to is `docs/physics/how-to/add-a-card-effect.md`.
+  `upright*` set incl. `uprightReadableDeg` for the letter readability band, the `pulse*` set,
+  colours, label sizes). The how-to is `docs/physics/how-to/add-a-card-effect.md`.
 
-## driftDebug() console tool
+## driftDebug() / driftState() console tools
 
-`+page.svelte` hangs `window.driftDebug` on mount. In the browser console run
-`driftDebug()` to show the Matter wireframe overlay, `driftDebug(false)` to hide. Bodies
-only exist while drifting/warping, so scroll a little to populate it. It does not show the
-transform-driven warp collapse (that phase is not physics).
+`+page.svelte` hangs two read hooks on `window` on mount. `driftDebug()` shows the Matter
+wireframe overlay (`driftDebug(false)` hides it); bodies only exist while drifting/warping, so
+scroll a little to populate it, and it does not show the transform-driven warp collapse (that
+phase is not physics). `driftState()` returns a read-only snapshot of the **actual** animation
+state — each card's `state`, whether the relationship `graph.formed`, and the GitHub `dock`
+(active + the button's rendered centre).
+
+**Assert on `driftState()`, not on rendered output.** When verifying timing/state changes
+(e.g. the graph forms ~900ms after the Constellation card goes active, the button docks once a
+card is up), poll `driftState()` for the source-of-truth flags rather than scraping the DOM
+(counting `svg text`, matching elements by class/text, parsing computed transforms). Those
+proxies break when rendering changes and pass on coincidental matches. Add a field to
+`driftState()` (and a small read accessor on the actor, like `RelationGraph.formed`) when you
+need to observe something new. Rendered position is the exception: `getBoundingClientRect()` on a
+known ref (e.g. `githubRef`) is itself source-of-truth, but never capture a sub-second transient
+with a screenshot taken in a _separate_ CLI call — the inter-command gap races the state; poll
+instead.
 
 To verify animation changes visually without a human, the `browser-verify` skill drives
 `playwright-cli` to start the dev server, `eval "driftDebug(true)"`, scroll, screenshot the
@@ -132,9 +169,12 @@ the protostar CLI (`protostar skills` lists what you have installed).
   does `export { default as Name } from './<name>.svelte';`.
 - **Section** has a `glass` prop (default `true`) for the translucent blurred panel; the
   hero passes `glass={false}` so the space background shows through.
-- **ProjectCard.svelte** renders a frosted-glass panel (backdrop blur/brightness over the
-  starfield) with a GitHub repo link, or a "Coming soon" note when `repo` is null. The actor
-  owns the element's transform; the component owns the look.
+- **ProjectCard.svelte** renders a frosted-glass panel that _lenses_ the starfield behind it:
+  `backdrop-filter` with light `blur` plus `brightness`/`contrast` to amplify the star points
+  (black sky stays black, so only the stars bloom). It deliberately omits `saturate` — that
+  washed the panel in the stars' blue and clashed with the neutral dark; brightness/contrast lift
+  luminance without the color cast. Carries a GitHub repo link, or a low-key "Coming soon" note
+  when `repo` is null. The actor owns the element's transform; the component owns the look.
 - **Dark by default:** `app.html` sets `class="dark"`; `SpaceBackground` renders behind all
   routes via `+layout.svelte`. There is no in-page theme toggle.
 - **Reduced motion:** the whole animation no-ops under `prefers-reduced-motion`, and

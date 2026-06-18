@@ -1,6 +1,7 @@
 import Matter from 'matter-js';
 import type { Actor, StepCtx } from './actor.js';
 import type { PhysicsStage } from './stage.js';
+import { readableUprightTorque } from './behaviors.js';
 
 const { Constraint, Body } = Matter;
 
@@ -112,6 +113,25 @@ export type GraphConfig = {
 	 * Restored to each body's original value on deactivate.
 	 */
 	memberFrictionAir: number;
+	/**
+	 * Readability for the chained letters while the graph is live (see
+	 * `readableUprightTorque`): a slight pull toward the nearest upright so the words
+	 * read, the same behaviour as the GitHub button but with a readable band. This is
+	 * that pull's strength; 0 leaves the letters to tumble.
+	 */
+	uprightStiffness: number;
+	/** Spin friction while a letter is turning fast — keep near 1 so it isn't braked hard. */
+	uprightSpinFriction: number;
+	/** Firmer friction once a letter has slowed, so it eases to a clean readable stop. */
+	uprightSettleFriction: number;
+	/** Spin speed (rad/step) the letter friction blends across. */
+	uprightSettleSpeed: number;
+	/**
+	 * Half-width (deg) of the readable band around upright. A letter is left at whatever
+	 * tilt it has within ±this (so it sits at a natural readable angle, not dead vertical);
+	 * past it the pull eases it back in. ~45 reads at a glance.
+	 */
+	uprightReadableDeg: number;
 	/** Stroke of the faint intra-cluster edges. */
 	webColor: string;
 	/** Stroke of the prominent anchor-to-hub edges. */
@@ -130,6 +150,20 @@ export type GraphConfig = {
 	intraLabelOpacity: number;
 	/** Duration (ms) of the draw-in fade when the graph activates. */
 	fadeMs: number;
+	/** Milliseconds between pulses that travel out from the hub through the graph (0 disables). */
+	pulseInterval: number;
+	/** Delay (ms) after activation before the first pulse, so the graph can settle first. */
+	pulseInitialDelay: number;
+	/** Pulse travel speed (px per fixed step). */
+	pulseSpeed: number;
+	/** Radius (px) within which the moving pulse shoves nodes aside (the wiggle). */
+	pulseRadius: number;
+	/** Push strength (px/step at its center) the pulse exerts on the nodes it passes. */
+	pulseForce: number;
+	/** Fill of the travelling pulse dot. */
+	pulseColor: string;
+	/** Radius (px) of the pulse dot. */
+	pulseDotRadius: number;
 };
 
 export const GRAPH_DEFAULTS: GraphConfig = {
@@ -150,6 +184,11 @@ export const GRAPH_DEFAULTS: GraphConfig = {
 	hubAnchorStiffness: 0.008, // subtle pull to the anchor (left on desktop, bottom on mobile)
 	hubAnchorDamping: 0.82, // bleed the card's momentum so it glides in without bouncing
 	memberFrictionAir: 0.02,
+	uprightStiffness: 0.0022, // slight pull keeping the chained letters readable (matches the GitHub button)
+	uprightSpinFriction: 0.99, // light while a letter is turning fast
+	uprightSettleFriction: 0.86, // firmer once slowed, so it eases to a clean readable stop
+	uprightSettleSpeed: 0.087, // ≈5°/step blend point between the two frictions
+	uprightReadableDeg: 45, // letters rest anywhere within ±45° of upright, not snapped dead vertical
 	webColor: 'rgba(150, 180, 255, 0.30)',
 	hubColor: 'rgba(196, 162, 255, 0.85)', // brand violet (matches the warp quasar core)
 	webWidth: 1,
@@ -158,7 +197,14 @@ export const GRAPH_DEFAULTS: GraphConfig = {
 	hubLabelSize: 17,
 	intraLabelSize: 11,
 	intraLabelOpacity: 0.6,
-	fadeMs: 600
+	fadeMs: 600,
+	pulseInterval: 2200, // gap between pulses
+	pulseInitialDelay: 1200, // let the graph settle before the first pulse
+	pulseSpeed: 13, // px per fixed step along the path
+	pulseRadius: 120, // how wide a swath the pulse jostles
+	pulseForce: 0.7, // how hard it shoves the nodes it passes
+	pulseColor: 'rgba(210, 190, 255, 0.95)', // brand-violet glow
+	pulseDotRadius: 5
 };
 
 const clamp01 = (t: number) => (t < 0 ? 0 : t > 1 ? 1 : t);
@@ -245,6 +291,23 @@ export class RelationGraph implements Actor {
 	/** Member bodies whose frictionAir we bumped, with the value to restore. */
 	private readonly damped = new Map<Matter.Body, number>();
 
+	// Pulse: a wave that travels out from the hub through the graph, shoving the
+	// nodes it passes so they wiggle and settle once it moves on. Each pulse takes a
+	// different cluster.
+	/** Each valid cluster's node bodies in order (spine order), for routing the pulse. */
+	private pulseClusters: Matter.Body[][] = [];
+	/** Which cluster the next pulse heads into (cycles). */
+	private pulseTargetIndex = 0;
+	/** The current pulse's route through the graph, or null between pulses. */
+	private pulsePath: Matter.Body[] | null = null;
+	/** Arc length the current pulse has travelled along its path. */
+	private pulseS = 0;
+	/** Timestamp the next pulse may spawn. */
+	private nextPulseAt = 0;
+	/** The travelling pulse dot, and where it is this frame. */
+	private pulseDot: SVGCircleElement | null = null;
+	private readonly pulsePoint = { x: 0, y: 0, visible: false };
+
 	constructor(config: Partial<GraphConfig> = {}) {
 		this.cfg = { ...GRAPH_DEFAULTS, ...config };
 		this.reduceMotion =
@@ -254,6 +317,11 @@ export class RelationGraph implements Actor {
 
 	mount(stage: PhysicsStage) {
 		this.stage = stage;
+	}
+
+	/** Whether the graph is currently wired up and drawn (between activate/deactivate). */
+	get formed(): boolean {
+		return this.active;
 	}
 
 	/**
@@ -275,6 +343,8 @@ export class RelationGraph implements Actor {
 		const linkStiff =
 			this.linkStiffnessFor && hasWin ? this.linkStiffnessFor(vw, vh) : this.cfg.linkStiffness;
 
+		this.pulseClusters = [];
+
 		// Each cluster's anchor body, kept by cluster index so the spine links can
 		// connect them (null for any empty cluster, whose links are skipped).
 		const anchors: (Matter.Body | null)[] = [];
@@ -292,6 +362,7 @@ export class RelationGraph implements Actor {
 				this.dampen(n.body);
 				this.nodeBodies.push(n.body);
 			}
+			this.pulseClusters.push(nodes.map((n) => n.body)); // for pulse routing
 
 			// Intra-cluster links: consecutive nodes, gathered in to a size-based rest
 			// length (not their scattered distance) so the spring actually pulls them
@@ -358,6 +429,15 @@ export class RelationGraph implements Actor {
 
 		this.active = true;
 		this.activatedAt = performance.now();
+
+		// Arm the pulse.
+		this.pulseTargetIndex = 0;
+		this.pulsePath = null;
+		this.pulseS = 0;
+		this.pulsePoint.visible = false;
+		this.nextPulseAt = this.activatedAt + this.cfg.pulseInitialDelay;
+		this.buildPulseDot();
+
 		this.stage.wake();
 	}
 
@@ -368,6 +448,10 @@ export class RelationGraph implements Actor {
 		this.edges.length = 0;
 		this.nodeBodies = [];
 		this.hubBody = null;
+		this.pulseClusters = [];
+		this.pulsePath = null;
+		this.pulseDot = null;
+		this.pulsePoint.visible = false;
 		for (const [body, frictionAir] of this.damped) body.frictionAir = frictionAir;
 		this.damped.clear();
 		this.removeSvg();
@@ -396,6 +480,23 @@ export class RelationGraph implements Actor {
 				x: (this.hubBody.velocity.x + (a.x - this.hubBody.position.x) * k) * d,
 				y: (this.hubBody.velocity.y + (a.y - this.hubBody.position.y) * k) * d
 			});
+		}
+
+		// Keep the chained letters readable: a slight pull toward the nearest upright with
+		// a ±readable-deg band, so each word reads but the letters sit at natural tilts
+		// rather than snapping dead vertical (the GitHub button's behaviour, banded).
+		if (this.cfg.uprightStiffness > 0) {
+			for (const body of this.damped.keys()) {
+				if (body === ctx.draggedBody) continue;
+				readableUprightTorque(
+					body,
+					this.cfg.uprightStiffness,
+					this.cfg.uprightSpinFriction,
+					this.cfg.uprightSettleFriction,
+					this.cfg.uprightSettleSpeed,
+					this.cfg.uprightReadableDeg
+				);
+			}
 		}
 
 		// Directional flow: push the glyph members off the hub in one direction (the
@@ -434,6 +535,9 @@ export class RelationGraph implements Actor {
 				});
 			}
 		}
+
+		// Pulse: a wave travelling out from the hub that shoves nodes as it passes.
+		this.stepPulse(ctx);
 
 		if (this.cfg.repulsion <= 0) return;
 		const nodes = this.nodeBodies;
@@ -498,6 +602,17 @@ export class RelationGraph implements Actor {
 				e.label.setAttribute('y', `${(ay + by) / 2}`);
 			}
 		}
+
+		// Draw the travelling pulse dot at its current spot (or hide it between pulses).
+		if (this.pulseDot) {
+			if (this.pulsePoint.visible) {
+				this.pulseDot.setAttribute('cx', `${this.pulsePoint.x}`);
+				this.pulseDot.setAttribute('cy', `${this.pulsePoint.y}`);
+				this.pulseDot.style.opacity = '1';
+			} else {
+				this.pulseDot.style.opacity = '0';
+			}
+		}
 	}
 
 	isBusy(): boolean {
@@ -506,6 +621,102 @@ export class RelationGraph implements Actor {
 
 	dispose() {
 		this.deactivate();
+	}
+
+	/**
+	 * Advance the pulse: spawn one when due, walk it along its path, shove the nodes
+	 * it passes (so they wiggle and settle behind it), and retire it at the end.
+	 */
+	private stepPulse(ctx: StepCtx) {
+		if (this.cfg.pulseForce <= 0 || this.cfg.pulseInterval <= 0 || this.pulseClusters.length === 0)
+			return;
+
+		// Spawn the next pulse, heading into the next cluster in turn.
+		if (!this.pulsePath && ctx.now >= this.nextPulseAt) {
+			this.pulsePath = this.buildPulsePath(this.pulseTargetIndex);
+			this.pulseTargetIndex = (this.pulseTargetIndex + 1) % this.pulseClusters.length;
+			this.pulseS = 0;
+		}
+		if (!this.pulsePath) {
+			this.pulsePoint.visible = false;
+			return;
+		}
+
+		this.pulseS += this.cfg.pulseSpeed;
+		const pt = this.pulsePointAt(this.pulsePath, this.pulseS);
+		this.pulsePoint.x = pt.x;
+		this.pulsePoint.y = pt.y;
+
+		if (pt.done) {
+			// Reached the end: retire and schedule the next.
+			this.pulsePath = null;
+			this.pulsePoint.visible = false;
+			this.nextPulseAt = ctx.now + this.cfg.pulseInterval;
+			return;
+		}
+		this.pulsePoint.visible = true;
+
+		// Shove nearby nodes away from the pulse. As it approaches then passes a node,
+		// the push direction flips, so the node bobs and then springs settle it.
+		const R = this.cfg.pulseRadius;
+		for (const body of this.damped.keys()) {
+			if (body === ctx.draggedBody) continue;
+			const dx = body.position.x - pt.x;
+			const dy = body.position.y - pt.y;
+			const dist = Math.hypot(dx, dy);
+			if (dist >= R || dist < 0.001) continue;
+			const push = this.cfg.pulseForce * (1 - dist / R);
+			Body.setVelocity(body, {
+				x: body.velocity.x + (dx / dist) * push,
+				y: body.velocity.y + (dy / dist) * push
+			});
+		}
+	}
+
+	/**
+	 * Route a pulse out from the hub, down the spine to cluster `i`, then into that
+	 * cluster's remaining nodes — following the real edges. Null if too short.
+	 */
+	private buildPulsePath(i: number): Matter.Body[] | null {
+		const path: Matter.Body[] = [];
+		if (this.hubBody) path.push(this.hubBody);
+		for (let c = 0; c <= i; c++) {
+			const cl = this.pulseClusters[c];
+			if (cl?.length) path.push(cl[0]); // spine anchor (first node of each cluster)
+		}
+		const target = this.pulseClusters[i];
+		for (let k = 1; k < target.length; k++) path.push(target[k]); // into the target word
+		return path.length >= 2 ? path : null;
+	}
+
+	/** The point at arc length `s` along a path of bodies, flagged `done` past the end. */
+	private pulsePointAt(path: Matter.Body[], s: number): { x: number; y: number; done: boolean } {
+		let remaining = s;
+		for (let i = 1; i < path.length; i++) {
+			const a = path[i - 1].position;
+			const b = path[i].position;
+			const len = Math.hypot(b.x - a.x, b.y - a.y);
+			if (len <= 0) continue;
+			if (remaining <= len) {
+				const t = remaining / len;
+				return { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t, done: false };
+			}
+			remaining -= len;
+		}
+		const last = path[path.length - 1].position;
+		return { x: last.x, y: last.y, done: true };
+	}
+
+	/** Create the glowing pulse dot on top of the edges (hidden until a pulse runs). */
+	private buildPulseDot() {
+		if (!this.group) return;
+		const dot = document.createElementNS(SVG_NS, 'circle');
+		dot.setAttribute('r', `${this.cfg.pulseDotRadius}`);
+		dot.setAttribute('fill', this.cfg.pulseColor);
+		dot.style.filter = `drop-shadow(0 0 6px ${this.cfg.pulseColor})`;
+		dot.style.opacity = '0';
+		this.group.appendChild(dot); // last child: drawn over the edges and labels
+		this.pulseDot = dot;
 	}
 
 	/** Bump a body's frictionAir for settling, remembering the original to restore. */
