@@ -7,9 +7,12 @@ description: >-
   into the GitHub button) and ProjectCards (tossed in from below on scroll, stay upright,
   eject out the bottom). Plus the separate spring-based NudgeField in $lib/nudge, the site's
   SvelteKit 5 + Tailwind 4 + shadcn-svelte conventions, the driftDebug() console tool, and
-  known build/lint gotchas. Use when working on the homepage, the drift/warp animation, the
-  project cards, the physics stage or actors, the Section / SpaceBackground /
-  ReducedMotionNotice components, or hitting the prerender and lint quirks.
+  known build/lint gotchas. Also the SpaceBackground star-field canvas render (real-sky
+  projection, the always-on RAF loop, its projection-cache/sprite-atlas/sine-LUT perf) and the
+  ScrollTimeline right-edge scroll rail (waypoints, the arrival offset, click-to-seek). Use when
+  working on the homepage, the drift/warp animation, the project cards, the physics stage or
+  actors, the star field / background, the scroll timeline, the Section / SpaceBackground /
+  ScrollTimeline / ReducedMotionNotice components, or hitting the prerender and lint quirks.
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep
 ---
 
@@ -26,7 +29,9 @@ SvelteKit 5 (runes: `$state`, `$props`, `$derived`), Tailwind v4, shadcn-svelte,
 The physics is split along two seams (see `$lib/physics/`). All framework-agnostic (no
 Svelte inside). For the general Matter-as-DOM technique (force-directed graphs, repulsion,
 the SVG edge overlay, frame-rate independence), see the matter-js physics skill available
-via the protostar CLI (`protostar skills` lists what you have installed).
+via the protostar CLI (`protostar skills` lists what you have installed). For the
+`SpaceBackground` star-field canvas render perf and the `ScrollTimeline` rail, see their
+sections below.
 For the full pattern, see the Diátaxis-organized docs under `docs/physics/`: the
 `explanation/architecture.md` (diagrams, fixed-timestep frame loop, why the nudge is a peer)
 and the `how-to/` guides (add an actor, add a peer effect). Keep them in sync with changes.
@@ -58,12 +63,13 @@ from the TypeScript source, so read `src/lib/physics/` for exact signatures.
   but velocity-aware friction bleeds the spin (light while fast so a flick loops several times,
   firmer as it slows) plus a slight `sin(angle)` pull toward the nearest upright, so a flick coasts
   to a readable stop, never yanked backwards. `setBottomBiasActive(on)` additionally docks the same element to a
-  bottom-centre hover spot on a narrow screen — a damped spring eases it to the anchor (centre-x,
+  bottom-centre hover spot on every viewport (it otherwise free-floats and snags in the glyphs and
+  cards) — a damped spring eases it to the anchor (centre-x,
   `bottomAnchorYFrac` of the height, within the bottom 15%), and the body turns into a sensor so it
-  slides under the card. The page drives the engage flag from the cards' state (`onStateChange`
+  slides under the cards. The page drives the engage flag from the cards' state (`onStateChange`
   count), so the button is pulled down only once a card slides in, not before. Tunables:
   `GlyphConfig` (`GLYPH_DEFAULTS`, incl. `touchPush`, `touchPushRadius`, `bottomPullStiffness`,
-  `bottomPullDamp`, `bottomAnchorYFrac`, `bottomMaxSpeed`, `bottomMaxWidth`, `uprightStiffness`,
+  `bottomPullDamp`, `bottomAnchorYFrac`, `bottomMaxSpeed`, `uprightStiffness`,
   `uprightSpinFriction`, `uprightSettleFriction`, `uprightSettleSpeed`) plus warp module constants (`WARP_PULL`, `WARP_TANGENT`,
   `WARP_DAMP`, `WARP_THROAT`, `WARP_ABSORB`, `WARP_*_MS`, `SPREAD_JITTER_DEG`).
 - **`ProjectCard` (`actors/project-card.ts`)** is one heavy, stays-upright card per instance.
@@ -163,6 +169,63 @@ To verify animation changes visually without a human, the `browser-verify` skill
 hero, and read the console for Matter.js errors. It is not bundled in this repo; get it via
 the protostar CLI (`protostar skills` lists what you have installed).
 
+## SpaceBackground — the star field (always-on canvas loop)
+
+`src/lib/components/space-background/space-background.svelte` renders the **real naked-eye sky**
+(~9k HYG-catalog stars) on a full-viewport `<canvas>` behind every route (mounted in
+`+layout.svelte`), dark-mode only. Each star's catalogue RA/Dec is projected through a virtual
+camera; the sky drifts in real time as Earth turns, plus a faint mouse parallax. Console:
+`skyView.list() / setVantage(i) / useMyLocation()`.
+
+It is the **one RAF loop that runs even at rest** (the physics stage and NudgeField park when
+idle), so it dominates idle CPU on a low-end device — the first place to look for a homepage perf
+win. Its per-frame cost is kept low by three things (the general technique is the canvas-2d
+render-perf skill, via the protostar CLI):
+
+- **Projection cache.** The heavy per-star trig lives in `project()`, called only every
+  `PROJECT_MS` (~100ms) — the sky drifts far slower than the frame rate. `draw()` runs every
+  frame but only adds the uniform parallax offset to the cached base positions and iterates the
+  `visible` (on-screen) subset. `projectDirty` forces a reproject on resize / vantage change /
+  catalog load.
+- **Sprite atlas.** Stars are `drawImage`'d from pre-rendered radial-gradient sprites bucketed by
+  colour (`PALETTE_N` buckets), not drawn with `beginPath`/`arc`/`fill`. This also avoids the
+  per-star `ctx.fillStyle = "rgb(...)"` colour-string reparse. Per-star brightness/twinkle rides
+  on `globalAlpha`; the bloom is baked into a halo sprite, gated to bright stars (`bloom`).
+- **Sine LUT.** Twinkle reads `SIN_LUT[(phase * TW_SCALE) & TW_MASK]` instead of `Math.sin` per
+  star per frame (power-of-two table, bitwise-mask index).
+
+Two intentional visual changes from that rework: star colour is quantized to buckets, and the
+glow is a soft baked gradient rather than a hard disc — imperceptible on the tiny background
+stars, tunable via the bucket count and the sprite gradient stops. Reduced motion / hidden tab
+draws one static frame and parks.
+
+## ScrollTimeline — the right-edge scroll rail
+
+`src/lib/components/scroll-timeline/` is a slim vertical progress rail pinned to the right edge
+that marks where each moment happens as you scroll, so the hero reads as "there's more below".
+`+page.svelte` owns the scroll math and passes `progress` (0-1, mirrored into `scrollProgress`
+state from `onScroll`), the `points`, `visible={scrolled}`, and an `onSeek` (the `seekTo` handler
+`window.scrollTo`s to a waypoint, smooth unless reduced motion). Fades in once `scrolled`;
+**desktop/tablet only** (`hidden sm:block`) — the right edge is tight on mobile and the cards dock
+bottom-centre there.
+
+- **Waypoints (`timelinePoints` in `+page.svelte`), in scroll order:** first **"The Void"** at
+  `GLYPH_DEFAULTS.driftThreshold` (where the title glyphs start drifting apart) — imported, not
+  re-typed, so it's one source of truth — then one per project at its toss `threshold` (the same
+  field drives the actor and the marker). A marker lights violet (flat, **no glow** — the glow read
+  worse) and scales up when `progress` reaches it.
+- **`arrivalOffset` is per-point.** A project's card tosses at its `threshold` but finishes flying
+  up into view a beat later, so its marker is nudged **down** a touch (`CARD_ARRIVAL_OFFSET` ~0.02)
+  so reaching the dot lines up with the card actually _appearing_, not its toss. "The Void" omits
+  the offset — its trigger (drift) is instant. The offset is per-point on the component, not one
+  global prop, exactly so the instant trigger can opt out.
+- **Sync gotcha (scroll-position vs time-based animation):** the marker is positioned by **scroll
+  fraction** but the card animates in over **time** (a physics launch), so a fixed offset is exact
+  only at one scroll speed — a fast flick outruns the card. Keep the offset small: the card is
+  visible only slightly past its threshold on a normal scroll. For exact sync, drive the lit state
+  off the card's actual on-screen presence rather than a scroll threshold (more wiring, and needs a
+  reduced-motion fallback since cards don't animate then).
+
 ## Conventions
 
 - **Components:** `src/lib/components/<name>/<name>.svelte` plus an `index.ts` barrel that
@@ -183,6 +246,21 @@ the protostar CLI (`protostar skills` lists what you have installed).
   pinned at viewport y=64 regardless of scroll. Glyph home positions are therefore
   scroll-independent, which is why `warp()` can `window.scrollTo(0, 0)` without shifting the
   restoring glyphs.
+- **Scroll → progress → behavior:** `onScroll` in `+page.svelte` maps `window.scrollY` to a
+  0-1 `progress` (`scrollY / (scrollHeight - innerHeight)`) and fans it to the stage via
+  `setScrollProgress`; the runway is a tall trailing spacer after the sticky hero (an
+  `h-1250` div at the time of writing). Key fractions: glyphs drift apart past
+  `GLYPH_DEFAULTS.driftThreshold` (~0.02), each card tosses in at its own
+  `ProjectCard.threshold` (0.3 / 0.5 / 0.7). The band between drift-start and the first card
+  is the **"limbo"** — title scattered, no card on screen yet. The page treats the two scroll
+  directions asymmetrically: scrolling **down** keeps the limbo (a beat of give before the
+  projects arrive), but scrolling **up** out of the projects (crossing below the lowest
+  `threshold`, `Math.min(...cards.map(c => c.actor.threshold))`) smooth-scrolls home to the
+  origin so the title reforms rather than stranding the user in limbo. A self-cancelling
+  `autoReturning` flag guards against re-trigger and stands down at the top (`y <= 1`) or if
+  the user reverses (`y > last.y`); the whole auto-return is skipped under reduced motion.
+  Note `window.scrollTo({behavior:'smooth'})` is interrupted by genuine user input, which is
+  what lets the reverse-cancel work.
 
 ## Known gotchas
 
@@ -214,4 +292,9 @@ the protostar CLI (`protostar skills` lists what you have installed).
 - **`core.autocrlf=true`:** prettier rewrites can show files as "modified" with an empty
   `git diff` (line-ending only). They normalize away on `git add`; check
   `git diff --cached --stat` for the real changes before committing.
+- **Tab-indented source bites multi-line edits.** Every `.ts`/`.svelte` file here indents
+  with tabs (prettier `useTabs`). A find-and-replace `old_string` that reconstructs the
+  indentation with spaces silently fails to match across multiple lines. Copy the exact tabs
+  from a fresh read of the file, or anchor on a unique single-line substring that carries no
+  leading whitespace.
 - Branch work happens on `VPW-*` feature branches (e.g. `VPW-8`), not `main`.
