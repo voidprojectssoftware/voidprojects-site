@@ -3,7 +3,7 @@ import type { PageLoad } from './$types';
 
 // Eagerly pull every post's module so we can read its frontmatter (`metadata`)
 // for the listing. Only the metadata is used here, not the rendered component,
-// so this stays cheap. The root +layout.ts already prerenders the whole site.
+// so this stays cheap. The root ++layout.ts already prerenders the whole site.
 export const load: PageLoad = () => {
 	const modules = import.meta.glob<{ metadata: PostMeta }>('/src/lib/content/blog/*.md', {
 		eager: true

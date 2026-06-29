@@ -5,7 +5,7 @@
 	let { scrolled = true }: { scrolled?: boolean } = $props();
 </script>
 
-<header class="sticky top-0 z-2 h-16 bg-transparent px-6 pt-4 sm:px-page-sm lg:px-page-lg">
+<header class="sticky top-0 z-2 h-16 bg-transparent px-6 pt-4 sm:px-page-sm lg:px-page-lg xl:px-page-xl">
 	<div class="flex flex-row items-center justify-between">
 		<div
 			class="flex flex-row items-center justify-center gap-3 transition-opacity duration-300 sm:gap-6"

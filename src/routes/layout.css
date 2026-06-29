@@ -50,7 +50,8 @@
 	--radius-4xl: calc(var(--radius) * 2.6);
 
 	--spacing-page-sm: 3rem;
-	--spacing-page-lg: 20rem;
+	--spacing-page-lg: 10rem;
+	--spacing-page-xl: 20rem;
 }
 
 :root {
