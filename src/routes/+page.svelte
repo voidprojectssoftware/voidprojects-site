@@ -6,6 +6,7 @@
 	import {
 		PhysicsStage,
 		GlyphField,
+		GLYPH_DEFAULTS,
 		ProjectCard as ProjectCardActor,
 		RelationGraph
 	} from '$lib/physics/index.js';
@@ -13,11 +14,15 @@
 	import { NudgeField } from '$lib/nudge/index.js';
 	import { ReducedMotionNotice } from '$lib/components/reduced-motion-notice/index.js';
 	import { ProjectCard } from '$lib/components/project-card/index.js';
+	import { ScrollTimeline } from '$lib/components/scroll-timeline/index.js';
 
 	let heroRef = $state<HTMLElement | null>(null);
 	let githubRef = $state<HTMLElement | null>(null);
 
 	let scrolled = $state(false);
+	// Total page-scroll progress (0-1), mirrored into state so the timeline rail can
+	// track it; the same value is fanned to the physics stage in onScroll.
+	let scrollProgress = $state(0);
 
 	const heroTitle = 'Void Projects';
 	const titleChars = [...heroTitle];
@@ -65,10 +70,12 @@
 
 	// Each card tosses in from below as scroll crosses its threshold, one after the
 	// next, and ejects back out the bottom on the way up. Distinct `class` vertical
-	// homes keep them readable (and un-stacked under reduced motion).
-	const cards = [
+	// homes keep them readable (and un-stacked under reduced motion). `threshold` is
+	// the scroll fraction the card arrives at — kept as a field so the same value
+	// drives both the actor and the scroll-timeline marker (one source of truth).
+	const cardDefs = [
 		{
-			actor: new ProjectCardActor({ threshold: 0.3 }),
+			threshold: 0.3,
 			title: 'Constellation',
 			desc: 'Transform disjointed, amorphic systems into accessible graphs of knowledge.',
 			// Private for now: the card shows "Coming soon" instead of a live repo link.
@@ -76,21 +83,43 @@
 			class: 'top-[18%]'
 		},
 		{
-			actor: new ProjectCardActor({ threshold: 0.5 }),
+			threshold: 0.5,
 			title: 'Protostar',
 			desc: 'Shareable, private, and internal agent skills that get better as you use them.',
 			repo: 'https://github.com/voidprojectssoftware/protostar-cli',
 			class: 'top-[42%]'
 		},
 		{
-			actor: new ProjectCardActor({ threshold: 0.7 }),
+			threshold: 0.7,
 			title: 'Wormhole',
 			desc: "Query a teammate's local notes in your favorite agent harness.",
 			repo: 'https://github.com/voidprojectssoftware/wormhole',
 			class: 'top-[66%]'
 		}
 	];
+	const cards = cardDefs.map((d) => ({
+		...d,
+		actor: new ProjectCardActor({ threshold: d.threshold })
+	}));
 	for (const c of cards) stage.add(c.actor);
+
+	// Cards toss in at their threshold and finish flying into view just a hair later, so
+	// nudge each marker down a touch: reaching the dot then lines up with the card
+	// actually showing up, not with the toss threshold. Kept small — the card is visible
+	// only slightly past its threshold on a normal scroll. Tune to taste.
+	const CARD_ARRIVAL_OFFSET = 0.02;
+
+	// The timeline waypoints, in scroll order: first "The Void" — where the title glyphs
+	// begin drifting apart (the glyph drift threshold), an instant trigger so it takes no
+	// arrival nudge — then one marker per project at the scroll fraction it tosses in at.
+	const timelinePoints = [
+		{ title: 'The Void', threshold: GLYPH_DEFAULTS.driftThreshold },
+		...cardDefs.map((d) => ({
+			title: d.title,
+			threshold: d.threshold,
+			arrivalOffset: CARD_ARRIVAL_OFFSET
+		}))
+	];
 
 	// Subtle cursor-repel-with-spring-back at rest. It and the drift take turns on
 	// the same glyphs: drift owns them while free-floating/warping, the nudge owns
@@ -310,12 +339,54 @@
 		});
 	}
 
+	// Jump the page to a timeline point's scroll position (a project's arrival).
+	function seekTo(threshold: number) {
+		const scrollable = document.documentElement.scrollHeight - window.innerHeight;
+		if (scrollable <= 0) return;
+		window.scrollTo({
+			top: threshold * scrollable,
+			behavior: stage.reduceMotion ? 'auto' : 'smooth'
+		});
+	}
+
 	onMount(() => {
-		const onScroll = () => {
-			scrolled = window.scrollY > 0;
+		const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+		// The scroll fraction at which the first project card tosses in. Below it sits the
+		// "limbo" zone: the title has scattered but no project is on screen yet. Scrolling
+		// down keeps that give (a beat of scattered glyphs before the projects arrive);
+		// scrolling back up past it means the projects have all left, so we glide home to
+		// the origin instead of stranding the user in the empty limbo with a broken title.
+		const firstCardThreshold = Math.min(...cards.map((c) => c.actor.threshold));
+
+		const measure = () => {
+			const y = window.scrollY;
 			const scrollable = document.documentElement.scrollHeight - window.innerHeight;
-			const progress = scrollable > 0 ? Math.max(0, Math.min(1, window.scrollY / scrollable)) : 0;
+			return { y, progress: scrollable > 0 ? Math.max(0, Math.min(1, y / scrollable)) : 0 };
+		};
+
+		let last = measure();
+		let autoReturning = false;
+
+		const onScroll = () => {
+			const { y, progress } = measure();
+			scrolled = y > 0;
+			scrollProgress = progress;
 			stage.setScrollProgress(progress);
+
+			if (!reduceMotion) {
+				if (autoReturning) {
+					// Stand down once home, or if the user pushed back down and took over.
+					if (y <= 1 || y > last.y) autoReturning = false;
+				} else if (last.progress >= firstCardThreshold && progress < firstCardThreshold) {
+					// Crossed up out of the projects: glide to the top so the title reforms at
+					// the origin rather than leaving the user in the scattered-glyph limbo.
+					autoReturning = true;
+					window.scrollTo({ top: 0, behavior: 'smooth' });
+				}
+			}
+
+			last = { y, progress };
 		};
 
 		window.addEventListener('scroll', onScroll, { passive: true });
@@ -323,8 +394,9 @@
 		// At rest the glyphs react to the cursor; drift takes over on scroll/warp.
 		nudgeField.enable();
 
-		// On mobile the scroll-up swipe plows the GitHub button to the top, where it
-		// strands in zero-g. Tag it so the field sinks it back toward the bottom.
+		// Left to drift freely the GitHub button snags in the glyphs and cards (and on
+		// mobile a scroll-up swipe plows it to the top, stranding it in zero-g). Tag it so
+		// the field docks it down at the bottom-centre, clear of the pile, once a card is up.
 		if (githubRef) glyphs.setBottomBias(githubRef);
 
 		// Console-driven debug overlay: `driftDebug()` to show, `driftDebug(false)` to hide.
@@ -457,5 +529,12 @@
 	</Section>
 	<div class="h-1250"></div>
 </main>
+
+<ScrollTimeline
+	points={timelinePoints}
+	progress={scrollProgress}
+	visible={scrolled}
+	onSeek={seekTo}
+/>
 
 <ReducedMotionNotice />

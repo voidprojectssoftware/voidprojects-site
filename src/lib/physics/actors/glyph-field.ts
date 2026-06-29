@@ -45,12 +45,12 @@ export type GlyphConfig = {
 	touchPushRadius: number;
 	/**
 	 * Docks an element tagged via {@link GlyphField.setBottomBias} to a hover spot in
-	 * the bottom-centre of the page — used for the GitHub button, which a scroll-up
-	 * swipe plows to the top of a phone where it strands in zero-g. A damped spring
-	 * eases the body toward the anchor (centre-x, {@link bottomAnchorYFrac} of the
-	 * height). It engages only once {@link GlyphField.setBottomBiasActive} is set (a
-	 * project card is on screen) and only at or below {@link bottomMaxWidth}. While
-	 * docked the body is a sensor so it slides under the card. 0 disables.
+	 * the bottom-centre of the page — used for the GitHub button, which otherwise
+	 * free-floats and snags in the drifting glyphs and cards (and on a phone gets plowed
+	 * to the top by a scroll-up swipe). A damped spring eases the body toward the anchor
+	 * (centre-x, {@link bottomAnchorYFrac} of the height). It engages only once
+	 * {@link GlyphField.setBottomBiasActive} is set (a project card is on screen). While
+	 * docked the body is a sensor so it slides under the cards. 0 disables.
 	 */
 	bottomPullStiffness: number;
 	/** Velocity damping for the dock spring (lower = more sluggish glide into place). */
@@ -59,8 +59,6 @@ export type GlyphConfig = {
 	bottomAnchorYFrac: number;
 	/** Cap on the dock spring's approach speed (px/step), so it glides in instead of snapping from across the screen. */
 	bottomMaxSpeed: number;
-	/** Max viewport width (px) at which the dock applies — mobile only. */
-	bottomMaxWidth: number;
 	/**
 	 * Readability behaviour for a {@link GlyphField.setBottomBias}-tagged glyph (the
 	 * GitHub button) while drifting, on every screen (see {@link readableUprightTorque}).
@@ -94,7 +92,6 @@ export const GLYPH_DEFAULTS: GlyphConfig = {
 	bottomPullDamp: 0.86, // heavy damping so it glides in with barely any overshoot
 	bottomAnchorYFrac: 0.91, // hover within the bottom ~15% of the viewport, above the very edge
 	bottomMaxSpeed: 6, // cap the glide so it doesn't snap from across the screen
-	bottomMaxWidth: 768, // phones/tablets only; desktop leaves the button to drift freely
 	uprightStiffness: 0.0022, // slight pull toward the nearest upright, too weak to fight a real spin
 	uprightSpinFriction: 0.99, // light while spinning fast: a hard flick loops several times
 	uprightSettleFriction: 0.86, // firmer once slowed, so it eases to a clean stop without oscillating
@@ -299,9 +296,10 @@ export class GlyphField implements Actor {
 	}
 
 	/**
-	 * Tag (or untag) a registered glyph to be pulled toward the bottom of the
-	 * viewport while drifting on a narrow screen (see {@link GlyphConfig.bottomBias}).
-	 * Used for the GitHub button, which a scroll-up swipe tends to plow up to the top.
+	 * Tag (or untag) a registered glyph to be pulled toward the bottom-centre of the
+	 * viewport while drifting (see {@link GlyphConfig.bottomPullStiffness}). Used for the
+	 * GitHub button, so it docks clear of the pile instead of snagging in the glyphs and
+	 * cards (and, on a phone, getting plowed to the top by a scroll-up swipe).
 	 */
 	setBottomBias(el: HTMLElement, on = true) {
 		if (on) this.bottomBiasEls.add(el);
@@ -430,16 +428,13 @@ export class GlyphField implements Actor {
 			// every screen, the readability behaviour lets it keep spinning while friction
 			// bleeds the spin off and a slight pull settles it upright — flick it and it
 			// coasts to a readable stop, never yanked backwards. Second, only once a
-			// project card is on screen (bottomBiasActive) and only on a narrow viewport, it
+			// project card is on screen (bottomBiasActive) it
 			// docks to a hover spot in the bottom-centre under the card: it turns into a
 			// sensor so it slips under the card and through the letters, then a damped spring
 			// eases it to the anchor (centre-x, bottomAnchorYFrac of the height). Grabbed, it
 			// is left to the user; off the dock it rejoins the collision world.
 			if (this.bottomBiasEls.size > 0) {
-				const dock =
-					this.bottomBiasActive &&
-					this.cfg.bottomPullStiffness > 0 &&
-					ctx.width <= this.cfg.bottomMaxWidth;
+				const dock = this.bottomBiasActive && this.cfg.bottomPullStiffness > 0;
 				for (const d of this.drifters) {
 					if (!d.body || !this.bottomBiasEls.has(d.el)) continue;
 					const body = d.body;

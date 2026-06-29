@@ -300,18 +300,17 @@ because `sin` repeats every turn it homes the short way and never rests inverted
 `uprightStiffness` the pull, `uprightSpinFriction` / `uprightSettleFriction` / `uprightSettleSpeed`
 the friction).
 
-One consequence of the plow: a scroll-up swipe shoves everything upward, so the GitHub button
-(which sits below the title) tends to get flung to the top of a phone and strand there in zero-g.
+Left to drift freely the GitHub button (which sits below the title) snags in the glyphs and cards;
+on a phone the plow makes it worse, a scroll-up swipe flinging it to the top to strand in zero-g.
 The field counters this by **docking** the same tagged element to a hover spot in the bottom-centre:
 a damped spring eases it toward the anchor (centre-x, `bottomAnchorYFrac` of the height, within the
-bottom 15%), gated to narrow viewports and engaged only while a project card is on screen
+bottom 15%), on every viewport and engaged only while a project card is on screen
 (`setBottomBias(el)` to tag, `setBottomBiasActive(on)` to engage; tunables
-`bottomPullStiffness`/`bottomPullDamp`/`bottomAnchorYFrac`/`bottomMaxSpeed`/`bottomMaxWidth`).
+`bottomPullStiffness`/`bottomPullDamp`/`bottomAnchorYFrac`/`bottomMaxSpeed`).
 The page tags the button and drives the engage flag from the cards' state changes (count up on
 `active`, down on `ejecting`), so the button is pulled down only once a card slides in, not before.
-While docked the body becomes a **sensor** so it slides under the card and through the letters
-instead of being blocked, then hovers centred at the anchor. Desktop leaves the button to drift
-freely (but still readability-biased).
+While docked the body becomes a **sensor** so it slides under the cards and through the letters
+instead of being blocked, then hovers centred at the anchor (still readability-biased throughout).
 
 ## Relationship graphs: additive effects over shared bodies
 

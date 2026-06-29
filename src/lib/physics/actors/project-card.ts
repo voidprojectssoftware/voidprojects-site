@@ -93,6 +93,11 @@ export class ProjectCard implements Actor {
 		return this.body_;
 	}
 
+	/** The scroll fraction at which this card tosses in (and below which it ejects). */
+	get threshold(): number {
+		return this.cfg.threshold;
+	}
+
 	/**
 	 * Toggle whether the card collides with other bodies. Off makes it a sensor, so
 	 * glyphs pass straight through it instead of being shoved aside — the composition
