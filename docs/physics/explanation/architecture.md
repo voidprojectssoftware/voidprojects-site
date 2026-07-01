@@ -55,7 +55,7 @@ flowchart TD
     subgraph physics["src/lib/physics/"]
         stage["stage.ts<br/>PhysicsStage"]
         actor["actor.ts<br/>Actor interface + COLLISION"]
-        behaviors["behaviors.ts<br/>uprightTorque, cursorPull"]
+        behaviors["behaviors.ts<br/>uprightTorque, readableUprightTorque, cursorPull, cursorPush"]
         glyph["actors/glyph-field.ts<br/>GlyphField"]
         card["actors/project-card.ts<br/>ProjectCard"]
         rgraph["relation-graph.ts<br/>RelationGraph (additive)"]
@@ -146,6 +146,25 @@ Several consequences follow, and they are the rules an actor must respect:
   way; the solver resolves them in the same step.
 
 The how-to guides restate these as a checklist at the point of action.
+
+## Timed cues: playing a scene on the frame clock
+
+Some effects play out **over time** — "the card arrives, _then_ a beat later the graph forms,
+_then_ the card goes solid." The temptation is a `setTimeout` per step, but those run on a
+different clock from the physics: they keep counting while the tab is backgrounded (where rAF is
+paused), they ignore reduced motion, and scattered across the composition root they become the
+ad-hoc eventing that this architecture works to avoid.
+
+Instead the stage exposes one seam: `stage.schedule(delayMs, cb)` returns a cancel function and
+fires `cb` from the **same frame loop** that runs the solver. So cues advance at wall-clock rate
+across refresh rates, pause exactly when the loop parks, never fire under reduced motion, and take
+effect before the solver step on the frame they land (a cue can add bodies or constraints and have
+them resolved that same frame). The stage stays awake while any cue is pending. Due cues are
+snapshotted and removed before any runs, so a callback can safely schedule or cancel further cues.
+
+A "scene" is then just a few `schedule` calls whose cancel handles are kept together and cleared
+as a unit — the Constellation card's arrival (above) is the worked example. This keeps sequenced
+behavior declarative and in one place rather than spread across stray timers.
 
 ## The coordinate model
 
@@ -251,6 +270,48 @@ even exist), it acts on a different lifecycle, and it is intentionally a cheap c
 Modelling it as a stage actor would be a worse fit, not a cleaner one. This is the template for
 any future at-rest effect; see [how to add a peer effect](../how-to/add-a-peer-effect.md).
 
+## Cursor lean vs. the touch plow: two pointer forces, one switch
+
+While drifting, the glyphs react to the pointer in one of two ways depending on the device, and
+the `GlyphField` picks exactly one per frame:
+
+- **Desktop (a mouse):** every glyph leans faintly toward the cursor (`cursorPull`). A steady,
+  tiny attraction.
+- **Touch (a finger):** the dragging finger **plows** through the glyphs, shoving aside the ones
+  it passes (`cursorPush`, a radial repel scaled by the finger's speed). So the very first scroll
+  swipe separates the letters by hand, not just by the drift's outward kick.
+
+The switch matters because of a browser quirk: once a touch becomes a scroll, the browser fires
+`pointercancel` and stops sending `pointermove`, so the pointer position goes stale mid-scroll,
+which is exactly when we want the finger. The stage therefore tracks the finger from the `touch*`
+events (which keep firing through a scroll) into a separate `touch` field on the per-frame
+context, distinct from `pointer`. Its `vx`/`vy` accumulate the finger's travel within a frame and
+are zeroed once a solver step consumes them, so a paused finger stops plowing and the push always
+reflects real movement. When `touch.active` is set the field runs the plow and skips the lean; on
+desktop `touch.active` is never set, so the lean runs as before. Tunables live in `GlyphConfig`
+(`touchPush`, `touchPushRadius`).
+
+A tagged element (the GitHub button, "Warp to Github") also stays **readable** on every screen
+while it drifts: `readableUprightTorque` lets it keep its angular momentum but bleeds it with
+velocity-aware friction (light while spinning fast so a flick loops several times, firmer as it
+slows so it eases to a clean stop), plus a slight `sin(angle)` pull toward the nearest upright. So
+a flick spins the same direction and just slows to a readable stop — never yanked backwards — and
+because `sin` repeats every turn it homes the short way and never rests inverted (tunables
+`uprightStiffness` the pull, `uprightSpinFriction` / `uprightSettleFriction` / `uprightSettleSpeed`
+the friction).
+
+Left to drift freely the GitHub button (which sits below the title) snags in the glyphs and cards;
+on a phone the plow makes it worse, a scroll-up swipe flinging it to the top to strand in zero-g.
+The field counters this by **docking** the same tagged element to a hover spot in the bottom-centre:
+a damped spring eases it toward the anchor (centre-x, `bottomAnchorYFrac` of the height, within the
+bottom 15%), on every viewport and engaged only while a project card is on screen
+(`setBottomBias(el)` to tag, `setBottomBiasActive(on)` to engage; tunables
+`bottomPullStiffness`/`bottomPullDamp`/`bottomAnchorYFrac`/`bottomMaxSpeed`).
+The page tags the button and drives the engage flag from the cards' state changes (count up on
+`active`, down on `ejecting`), so the button is pulled down only once a card slides in, not before.
+While docked the body becomes a **sensor** so it slides under the cards and through the letters
+instead of being blocked, then hovers centred at the anchor (still readability-biased throughout).
+
 ## Relationship graphs: additive effects over shared bodies
 
 The drift and the nudge are the two original axes. The relationship graph (`RelationGraph` in
@@ -269,9 +330,11 @@ Two things make it cheap and non-invasive:
 - **The links are real constraints, solved by the existing loop.** A Matter `Constraint` is a
   spring between two bodies. Added to the shared world (through `stage.addConstraint`, the same
   way bodies go through `stage.addBody`), it is resolved by the one `Engine.update` the stage
-  already runs. So "pull the letters together" is just the solver doing its job; the graph
-  applies no forces of its own in `step`. Constraints are the second kind of world membership,
-  alongside bodies.
+  already runs. So "pull the letters together" is just the solver doing its job. Constraints are
+  the second kind of world membership, alongside bodies. The graph's `step` adds only the rest of
+  a force-directed layout on top (repulsion to fan the cloud out, the directional flow off the
+  card, the travelling pulse, and a `readableUprightTorque` keeping each letter legible within a
+  ±45° band) — never a transform.
 - **It never owns a transform.** The glyph and card actors still write their own elements'
   transforms from the same bodies every frame. The graph only adds the springs (which move the
   bodies) and draws the edges (an SVG overlay whose line endpoints track the live body
@@ -282,6 +345,15 @@ The trigger is the same decoupled-callback pattern as the nudge handoff, one lev
 announces its state changes through `onStateChange`; the composition root listens and activates
 or deactivates the graph. The card knows nothing about the graph, and the graph knows nothing
 about cards.
+
+The card's arrival is a small timed **scene**, not a single instant. The composition root plays
+it out with `stage.schedule` (see [timed cues](#timed-cues-playing-a-scene-on-the-frame-clock)):
+the card crashes in **solid** and bulldozes the drifting glyphs around (the chaos); when the
+graph forms it goes **non-colliding** (a sensor, via `ProjectCard.setColliding(false)`) so the
+letters can pull into formation straight through it (the spec is built when that cue fires, so it
+captures where the bodies actually scattered to); once the formation has settled the card goes
+**solid** again so it has real presence in the constellation. The whole scene is cancelled as a
+unit if the card leaves mid-way (`ejecting`) or on unmount, so a half-played sequence never lands.
 
 ```mermaid
 sequenceDiagram

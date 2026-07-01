@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { TriangleAlert, X } from '@lucide/svelte';
-	import { Card } from '$lib/components/shadcn/ui/card/index.js';
 
 	let {
 		docsUrl = 'https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-reduced-motion'
@@ -22,12 +21,12 @@
 </script>
 
 {#if show}
-	<Card
+	<div
 		role="status"
-		class="fixed right-4 bottom-4 z-2 max-w-sm flex-row items-start gap-3 p-4 shadow-lg"
+		class="fixed right-4 bottom-4 z-2 flex max-w-sm items-start gap-3 rounded-xl border bg-card p-4 text-card-foreground shadow-lg"
 	>
 		<TriangleAlert size={20} class="mt-0.5 shrink-0 text-primary" />
-		<div class="flex flex-col gap-1">
+		<div class="flex flex-col gap-1 text-sm">
 			<p class="font-medium">Animations are turned off</p>
 			<p class="text-muted-foreground">
 				Your system has reduced motion enabled, so our cool animations won't be visible :(
@@ -48,5 +47,5 @@
 		>
 			<X size={16} />
 		</button>
-	</Card>
+	</div>
 {/if}

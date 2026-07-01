@@ -70,7 +70,29 @@
 </div>
 
 <style>
+	/* Glass body: a faint rim of light and a soft drop shadow give it just enough
+	   edge to read as a solid pane over the stars, no gradient fill. */
+	.panel {
+		box-shadow:
+			inset 0 1px 0 0 oklch(1 0 0 / 0.08),
+			inset 0 0 0 1px oklch(1 0 0 / 0.07),
+			0 16px 36px -20px oklch(0 0 0 / 0.65);
+		transition:
+			transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+			box-shadow 0.4s ease;
+	}
+
+	/* A gentle lift and a touch of violet on the rim when hovered. */
+	.card:hover .panel {
+		transform: translateY(-2px);
+		box-shadow:
+			inset 0 1px 0 0 oklch(1 0 0 / 0.12),
+			inset 0 0 0 1px oklch(0.6534 0.1876 301.62 / 0.22),
+			0 20px 44px -20px oklch(0 0 0 / 0.7);
+	}
+
 	@media (prefers-reduced-motion: reduce) {
+		.panel,
 		a {
 			transition: none;
 		}

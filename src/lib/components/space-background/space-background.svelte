@@ -66,11 +66,15 @@
 		ra: number; // hours
 		sinDec: number;
 		cosDec: number;
-		size: number;
 		alpha: number;
-		fill: string; // "rgb(r,g,b)"
 		twPhase: number;
 		twSpeed: number;
+		bucket: number; // index into the pre-rendered colour-sprite palette
+		coreD: number; // core sprite draw diameter (px)
+		haloD: number; // bloom sprite draw diameter (px)
+		bloom: boolean; // bright enough to warrant the halo pass
+		bx: number; // cached projected screen x, before parallax (refreshed off the hot path)
+		by: number;
 	};
 
 	const DEG = Math.PI / 180;
@@ -87,6 +91,12 @@
 		let raf = 0;
 		let running = false;
 
+		// Projection cache state: the on-screen star subset and when it was last
+		// reprojected. Marked dirty on resize / vantage change to reproject at once.
+		let visible: Star[] = [];
+		let lastProjectAt = 0;
+		let projectDirty = true;
+
 		// active observer location + cached trig
 		let location = CONFIG.vantages[CONFIG.defaultVantage];
 		let sinLat = Math.sin(location.lat * DEG);
@@ -95,6 +105,7 @@
 			location = loc;
 			sinLat = Math.sin(loc.lat * DEG);
 			cosLat = Math.cos(loc.lat * DEG);
+			projectDirty = true; // observer moved — reproject every star next frame
 		};
 
 		// real (or sped-up) clock
@@ -112,6 +123,60 @@
 		// Filled asynchronously from the binary catalogue so it never blocks paint.
 		let stars: Star[] = [];
 
+		// --- Render scaffolding: sprite atlas, sine LUT, projection cadence --------
+		// Stars are blitted from a small pre-rendered sprite instead of building an
+		// arc path (and parsing a fillStyle string) per star each frame — far cheaper,
+		// and the soft glow is baked in. One sprite per quantized colour bucket;
+		// brightness and twinkle ride on globalAlpha so the sprite itself never changes.
+		const SPRITE_PX = 64; // native sprite resolution; downscaled per star
+		const PALETTE_N = 24; // colour buckets across the B-V range
+		const CORE_K = 2.5; // core sprite draw diameter = star size × this
+		const HALO_K = 4.8; // halo (bloom) sprite draw diameter = star size × this
+		const BLOOM_MIN = 1.7; // star size above which the halo pass runs (matches the old cutoff)
+		const PROJECT_MS = 100; // reproject the (slowly drifting) sky at most this often
+
+		const makeSprite = (rgb: string, halo: boolean): HTMLCanvasElement => {
+			const c = document.createElement('canvas');
+			c.width = c.height = SPRITE_PX;
+			const g = c.getContext('2d')!;
+			const r = SPRITE_PX / 2;
+			const grad = g.createRadialGradient(r, r, 0, r, r, r);
+			if (halo) {
+				// Soft glow: bright centre easing to nothing at the edge.
+				grad.addColorStop(0, `rgba(${rgb},0.9)`);
+				grad.addColorStop(0.5, `rgba(${rgb},0.5)`);
+				grad.addColorStop(1, `rgba(${rgb},0)`);
+			} else {
+				// Crisp dot: solid core with a thin anti-aliased edge.
+				grad.addColorStop(0, `rgba(${rgb},1)`);
+				grad.addColorStop(0.8, `rgba(${rgb},1)`);
+				grad.addColorStop(1, `rgba(${rgb},0)`);
+			}
+			g.fillStyle = grad;
+			g.fillRect(0, 0, SPRITE_PX, SPRITE_PX);
+			return c;
+		};
+
+		const coreSprites: HTMLCanvasElement[] = [];
+		const haloSprites: HTMLCanvasElement[] = [];
+		for (let k = 0; k < PALETTE_N; k++) {
+			const rgb = ciToRgb((k / (PALETTE_N - 1)) * 2.4 - 0.4); // span the B-V range
+			coreSprites[k] = makeSprite(rgb, false);
+			haloSprites[k] = makeSprite(rgb, true);
+		}
+		const ciBucket = (ci: number) => {
+			const k = Math.round(((ci + 0.4) / 2.4) * (PALETTE_N - 1));
+			return k < 0 ? 0 : k > PALETTE_N - 1 ? PALETTE_N - 1 : k;
+		};
+
+		// Twinkle reads a sine lookup table instead of calling Math.sin per star per
+		// frame. Power-of-two size so the phase wraps with a cheap bitwise mask.
+		const TW_N = 1024;
+		const TW_MASK = TW_N - 1;
+		const TW_SCALE = TW_N / (Math.PI * 2);
+		const SIN_LUT = new Float32Array(TW_N);
+		for (let i = 0; i < TW_N; i++) SIN_LUT[i] = Math.sin((i / TW_N) * Math.PI * 2);
+
 		// Fetch + decode the binary catalogue (format shared with the generator via
 		// catalog-format.js), then turn each star into a ready-to-draw record.
 		const loadCatalog = async () => {
@@ -128,18 +193,24 @@
 				if (c.mag > CONFIG.magLimit) continue;
 				const dec = c.dec * DEG;
 				const m = CONFIG.magLimit - c.mag; // 0 (faint) .. ~8 (brightest)
+				const size = CONFIG.sizeBase + m * CONFIG.sizePerMag;
 				next.push({
 					ra: c.ra,
 					sinDec: Math.sin(dec),
 					cosDec: Math.cos(dec),
-					size: CONFIG.sizeBase + m * CONFIG.sizePerMag,
 					alpha: Math.min(0.97, CONFIG.alphaFloor + (m / 8) * 0.82),
-					fill: `rgb(${ciToRgb(c.ci)})`,
 					twPhase: Math.random() * Math.PI * 2,
-					twSpeed: 0.4 + Math.random() * 1.4
+					twSpeed: 0.4 + Math.random() * 1.4,
+					bucket: ciBucket(c.ci),
+					coreD: size * CORE_K,
+					haloD: size * HALO_K,
+					bloom: size > BLOOM_MIN,
+					bx: 0,
+					by: 0
 				});
 			}
 			stars = next;
+			projectDirty = true; // new star set — project it before the next draw
 			sync();
 		};
 
@@ -151,17 +222,15 @@
 			canvas.style.width = `${w}px`;
 			canvas.style.height = `${h}px`;
 			ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+			projectDirty = true; // viewport changed — scale/centre moved, reproject
 		};
 
-		const draw = (now: number) => {
-			if (!startPerf) startPerf = now;
-			ctx.clearRect(0, 0, w, h);
-
-			px += (targetX - px) * 0.04;
-			py += (targetY - py) * 0.04;
-			const offX = px * CONFIG.parallax;
-			const offY = py * CONFIG.parallax;
-
+		// Reproject every star to its base (pre-parallax) screen position. This is the
+		// heavy trig; the sky drifts far slower than the frame rate, so the draw loop
+		// only calls this every PROJECT_MS, then reuses `visible` (the on-screen subset)
+		// across the frames in between. Parallax is a uniform offset applied per frame,
+		// so it doesn't need a reprojection.
+		const project = (now: number) => {
 			// local sidereal time for the current (optionally sped-up) instant
 			const date = new Date(epoch + (now - startPerf) * CONFIG.timeScale);
 			const lst = lstHours(date, location.lon);
@@ -184,8 +253,8 @@
 			const scale = Math.max(w, h) / 2 / Math.tan((CONFIG.fov / 2) * DEG);
 			const cx = w / 2;
 			const cy = h / 2;
-			const twAmt = CONFIG.twinkle;
 
+			visible.length = 0;
 			for (const s of stars) {
 				const ha = (lst - s.ra) * 15 * DEG; // hour angle
 				const cosDcosH = s.cosDec * Math.cos(ha);
@@ -201,28 +270,54 @@
 
 				const xf = n * rN + e * rE;
 				const yf = n * uN + e * uE + u * uU;
-				const sx = cx + (xf / zf) * scale + offX;
-				const sy = cy - (yf / zf) * scale + offY;
+				const sx = cx + (xf / zf) * scale;
+				const sy = cy - (yf / zf) * scale;
+				// Cull on the base position; the parallax offset (≤ a few px) stays well
+				// inside this 40px margin, so nothing pops at the edges between reprojections.
 				if (sx < -40 || sx > w + 40 || sy < -40 || sy > h + 40) continue;
 
+				s.bx = sx;
+				s.by = sy;
+				visible.push(s);
+			}
+
+			lastProjectAt = now;
+			projectDirty = false;
+		};
+
+		const draw = (now: number) => {
+			if (!startPerf) startPerf = now;
+			ctx.clearRect(0, 0, w, h);
+
+			px += (targetX - px) * 0.04;
+			py += (targetY - py) * 0.04;
+			const offX = px * CONFIG.parallax;
+			const offY = py * CONFIG.parallax;
+
+			if (projectDirty || now - lastProjectAt >= PROJECT_MS) project(now);
+
+			const twAmt = CONFIG.twinkle;
+			const twPhase = now * 0.001;
+			for (const s of visible) {
 				const tw = reduce
 					? 1
-					: 1 - twAmt + twAmt * (0.5 + 0.5 * Math.sin(now * 0.001 * s.twSpeed + s.twPhase));
+					: 1 -
+						twAmt +
+						twAmt * (0.5 + 0.5 * SIN_LUT[((s.twPhase + twPhase * s.twSpeed) * TW_SCALE) & TW_MASK]);
 
-				// faint bloom on the brightest few
-				if (s.size > 1.7) {
+				const x = s.bx + offX;
+				const y = s.by + offY;
+
+				// faint bloom on the brightest few, drawn under the core
+				if (s.bloom) {
 					ctx.globalAlpha = s.alpha * tw * 0.18;
-					ctx.fillStyle = s.fill;
-					ctx.beginPath();
-					ctx.arc(sx, sy, s.size * 2.4, 0, Math.PI * 2);
-					ctx.fill();
+					const hd = s.haloD;
+					ctx.drawImage(haloSprites[s.bucket], x - hd / 2, y - hd / 2, hd, hd);
 				}
 
 				ctx.globalAlpha = s.alpha * tw;
-				ctx.fillStyle = s.fill;
-				ctx.beginPath();
-				ctx.arc(sx, sy, s.size, 0, Math.PI * 2);
-				ctx.fill();
+				const cd = s.coreD;
+				ctx.drawImage(coreSprites[s.bucket], x - cd / 2, y - cd / 2, cd, cd);
 			}
 
 			ctx.globalAlpha = 1;

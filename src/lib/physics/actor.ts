@@ -29,6 +29,14 @@ export type StepCtx = {
 	height: number;
 	/** Cursor position + whether the pointer is currently over the page. */
 	pointer: { x: number; y: number; active: boolean };
+	/**
+	 * Finger drag while touch-scrolling: position, the finger's travel this frame
+	 * (`vx`/`vy`, px/step, zeroed once consumed), and whether a finger is down. The
+	 * browser fires `pointercancel` and stops `pointermove` once a touch becomes a
+	 * scroll, so this is the only live finger signal during a scroll — it drives the
+	 * touch "plow" that shoves glyphs aside as the finger passes through them.
+	 */
+	touch: { x: number; y: number; vx: number; vy: number; active: boolean };
 	/** The body the stage is currently dragging, so actors skip it in their own forces. */
 	draggedBody: Matter.Body | null;
 };

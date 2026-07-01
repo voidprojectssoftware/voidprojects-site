@@ -1,11 +1,12 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { Button } from '$lib/components/shadcn/ui/button/index.js';
-	import { Section } from '$lib/components/voidprojects/section/index.js';
+	import { Section } from '$lib/components/section/index.js';
 	import { ChevronDown } from '@lucide/svelte';
 	import {
 		PhysicsStage,
 		GlyphField,
+		GLYPH_DEFAULTS,
 		ProjectCard as ProjectCardActor,
 		RelationGraph
 	} from '$lib/physics/index.js';
@@ -13,12 +14,15 @@
 	import { NudgeField } from '$lib/nudge/index.js';
 	import { ReducedMotionNotice } from '$lib/components/reduced-motion-notice/index.js';
 	import { ProjectCard } from '$lib/components/project-card/index.js';
-	import { SiteHeader } from '$lib/components/site-header/index.js';
+	import { ScrollTimeline } from '$lib/components/scroll-timeline/index.js';
 
 	let heroRef = $state<HTMLElement | null>(null);
 	let githubRef = $state<HTMLElement | null>(null);
 
 	let scrolled = $state(false);
+	// Total page-scroll progress (0-1), mirrored into state so the timeline rail can
+	// track it; the same value is fanned to the physics stage in onScroll.
+	let scrollProgress = $state(0);
 
 	const heroTitle = 'Void Projects';
 	const titleChars = [...heroTitle];
@@ -66,10 +70,12 @@
 
 	// Each card tosses in from below as scroll crosses its threshold, one after the
 	// next, and ejects back out the bottom on the way up. Distinct `class` vertical
-	// homes keep them readable (and un-stacked under reduced motion).
-	const cards = [
+	// homes keep them readable (and un-stacked under reduced motion). `threshold` is
+	// the scroll fraction the card arrives at — kept as a field so the same value
+	// drives both the actor and the scroll-timeline marker (one source of truth).
+	const cardDefs = [
 		{
-			actor: new ProjectCardActor({ threshold: 0.3 }),
+			threshold: 0.3,
 			title: 'Constellation',
 			desc: 'Transform disjointed, amorphic systems into accessible graphs of knowledge.',
 			// Private for now: the card shows "Coming soon" instead of a live repo link.
@@ -77,21 +83,43 @@
 			class: 'top-[18%]'
 		},
 		{
-			actor: new ProjectCardActor({ threshold: 0.5 }),
+			threshold: 0.5,
 			title: 'Protostar',
 			desc: 'Shareable, private, and internal agent skills that get better as you use them.',
 			repo: 'https://github.com/voidprojectssoftware/protostar-cli',
 			class: 'top-[42%]'
 		},
 		{
-			actor: new ProjectCardActor({ threshold: 0.7 }),
+			threshold: 0.7,
 			title: 'Wormhole',
 			desc: "Query a teammate's local notes in your favorite agent harness.",
 			repo: 'https://github.com/voidprojectssoftware/wormhole',
 			class: 'top-[66%]'
 		}
 	];
+	const cards = cardDefs.map((d) => ({
+		...d,
+		actor: new ProjectCardActor({ threshold: d.threshold })
+	}));
 	for (const c of cards) stage.add(c.actor);
+
+	// Cards toss in at their threshold and finish flying into view just a hair later, so
+	// nudge each marker down a touch: reaching the dot then lines up with the card
+	// actually showing up, not with the toss threshold. Kept small — the card is visible
+	// only slightly past its threshold on a normal scroll. Tune to taste.
+	const CARD_ARRIVAL_OFFSET = 0.02;
+
+	// The timeline waypoints, in scroll order: first "The Void" — where the title glyphs
+	// begin drifting apart (the glyph drift threshold), an instant trigger so it takes no
+	// arrival nudge — then one marker per project at the scroll fraction it tosses in at.
+	const timelinePoints = [
+		{ title: 'The Void', threshold: GLYPH_DEFAULTS.driftThreshold },
+		...cardDefs.map((d) => ({
+			title: d.title,
+			threshold: d.threshold,
+			arrivalOffset: CARD_ARRIVAL_OFFSET
+		}))
+	];
 
 	// Subtle cursor-repel-with-spring-back at rest. It and the drift take turns on
 	// the same glyphs: drift owns them while free-floating/warping, the nudge owns
@@ -199,13 +227,59 @@
 		return { clusters, links, hub };
 	}
 
-	if (constellationCard) {
-		constellationCard.actor.onStateChange = (state) => {
-			if (state === 'active') {
-				const spec = buildConstellationSpec();
-				if (spec) graph.activate(spec);
-			} else if (state === 'ejecting') {
-				graph.deactivate();
+	// The Constellation card's arrival is a little timed scene, played on the stage's
+	// frame clock via `stage.schedule` (one cancellable seam for "over time" effects,
+	// not stray setTimeouts): the card crashes in SOLID and bulldozes the drifting
+	// glyphs around (the chaos); when the graph forms the card stops colliding so the
+	// letters can pull into formation straight through it; once it has settled the card
+	// collides again so it has real presence in the constellation.
+	const SCENE = {
+		graphFormMs: 1100, // card has shoved the glyphs around; now the graph forms + the card opens
+		cardOpenMs: 1600 // how long the card stays non-colliding after that, so the formation settles
+	};
+	let sceneCues: Array<() => void> = []; // cancel handles for the in-flight scene
+	const clearScene = () => {
+		for (const cancel of sceneCues) cancel();
+		sceneCues = [];
+	};
+
+	// The GitHub button docks at the bottom only while a project card is on screen, so
+	// count cards in flight and toggle the dock as the first arrives / last leaves.
+	// Cards go active -> ejecting -> dormant, so count up on 'active', down on
+	// 'ejecting'. The Constellation card additionally plays its arrival scene.
+	let cardsOnScreen = 0;
+	// Latest state per card, by title — the source of truth the introspection hook
+	// (`window.driftState()`) reports, so tests assert on real state, not DOM output.
+	const cardStates: Record<string, string> = {};
+	for (const c of cards) {
+		c.actor.onStateChange = (state) => {
+			cardStates[c.title] = state;
+			if (state === 'active') cardsOnScreen++;
+			else if (state === 'ejecting') cardsOnScreen = Math.max(0, cardsOnScreen - 1);
+			glyphs.setBottomBiasActive(cardsOnScreen > 0);
+
+			if (c === constellationCard) {
+				if (state === 'active') {
+					clearScene();
+					// The card arrives solid (default) and shoves the glyphs around for a beat.
+					sceneCues = [
+						// Then the graph forms and the card opens up (non-colliding) so the letters
+						// can pull into formation through it. The spec is built at fire time, so it
+						// captures where the bodies actually scattered to.
+						stage.schedule(SCENE.graphFormMs, () => {
+							const spec = buildConstellationSpec();
+							if (spec) graph.activate(spec);
+							constellationCard.actor.setColliding(false);
+						}),
+						// Once the formation has settled, the card collides again so it has presence.
+						stage.schedule(SCENE.graphFormMs + SCENE.cardOpenMs, () =>
+							constellationCard.actor.setColliding(true)
+						)
+					];
+				} else if (state === 'ejecting') {
+					clearScene(); // left mid-scene — cancel whatever hasn't played yet
+					graph.deactivate();
+				}
 			}
 		};
 	}
@@ -265,12 +339,54 @@
 		});
 	}
 
+	// Jump the page to a timeline point's scroll position (a project's arrival).
+	function seekTo(threshold: number) {
+		const scrollable = document.documentElement.scrollHeight - window.innerHeight;
+		if (scrollable <= 0) return;
+		window.scrollTo({
+			top: threshold * scrollable,
+			behavior: stage.reduceMotion ? 'auto' : 'smooth'
+		});
+	}
+
 	onMount(() => {
-		const onScroll = () => {
-			scrolled = window.scrollY > 0;
+		const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+		// The scroll fraction at which the first project card tosses in. Below it sits the
+		// "limbo" zone: the title has scattered but no project is on screen yet. Scrolling
+		// down keeps that give (a beat of scattered glyphs before the projects arrive);
+		// scrolling back up past it means the projects have all left, so we glide home to
+		// the origin instead of stranding the user in the empty limbo with a broken title.
+		const firstCardThreshold = Math.min(...cards.map((c) => c.actor.threshold));
+
+		const measure = () => {
+			const y = window.scrollY;
 			const scrollable = document.documentElement.scrollHeight - window.innerHeight;
-			const progress = scrollable > 0 ? Math.max(0, Math.min(1, window.scrollY / scrollable)) : 0;
+			return { y, progress: scrollable > 0 ? Math.max(0, Math.min(1, y / scrollable)) : 0 };
+		};
+
+		let last = measure();
+		let autoReturning = false;
+
+		const onScroll = () => {
+			const { y, progress } = measure();
+			scrolled = y > 0;
+			scrollProgress = progress;
 			stage.setScrollProgress(progress);
+
+			if (!reduceMotion) {
+				if (autoReturning) {
+					// Stand down once home, or if the user pushed back down and took over.
+					if (y <= 1 || y > last.y) autoReturning = false;
+				} else if (last.progress >= firstCardThreshold && progress < firstCardThreshold) {
+					// Crossed up out of the projects: glide to the top so the title reforms at
+					// the origin rather than leaving the user in the scattered-glyph limbo.
+					autoReturning = true;
+					window.scrollTo({ top: 0, behavior: 'smooth' });
+				}
+			}
+
+			last = { y, progress };
 		};
 
 		window.addEventListener('scroll', onScroll, { passive: true });
@@ -278,21 +394,66 @@
 		// At rest the glyphs react to the cursor; drift takes over on scroll/warp.
 		nudgeField.enable();
 
+		// Left to drift freely the GitHub button snags in the glyphs and cards (and on
+		// mobile a scroll-up swipe plows it to the top, stranding it in zero-g). Tag it so
+		// the field docks it down at the bottom-centre, clear of the pile, once a card is up.
+		if (githubRef) glyphs.setBottomBias(githubRef);
+
 		// Console-driven debug overlay: `driftDebug()` to show, `driftDebug(false)` to hide.
-		const w = window as typeof window & { driftDebug?: (on?: boolean) => void };
+		// `driftState()` returns a read-only snapshot of the real animation state (card
+		// states, whether the graph has formed, the GitHub dock + its rendered centre),
+		// so it can be inspected from the console and asserted on without scraping the
+		// DOM for incidental output.
+		const w = window as typeof window & {
+			driftDebug?: (on?: boolean) => void;
+			driftState?: () => unknown;
+		};
 		w.driftDebug = (on = true) => (on ? stage.enableDebug() : stage.disableDebug());
-		console.info('[drift] run driftDebug() in the console to overlay the physics wireframe');
+		w.driftState = () => {
+			const r = githubRef?.getBoundingClientRect();
+			const cardBody = constellationCard?.actor.body ?? null;
+			return {
+				cards: cards.map((c) => ({ title: c.title, state: cardStates[c.title] ?? 'dormant' })),
+				graph: { formed: graph.formed },
+				// null = no live body (dormant); otherwise whether it currently collides.
+				constellationColliding: cardBody ? !cardBody.isSensor : null,
+				dock: {
+					active: cardsOnScreen > 0,
+					buttonCenter: r ? { x: r.left + r.width / 2, y: r.top + r.height / 2 } : null
+				}
+			};
+		};
+		console.info(
+			'[drift] run driftDebug() to overlay the physics wireframe, driftState() to read state'
+		);
 
 		return () => {
 			window.removeEventListener('scroll', onScroll);
 			delete w.driftDebug;
+			delete w.driftState;
+			clearScene();
 			stage.destroy();
 			nudgeField.destroy();
 		};
 	});
 </script>
 
-<SiteHeader {scrolled} />
+<header class="sticky top-0 z-2 h-16 bg-transparent px-6 pt-4 sm:px-12 lg:px-35">
+	<div class="flex flex-row items-center justify-between">
+		<div
+			class="flex flex-row items-center justify-center gap-3 transition-opacity duration-300 sm:gap-6"
+			class:opacity-0={!scrolled}
+			class:pointer-events-none={!scrolled}
+			aria-hidden={!scrolled}
+		>
+			<span class="text-base font-bold whitespace-nowrap sm:text-xl">Void Projects</span>
+			<a href="/blog" class="text-base whitespace-nowrap hover:opacity-60 sm:text-lg">Blog</a>
+			<a href="/team" class="text-base whitespace-nowrap hover:opacity-60 sm:text-lg"
+				>Meet The Team</a
+			>
+		</div>
+	</div>
+</header>
 <main class="flex flex-col">
 	<Section
 		bind:ref={heroRef}
@@ -368,5 +529,12 @@
 	</Section>
 	<div class="h-1250"></div>
 </main>
+
+<ScrollTimeline
+	points={timelinePoints}
+	progress={scrollProgress}
+	visible={scrolled}
+	onSeek={seekTo}
+/>
 
 <ReducedMotionNotice />
