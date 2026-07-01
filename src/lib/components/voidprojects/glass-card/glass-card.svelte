@@ -1,16 +1,26 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import { Card } from '$lib/components/shadcn/ui/card';
+	import type { WithElementRef } from '$lib/utils';
+	import type { HTMLAttributes } from 'svelte/elements';
 
 	// The site's "frosted glass" card look, shared by anything that should read as
 	// a pane of glass over whatever's behind it (the floating ProjectCard, the
 	// blog Post card): a translucent, blurred body with a faint rim of light and a
 	// soft drop shadow, lifting and picking up a touch of brand violet on hover.
 	// Layout (width, padding, position) is left to the consumer via `class`.
-	let { class: className = '', children }: { class?: string; children?: Snippet } = $props();
+	let {
+		class: className = '',
+		children,
+		...restProps
+	}: WithElementRef<HTMLAttributes<HTMLDivElement>> & {
+		class?: string;
+		children?: Snippet;
+	} = $props();
 </script>
 
 <Card
+	{...restProps}
 	class="glass-panel relative gap-2 bg-background/8 shadow-none ring-0 backdrop-blur-[2px] backdrop-brightness-[2.1] backdrop-contrast-[1.3] {className}"
 >
 	{@render children?.()}

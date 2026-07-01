@@ -14,13 +14,7 @@
 	<meta name="description" content={data.meta.description} />
 </svelte:head>
 
-<SiteHeader />
-<Section class="min-h-[calc(100dvh-4rem)]">
-	<a
-		href="/blog"
-		class="inline-flex items-center gap-1.5 pb-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
-	>
-		<ArrowLeft size={16} /> Back to blog
-	</a>
+<SiteHeader transparent={false} />
+<Section class="min-h-[calc(100dvh-4rem)] bg-transparent">
 	<Content />
 </Section>

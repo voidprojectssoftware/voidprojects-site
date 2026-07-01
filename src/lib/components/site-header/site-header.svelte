@@ -2,10 +2,15 @@
 	// The compact nav that fades in once the hero has scrolled past, showing the
 	// site name and secondary links. Hidden (but kept in the layout, `aria-hidden`)
 	// while at rest so it doesn't compete with the hero title.
-	let { scrolled = true }: { scrolled?: boolean } = $props();
+	let { scrolled = true, transparent = true }: { scrolled?: boolean; transparent?: boolean } =
+		$props();
 </script>
 
-<header class="sticky top-0 z-2 h-16 bg-transparent px-6 pt-4 sm:px-page-sm lg:px-page-lg xl:px-page-xl">
+<header
+	class="sticky top-0 z-2 h-16 {transparent
+		? 'bg-transparent'
+		: 'bg-background'} px-6 pt-4 sm:px-page-sm lg:px-page-lg xl:px-page-xl"
+>
 	<div class="flex flex-row items-center justify-between">
 		<div
 			class="flex flex-row items-center justify-center gap-3 transition-opacity duration-300 sm:gap-6"

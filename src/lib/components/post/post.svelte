@@ -2,6 +2,7 @@
 	import { GlassCard } from '$lib/components/voidprojects/glass-card/index.js';
 	import { ArrowRight } from '@lucide/svelte';
 	import type { PostMeta } from '$lib/content/types';
+	import { goto } from '$app/navigation';
 
 	// A blog post summary card for the index list: title, blurb, date, and a
 	// "Read more" link through to the full post. The glass-panel look is inherited
@@ -18,9 +19,11 @@
 			new Date(meta.date)
 		)
 	);
+
+	const goToPost = () => goto(`/blog/${slug}`);
 </script>
 
-<GlassCard class="w-full gap-3 px-6 py-5 {className}">
+<GlassCard onclick={goToPost} class="w-full gap-3 px-6 py-5 {className}">
 	<div class="flex flex-col gap-1">
 		<h3 class="text-xl leading-tight font-semibold tracking-tight text-foreground">{meta.title}</h3>
 		<div class="flex flex-row items-center gap-3">
@@ -29,10 +32,4 @@
 		</div>
 	</div>
 	<p class="text-sm leading-relaxed text-foreground/65">{meta.description}</p>
-	<a
-		href="/blog/{slug}"
-		class="inline-flex items-center gap-1 self-start text-sm font-medium text-primary transition-opacity hover:opacity-80"
-	>
-		Read more <ArrowRight size={15} />
-	</a>
 </GlassCard>
