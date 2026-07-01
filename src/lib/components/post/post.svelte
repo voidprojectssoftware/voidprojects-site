@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { GlassCard } from '$lib/components/voidprojects/glass-card/index.js';
-	import { ArrowRight } from '@lucide/svelte';
 	import type { PostMeta } from '$lib/content/types';
 	import { goto } from '$app/navigation';
 

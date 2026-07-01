@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { SiteHeader } from '$lib/components/site-header/index.js';
 	import { Section } from '$lib/components/voidprojects/section/index.js';
-	import { ArrowLeft } from '@lucide/svelte';
 
 	let { data } = $props();
 
