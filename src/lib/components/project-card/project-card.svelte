@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { ProjectCard as CardActor } from '$lib/physics/index.js';
+	import { GlassCard } from '$lib/components/voidprojects/glass-card/index.js';
 
 	// A project card rendered as a frosted glass panel floating in the scene: a
 	// translucent, blurred body so the real starfield behind it shows through
@@ -38,16 +39,8 @@
 
 <div class="pointer-events-none absolute inset-x-0 flex justify-center {className}">
 	<div use:bind class="card pointer-events-none relative opacity-0">
-		<!-- Lensing glass: the backdrop-filter doesn't just blur the starfield behind
-		     it, it amplifies it — brightness + contrast concentrate the starlight into
-		     brighter blooms (black stays black, so only the stars pop) so each card
-		     looks like it's gathering the light it sits on. We deliberately don't
-		     saturate: that washed the panel in the stars' blue and clashed with the
-		     site's neutral dark. A light blur keeps it glassy; bottom padding leaves
-		     room for the corner action. -->
-		<article
-			class="panel relative flex w-72 flex-col gap-2 rounded-4xl bg-background/8 px-6 pt-5 pb-11 backdrop-blur-[2px] backdrop-brightness-[2.1] backdrop-contrast-[1.3]"
-		>
+		<!-- Bottom padding leaves room for the corner action. -->
+		<GlassCard class="w-72 px-6 pt-5 pb-11">
 			<h3 class="text-xl leading-tight font-semibold tracking-tight text-foreground">{title}</h3>
 			<p class="text-sm leading-relaxed text-foreground/65">{desc}</p>
 
@@ -72,7 +65,7 @@
 					Coming soon
 				</span>
 			{/if}
-		</article>
+		</GlassCard>
 	</div>
 </div>
 
