@@ -49,15 +49,16 @@
 			aria-hidden="true"
 		></span>
 
-		{#each points as p (p.title)}
+		{#each points as p, i (p.title)}
 			{@const spot = at(p)}
+			{@const visualPos = points.length > 1 ? i / (points.length - 1) : 0.5}
 			{@const reached = clamped >= spot}
 			<button
 				type="button"
 				onclick={() => onSeek?.(spot)}
 				aria-label="Scroll to {p.title}"
 				class="dot-btn absolute left-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center justify-center p-1.5"
-				style="top: {spot * 100}%"
+				style="top: {visualPos * 100}%"
 			>
 				<span
 					class="label absolute top-1/2 right-[calc(100%+0.6rem)] -translate-y-1/2 text-right text-xs whitespace-nowrap"
