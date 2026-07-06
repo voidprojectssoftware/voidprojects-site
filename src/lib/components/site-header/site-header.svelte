@@ -20,9 +20,6 @@
 		>
 			<span class="text-base font-bold whitespace-nowrap sm:text-xl">Void Projects</span>
 			<a href="/blog" class="text-base whitespace-nowrap hover:opacity-60 sm:text-lg">Blog</a>
-			<a href="/team" class="text-base whitespace-nowrap hover:opacity-60 sm:text-lg"
-				>Meet The Team</a
-			>
 		</div>
 	</div>
 </header>
