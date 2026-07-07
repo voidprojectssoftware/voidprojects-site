@@ -1,0 +1,14 @@
+# Normalize line endings across platforms: store text as LF in the repo and check
+# it out as LF everywhere. This stops Windows checkouts (with core.autocrlf) from
+# showing the whole tree as modified. Binary files are auto-detected and left
+# untouched, with a few common types pinned explicitly for safety.
+* text=auto eol=lf
+
+*.bin binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
