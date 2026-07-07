@@ -1,5 +1,5 @@
 <script lang="ts">
-	import BrandStarfield from '../BrandStarfield.svelte';
+	import BrandStarfield from '../starfield/BrandStarfield.svelte';
 	import { BRAND, type BrandAssetSpec } from '../manifest.js';
 
 	let { spec }: { spec: BrandAssetSpec } = $props();

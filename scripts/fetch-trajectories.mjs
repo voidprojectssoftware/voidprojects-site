@@ -12,7 +12,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const OUT = join(HERE, '..', 'src', 'lib', 'brand', 'trajectories.json');
+const OUT = join(HERE, '..', 'src', 'lib', 'trajectory', 'trajectories.json');
 const BASE = 'https://ssd.jpl.nasa.gov/api/horizons.api';
 
 // The four that left the solar system are the default set; the rest are extra

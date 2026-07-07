@@ -7,11 +7,11 @@
 // log scale compresses the long straight cruise and blooms the inner spiral into
 // the recognizable logo shape.
 
-import { DATA, type TrajectoryCraft } from './trajectory-data.js';
+import { DATA, type TrajectoryCraft } from './data.js';
 
 type Craft = TrajectoryCraft;
 
-export { CRAFT_META, CRAFT_IDS } from './trajectory-data.js';
+// CRAFT_META / CRAFT_IDS are defined in ./data and re-exported via ./index (barrel).
 
 export type RadialScale = 'linear' | 'sqrt' | 'log';
 export type TrajectoryPalette = 'aurum' | 'brand' | 'mono' | 'spectral';

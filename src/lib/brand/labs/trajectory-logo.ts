@@ -11,7 +11,7 @@
 // spec straight to renderSpec so every knob is adjustable. The derivation's RNG
 // draw order is fixed, so a given seed always yields the same mark.
 
-import { DATA, type TrajectoryCraft } from './trajectory-data.js';
+import { DATA, type TrajectoryCraft } from '$lib/trajectory';
 
 export type TLPalette = 'brand' | 'aurum' | 'argent' | 'mono' | 'spectral' | 'duo';
 export type TLScale = 'linear' | 'sqrt' | 'log';

@@ -16,7 +16,7 @@
 		Shuffle,
 		X
 	} from '@lucide/svelte';
-	import { CRAFT_META } from '$lib/brand/trajectory-data.js';
+	import { CRAFT_META } from '$lib/trajectory';
 	import {
 		deriveSpec,
 		renderSpec,
@@ -30,7 +30,7 @@
 		type TLFrame,
 		type TLSymmetry,
 		type TLBgShape
-	} from '$lib/brand/trajectory-logo.js';
+	} from '$lib/brand/labs/trajectory-logo.js';
 
 	const N = 12;
 	const INITIAL_SEED = 424242;

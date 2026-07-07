@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import BrandArt from '$lib/brand/BrandArt.svelte';
+	import BrandArt from '$lib/brand/assets/BrandArt.svelte';
 	import VoidMark from '$lib/brand/VoidMark.svelte';
 	import {
 		ASSETS,

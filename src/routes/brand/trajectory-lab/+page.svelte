@@ -9,7 +9,7 @@
 		CRAFT_IDS,
 		type RadialScale,
 		type TrajectoryPalette
-	} from '$lib/brand/trajectory.js';
+	} from '$lib/trajectory';
 
 	// Default to the four probes that left the solar system; the rest toggle on.
 	const OUTBOUND = ['pioneer10', 'pioneer11', 'voyager1', 'voyager2'];
