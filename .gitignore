@@ -30,3 +30,6 @@ vite.config.ts.timestamp-*
 
 # Playwright CLI scratch snapshots/logs (from local browser verification)
 .playwright-cli/
+
+# Exported brand assets (regenerate with `npm run export:brand`)
+/brand-exports
