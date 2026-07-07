@@ -2,6 +2,7 @@
 	import { page } from '$app/state';
 	import BrandArt from '$lib/brand/assets/BrandArt.svelte';
 	import VoidMark from '$lib/brand/VoidMark.svelte';
+	import orbitmark from '$lib/brand/orbitmark.svg';
 	import {
 		ASSETS,
 		assetById,
@@ -156,21 +157,34 @@
 			<h2 class="mb-4 text-xl font-semibold">Logo</h2>
 			<div class="grid gap-6 md:grid-cols-[auto_1fr]">
 				<div
-					class="flex items-center justify-center gap-8 rounded-2xl p-8 ring-1 ring-white/10"
-					style="background:oklch(0.17 0.018 285)"
+					class="flex flex-col gap-4 rounded-2xl p-6 ring-1 ring-white/10"
+					style="background:#0e0e17"
 				>
-					<VoidMark size={120} />
-					<VoidMark size={56} />
-					<VoidMark size={32} />
+					<div class="flex items-center gap-6">
+						<div class="orbit" style="width:160px;height:160px">
+							<img src={orbitmark} alt="Void Projects" />
+						</div>
+						<div class="orbit" style="width:88px;height:88px">
+							<img src={orbitmark} alt="Void Projects" />
+						</div>
+						<div class="orbit" style="width:48px;height:48px">
+							<img src={orbitmark} alt="Void Projects" />
+						</div>
+					</div>
+					<div class="flex items-center gap-3 border-t border-white/10 pt-4">
+						<span class="text-xs tracking-wide text-foreground/45 uppercase"
+							>Lettermark alternate</span
+						>
+						<VoidMark size={36} />
+					</div>
 				</div>
 				<div class="rounded-2xl bg-white/[0.02] p-6 ring-1 ring-white/10">
 					<div class="text-3xl font-bold tracking-tight">Void Projects</div>
 					<p class="mt-3 text-sm leading-relaxed text-foreground/55">
-						The mark is a monochromatic “VP” lettermark (Inter, weight 800), no frame, in the brand
-						violet. The full wordmark is “Void Projects” in Inter Bold. Use the lettermark as the
-						avatar; use the wordmark on banners. Recolor via the mark’s <code class="text-primary"
-							>color</code
-						> prop (e.g. white on light surfaces) — never add effects or a background shape.
+						The primary logo is the <strong class="text-foreground/80">orbit mark</strong> — a constellation
+						of stars abstracted from real deep-space probe trajectories (Pioneer / Voyager), in brand
+						violet on the deep-space field. It's the avatar on every platform and the site favicon. A
+						monochromatic “VP” lettermark is the compact alternate for very small or text-only contexts.
 					</p>
 				</div>
 			</div>
@@ -352,6 +366,15 @@
 {/if}
 
 <style>
+	.orbit {
+		line-height: 0;
+	}
+	.orbit img {
+		display: block;
+		width: 100%;
+		height: 100%;
+	}
+
 	.checker {
 		background-image:
 			linear-gradient(45deg, oklch(1 0 0 / 0.04) 25%, transparent 25%),

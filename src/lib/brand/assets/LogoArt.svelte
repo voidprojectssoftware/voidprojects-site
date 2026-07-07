@@ -1,26 +1,28 @@
 <script lang="ts">
-	import VoidMark from '../VoidMark.svelte';
+	// The orbit mark (a scatter of stars derived from real spacecraft trajectories),
+	// exported verbatim from the trajectory logo lab. It's self-contained — its own
+	// dark field + violet stars — so it just scales to fill the asset.
+	import orbitmark from '../orbitmark.svg';
 	import { type BrandAssetSpec } from '../manifest.js';
 
 	let { spec }: { spec: BrandAssetSpec } = $props();
-
-	const dim = $derived(Math.min(spec.width, spec.height));
-	const markSize = $derived(dim);
 </script>
 
-<!-- A flat logo: solid backdrop, flat monochromatic mark, nothing else. -->
 <div
 	class="logo"
 	data-brand-asset={spec.id}
 	style="width:{spec.width}px;height:{spec.height}px;background:{spec.background}"
 >
-	<VoidMark size={markSize} />
+	<img src={orbitmark} alt="Void Projects" />
 </div>
 
 <style>
 	.logo {
-		display: flex;
-		align-items: center;
-		justify-content: center;
+		line-height: 0;
+	}
+	.logo img {
+		display: block;
+		width: 100%;
+		height: 100%;
 	}
 </style>

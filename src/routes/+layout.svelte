@@ -1,6 +1,6 @@
 <script lang="ts">
 	import './layout.css';
-	import favicon from '$lib/assets/favicon.svg';
+	import favicon from '$lib/brand/orbitmark.svg';
 	import { SpaceBackground } from '$lib/components/space-background/index.js';
 	import { afterNavigate } from '$app/navigation';
 
