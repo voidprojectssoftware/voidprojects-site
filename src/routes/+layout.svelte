@@ -1,19 +1,25 @@
 <script lang="ts">
 	import './layout.css';
-	import faviconFallback from '$lib/brand/orbitmark.svg';
 	import { SpaceBackground } from '$lib/components/space-background/index.js';
 	import { afterNavigate } from '$app/navigation';
 	import { onMount } from 'svelte';
 
 	let { children } = $props();
 
-	// The favicon is a fresh generated orbit mark each load. The static orbit mark is
-	// the pre-hydration / no-JS fallback; on mount we roll a random one and swap it in.
-	// Lazy-loaded so the generator + trajectory data stay out of the initial bundle.
-	let faviconHref = $state(faviconFallback);
-	onMount(async () => {
-		const { generateFaviconDataUri } = await import('$lib/brand/favicon.js');
-		faviconHref = generateFaviconDataUri();
+	// The favicon is a fresh generated orbit mark each load. We render no icon until
+	// it's ready — so no static fallback flashes first — and generate it during idle
+	// time (lazy-loaded) so the work never competes with the hero's opening frames.
+	let faviconHref = $state<string | undefined>(undefined);
+	onMount(() => {
+		const roll = async () => {
+			const { generateFaviconDataUri } = await import('$lib/brand/favicon.js');
+			faviconHref = generateFaviconDataUri();
+		};
+		if ('requestIdleCallback' in window) {
+			window.requestIdleCallback(() => roll(), { timeout: 2000 });
+		} else {
+			setTimeout(roll, 200);
+		}
 	});
 
 	// On a fresh load or refresh, start at the top rather than wherever the browser
@@ -26,7 +32,9 @@
 	});
 </script>
 
-<svelte:head><link rel="icon" href={faviconHref} /></svelte:head>
+<svelte:head>
+	{#if faviconHref}<link rel="icon" href={faviconHref} />{/if}
+</svelte:head>
 
 <SpaceBackground />
 
