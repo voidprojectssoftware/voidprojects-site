@@ -4,6 +4,7 @@
 // Returns an inline SVG data URI ready for <link rel="icon" href>.
 import { deriveSpec, renderSpec } from './labs/trajectory-logo.js';
 import { CRAFT_IDS } from '$lib/trajectory';
+import { brandColor } from './colors.js';
 
 // Bolder than the lab's UI max (2) on purpose — favicons render tiny, so the fine
 // trajectory lines need weight to survive at 16px.
@@ -13,6 +14,10 @@ export function generateFaviconSvg(seed: number = randomSeed()): string {
 	const spec = deriveSpec(seed, {
 		stroke: FAVICON_STROKE,
 		palette: 'brand',
+		// Bake the real brand violet (--color-primary from layout.css) into the mark —
+		// a data-URI favicon renders isolated, so a var() wouldn't resolve. Falls back
+		// to the palette default if unavailable (non-browser).
+		ink: brandColor('--color-primary') || undefined,
 		frameMode: 'none',
 		symmetry: 'emblem',
 		pool: CRAFT_IDS

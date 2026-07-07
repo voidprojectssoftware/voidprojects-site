@@ -41,6 +41,7 @@ export interface TLSpec {
 	style: TLStyle;
 	stroke: number; // weight multiplier
 	palette: TLPalette;
+	ink?: string; // explicit ink color; overrides the palette default (e.g. --color-primary)
 	frame: TLFrame; // stroked outline
 	sun: boolean;
 	bg: TLBackground; // filled backing shape
@@ -50,6 +51,7 @@ export interface TLSpec {
 export interface TLGlobals {
 	stroke: number;
 	palette: TLPalette;
+	ink?: string; // explicit ink color, threaded to the spec (overrides palette default)
 	frameMode: TLFrame | 'random';
 	symmetry: TLSymmetry;
 	pool: string[]; // craft ids allowed as source arms
@@ -273,6 +275,7 @@ export function deriveSpec(seed: number, g: TLGlobals): TLSpec {
 		style,
 		stroke: g.stroke,
 		palette: g.palette,
+		ink: g.ink,
 		frame,
 		sun,
 		bg: { shape: 'none', size: 1, fill: 'none' }
@@ -316,7 +319,7 @@ export function renderSpec(spec: TLSpec): BuiltTL {
 	}
 
 	const fid = `a${Math.abs(Math.round(spec.rotationDeg * 1000) + spec.order * 7 + spec.reach).toString(36)}`;
-	const ink = spec.palette === 'spectral' ? craft.color : INK[spec.palette];
+	const ink = spec.palette === 'spectral' ? craft.color : (spec.ink ?? INK[spec.palette]);
 
 	const copies: { deg: number; mirror: boolean }[] = [];
 	for (let i = 0; i < spec.order; i++) copies.push({ deg: (360 / spec.order) * i, mirror: false });
@@ -325,7 +328,7 @@ export function renderSpec(spec: TLSpec): BuiltTL {
 
 	let uses = '';
 	copies.forEach((cp, i) => {
-		const color = spec.palette === 'duo' ? (i % 2 ? DUO_B : INK.brand) : ink;
+		const color = spec.palette === 'duo' ? (i % 2 ? DUO_B : (spec.ink ?? INK.brand)) : ink;
 		const t = cp.mirror
 			? `rotate(${f(cp.deg)} ${C} ${C}) translate(${VB} 0) scale(-1 1)`
 			: `rotate(${f(cp.deg)} ${C} ${C})`;

@@ -12,6 +12,7 @@
 		type BrandAssetSpec
 	} from '$lib/brand/manifest.js';
 	import { PALETTE, FONT_VAR, TYPE_WEIGHTS } from '$lib/brand/tokens.js';
+	import { brandColor } from '$lib/brand/colors.js';
 
 	// ?asset=<id>&raw=1 renders that single asset alone at exact pixel size (no page
 	// chrome) — this is what scripts/export-brand.mjs screenshots. With no params we
@@ -84,12 +85,11 @@
 	let fontValue = $state('');
 	const fontName = $derived(fontValue.split(',')[0].replace(/['"]/g, '').trim());
 	onMount(() => {
-		const cs = getComputedStyle(document.documentElement);
-		const read = (v: string) => cs.getPropertyValue(v).trim();
 		const map: Record<string, string> = {};
-		for (const group of PALETTE) for (const sw of group.swatches) map[sw.cssVar] = read(sw.cssVar);
+		for (const group of PALETTE)
+			for (const sw of group.swatches) map[sw.cssVar] = brandColor(sw.cssVar);
 		tokenValues = map;
-		fontValue = read(FONT_VAR);
+		fontValue = brandColor(FONT_VAR);
 	});
 </script>
 
