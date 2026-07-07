@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { page } from '$app/state';
 	import BrandArt from '$lib/brand/assets/BrandArt.svelte';
 	import VoidMark from '$lib/brand/VoidMark.svelte';
@@ -10,7 +11,7 @@
 		BRAND,
 		type BrandAssetSpec
 	} from '$lib/brand/manifest.js';
-	import { PALETTE, TYPE_WEIGHTS, FONT_FAMILY } from '$lib/brand/tokens.js';
+	import { PALETTE, FONT_VAR, TYPE_WEIGHTS } from '$lib/brand/tokens.js';
 
 	// ?asset=<id>&raw=1 renders that single asset alone at exact pixel size (no page
 	// chrome) — this is what scripts/export-brand.mjs screenshots. With no params we
@@ -76,6 +77,20 @@
 		{ label: 'YouTube', value: BRAND.youtube },
 		{ label: 'LinkedIn', value: BRAND.linkedin }
 	];
+
+	// Read token values live from layout.css (the single source of truth) rather
+	// than hardcoding them. Runs in the browser after mount.
+	let tokenValues = $state<Record<string, string>>({});
+	let fontValue = $state('');
+	const fontName = $derived(fontValue.split(',')[0].replace(/['"]/g, '').trim());
+	onMount(() => {
+		const cs = getComputedStyle(document.documentElement);
+		const read = (v: string) => cs.getPropertyValue(v).trim();
+		const map: Record<string, string> = {};
+		for (const group of PALETTE) for (const sw of group.swatches) map[sw.cssVar] = read(sw.cssVar);
+		tokenValues = map;
+		fontValue = read(FONT_VAR);
+	});
 </script>
 
 <svelte:head>
@@ -194,8 +209,8 @@
 		<section id="colors" class="mb-14 scroll-mt-6">
 			<h2 class="mb-1 text-xl font-semibold">Colors</h2>
 			<p class="mb-5 text-sm text-foreground/50">
-				oklch is the source of truth (see <code class="text-primary">layout.css</code>). Click a
-				swatch to copy its value.
+				Read live from the CSS tokens in <code class="text-primary">layout.css</code> — no values are
+				duplicated here. Click a swatch to copy.
 			</p>
 			<div class="flex flex-col gap-8">
 				{#each PALETTE as group (group.title)}
@@ -206,24 +221,23 @@
 						</div>
 						<div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
 							{#each group.swatches as sw (sw.name)}
+								{@const val = tokenValues[sw.cssVar] ?? ''}
 								<button
 									type="button"
-									onclick={() => copy(sw.value)}
+									onclick={() => copy(val)}
 									class="checker cursor-pointer overflow-hidden rounded-xl text-left ring-1 ring-white/10 transition hover:ring-white/25"
 								>
-									<div class="h-16 w-full" style="background:{sw.value}"></div>
+									<div class="h-16 w-full" style="background:var({sw.cssVar})"></div>
 									<div class="bg-card/60 p-3">
 										<div class="flex items-center justify-between gap-2">
 											<span class="text-sm font-medium">{sw.name}</span>
-											{#if copied === sw.value}
+											{#if val && copied === val}
 												<span class="text-xs text-primary">Copied</span>
 											{/if}
 										</div>
-										{#if sw.token}
-											<div class="mt-0.5 font-mono text-[11px] text-foreground/45">{sw.token}</div>
-										{/if}
+										<div class="mt-0.5 font-mono text-[11px] text-foreground/45">{sw.cssVar}</div>
 										<div class="mt-1 font-mono text-[11px] break-all text-foreground/60">
-											{sw.value}
+											{val || '…'}
 										</div>
 										{#if sw.note}
 											<div class="mt-1 text-[11px] text-foreground/40">{sw.note}</div>
@@ -243,7 +257,7 @@
 			<div class="grid gap-6 lg:grid-cols-2">
 				<div class="rounded-2xl bg-white/[0.02] p-6 ring-1 ring-white/10">
 					<div class="text-xs tracking-wide text-foreground/45 uppercase">Typeface</div>
-					<div class="mt-1 text-2xl font-bold">{FONT_FAMILY}</div>
+					<div class="mt-1 text-2xl font-bold">{fontName || '…'}</div>
 					<p class="mt-2 text-sm text-foreground/55">
 						One family for everything — UI, headings, wordmark, and the logo. Variable, so any
 						weight is available.

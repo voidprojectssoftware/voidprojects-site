@@ -145,9 +145,9 @@
 		align-items: center;
 		gap: 0.5em;
 		padding: 0.5em 0.9em;
-		border: 1px solid oklch(0.6534 0.1876 301.62 / 0.55);
+		border: 1px solid color-mix(in oklch, var(--color-primary) 55%, transparent);
 		border-radius: 999px;
-		background: oklch(0.6534 0.1876 301.62 / 0.12);
+		background: color-mix(in oklch, var(--color-primary) 12%, transparent);
 		font-weight: 600;
 		line-height: 1;
 		white-space: nowrap;

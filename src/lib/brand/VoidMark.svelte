@@ -3,7 +3,7 @@
 	// frame. `color` recolors it; defaults to brand violet.
 	let {
 		size = 200,
-		color = 'oklch(0.6534 0.1876 301.62)',
+		color = 'var(--color-primary)',
 		text = 'VP',
 		class: className = ''
 	}: { size?: number; color?: string; text?: string; class?: string } = $props();
