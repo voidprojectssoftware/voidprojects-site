@@ -9,6 +9,7 @@
 	parallax. Real constellations emerge on their own. Dark-mode only.
 
 	Dev console (when dark): `skyView.list()`, `skyView.setVantage(i)`,
+	`skyView.setTimeScale(n)` (1 = real time; raise to speed the drift for capture),
 	`skyView.useMyLocation()`.
 -->
 <script lang="ts">
@@ -17,9 +18,14 @@
 	import { lstHours, ciToRgb, type GeoLocation } from '$lib/sky/astro.js';
 	import { decode as decodeCatalog } from '$lib/sky/catalog-format.js';
 
-	let { showLabel = true } = $props(); // bottom-left location label / geolocation button
+	let { showLabel = true, timeScale = 1 } = $props(); // showLabel: bottom-left location label / geolocation button. timeScale: sky-drift speed (1 = real time; raise to make the field visibly move, e.g. for video capture)
 
 	let canvas: HTMLCanvasElement;
+
+	// Bridge the reactive `timeScale` prop into the onMount render loop (which owns
+	// CONFIG). Reassigned once the loop is live; the effect re-runs to push updates.
+	let applyTimeScale = $state<(n: number) => void>(() => {});
+	$effect(() => applyTimeScale(timeScale));
 
 	const DEFAULT_LABEL = 'Our Sky - Memphis, TN';
 	let skyLabel = $state(DEFAULT_LABEL);
@@ -61,7 +67,7 @@
 		alphaFloor: 0.16, // dimmest stars
 		twinkle: 0.28, // 0 = none .. 1 = full blink
 		parallax: 4, // max px the field shifts with the pointer
-		timeScale: 1 // 1 = real time; raise to speed up the sky's rotation
+		timeScale: 1 // 1 = real time; raise to speed up the sky's rotation (driven by the timeScale prop)
 	};
 
 	type Star = {
@@ -110,9 +116,17 @@
 			projectDirty = true; // observer moved — reproject every star next frame
 		};
 
-		// real (or sped-up) clock
+		// Sky clock: milliseconds of (optionally sped-up) sky-time elapsed since the
+		// page opened, accumulated per reprojection. Accumulating a delta — rather than
+		// scaling total elapsed time — lets timeScale change mid-flight without the sky
+		// jumping, since past drift stays put.
 		const epoch = Date.now();
-		let startPerf = 0;
+		let skyClock = 0;
+		let lastClockNow = 0;
+		const setTimeScale = (n: number) => {
+			CONFIG.timeScale = Number.isFinite(n) && n >= 0 ? n : 1;
+		};
+		setTimeScale(timeScale);
 
 		// pointer parallax, eased toward target
 		let px = 0;
@@ -233,8 +247,12 @@
 		// across the frames in between. Parallax is a uniform offset applied per frame,
 		// so it doesn't need a reprojection.
 		const project = (now: number) => {
+			// advance the sky clock by the real time since the last reprojection, scaled
+			if (lastClockNow) skyClock += (now - lastClockNow) * CONFIG.timeScale;
+			lastClockNow = now;
+
 			// local sidereal time for the current (optionally sped-up) instant
-			const date = new Date(epoch + (now - startPerf) * CONFIG.timeScale);
+			const date = new Date(epoch + skyClock);
 			const lst = lstHours(date, location.lon);
 
 			// virtual camera basis in (north, east, up)
@@ -288,7 +306,6 @@
 		};
 
 		const draw = (now: number) => {
-			if (!startPerf) startPerf = now;
 			ctx.clearRect(0, 0, w, h);
 
 			px += (targetX - px) * 0.04;
@@ -296,7 +313,11 @@
 			const offX = px * CONFIG.parallax;
 			const offY = py * CONFIG.parallax;
 
-			if (projectDirty || now - lastProjectAt >= PROJECT_MS) project(now);
+			// Cap the drift between reprojections to a small angular step so a sped-up
+			// sky glides instead of stepping at the 10 Hz base cadence. At timeScale 1
+			// this stays at PROJECT_MS; the faster the sky, the more often we reproject.
+			const projectInterval = Math.min(PROJECT_MS, 12000 / CONFIG.timeScale);
+			if (projectDirty || now - lastProjectAt >= projectInterval) project(now);
 
 			const twAmt = CONFIG.twinkle;
 			const twPhase = now * 0.001;
@@ -399,8 +420,12 @@
 		win.skyView = {
 			list: () => CONFIG.vantages.map((v, i) => `${i}: ${v.name}`),
 			setVantage: (i: number) => CONFIG.vantages[i] && setLocation(CONFIG.vantages[i]),
+			setTimeScale, // live-tune the drift speed while recording (1 = real time)
 			useMyLocation
 		};
+
+		// Now that the loop owns setTimeScale, let the reactive prop drive it.
+		applyTimeScale = setTimeScale;
 
 		window.addEventListener('resize', resize);
 		window.addEventListener('pointermove', onPointer, { passive: true });

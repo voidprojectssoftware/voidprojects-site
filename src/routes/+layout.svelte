@@ -7,6 +7,9 @@
 
 	let { children } = $props();
 
+	// larrystuff is a bare star-field capture page (see the SpaceBackground below).
+	let isCapture = $derived(page.route.id === '/larrystuff');
+
 	// The favicon is a fresh generated orbit mark each load. We render no icon until
 	// it's ready — so no static fallback flashes first — and generate it during idle
 	// time (lazy-loaded) so the work never competes with the hero's opening frames.
@@ -37,8 +40,13 @@
 	{#if faviconHref}<link rel="icon" href={faviconHref} />{/if}
 </svelte:head>
 
-<!-- larrystuff is a bare star-field capture page: hide the location label so it stays out of recordings. -->
-<SpaceBackground showLabel={page.route.id !== '/larrystuff'} />
+<!--
+	On the capture page, hide the location label so it stays out of recordings, and
+	speed up the sky's drift (real-time rotation is too slow to read on video) so the
+	stars visibly move on their own. ~720× = a full sky rotation every two minutes;
+	tune live in the console with skyView.setTimeScale(n).
+-->
+<SpaceBackground showLabel={!isCapture} timeScale={isCapture ? 300 : 1} />
 
 <div class="flex flex-col">
 	{@render children()}
