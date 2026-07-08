@@ -16,6 +16,9 @@
 	import { ScrollTimeline } from '$lib/components/scroll-timeline/index.js';
 	import { SiteHeader } from '$lib/components/site-header/index.js';
 	import { ProfileCard } from '$lib/components/profile-card/index.js';
+	import larryProfilePicture from '$lib/assets/larryProfilePicture2024.jpg';
+	import blakeProfilePicture from '$lib/assets/IMG_2021.JPEG';
+	import jacksonProfilePicture from '$lib/assets/100_2013.JPEG';
 
 	let heroRef = $state<HTMLElement | null>(null);
 	let githubRef = $state<HTMLElement | null>(null);
@@ -577,7 +580,7 @@
 				>
 					<div class="flex w-full shrink-0 snap-center items-center justify-center px-8 py-6">
 						<ProfileCard
-							src="src/lib/assets/larryProfilePicture2024.jpg"
+							src={larryProfilePicture}
 							alt="Larry Jones"
 							name="Larry Jones"
 							role="Co-Founder"
@@ -590,7 +593,7 @@
 					</div>
 					<div class="flex w-full shrink-0 snap-center items-center justify-center px-8 py-6">
 						<ProfileCard
-							src="src/lib/assets/IMG_2021.JPEG"
+							src={blakeProfilePicture}
 							alt="Blake Hastings"
 							name="Blake Hastings"
 							role="Co-Founder"
@@ -603,7 +606,7 @@
 					</div>
 					<div class="flex w-full shrink-0 snap-center items-center justify-center px-8 py-6">
 						<ProfileCard
-							src="src/lib/assets/100_2013.JPEG"
+							src={jacksonProfilePicture}
 							alt="Jackson Torregrossa"
 							name="Jackson Torregrossa"
 							role="Co-Founder"
