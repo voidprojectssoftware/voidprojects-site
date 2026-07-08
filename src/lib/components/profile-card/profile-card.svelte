@@ -1,12 +1,15 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import { ProfilePicture } from '$lib/components/profile-picture/index.js';
+	import { Badge } from '$lib/components/shadcn/ui/badge/index.js';
 
 	let {
 		src,
 		alt,
 		name,
 		role,
+		subrole,
+		skills,
 		email,
 		linkedin,
 		desc
@@ -15,18 +18,22 @@
 		alt: string;
 		name: string;
 		role: string;
+		subrole: string;
+		skills: string[];
 		email: string;
 		linkedin?: string;
 		desc?: Snippet;
 	} = $props();
 </script>
 
-<div class="flex flex-row items-center gap-6 max-[600px]:flex-col lg:max-w-4xl xl:max-w-5xl">
+<div
+	class="flex flex-row items-center gap-6 max-[600px]:flex-col md:max-w-2xl lg:max-w-3xl xl:max-w-4xl"
+>
 	<ProfilePicture {src} {alt} class="size-48" />
 	<div class="flex flex-col items-start gap-3 text-left text-sm sm:text-base">
-		<div class="flex flex-col items-start gap-0">
+		<div class="flex flex-col items-start gap-0 max-[600px]:items-center">
 			<div class="flex flex-row items-center gap-3">
-				<span class="text-2xl font-bold">{name}</span>
+				<span class="text-2xl font-bold max-[600px]:text-xl">{name}</span>
 				{#if linkedin}
 					<a
 						href={linkedin}
@@ -49,7 +56,17 @@
 					</a>
 				{/if}
 			</div>
-			<span class="text-xl opacity-70">{role}</span>
+			<div
+				class="flex flex-row items-end gap-2 max-[600px]:flex-col max-[600px]:items-center max-[600px]:gap-0"
+			>
+				<span class="text-xl opacity-70">{role}</span>
+				<span class="mb-0.5 text-sm opacity-70">{subrole}</span>
+			</div>
+			<div class="mt-1 flex flex-row flex-wrap items-center gap-2 max-[600px]:justify-center">
+				{#each skills as skill}
+					<Badge variant="default" class="text-sm max-[600px]:text-xs">{skill}</Badge>
+				{/each}
+			</div>
 		</div>
 		{#if desc}{@render desc()}{/if}
 	</div>

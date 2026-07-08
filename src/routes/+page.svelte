@@ -112,7 +112,11 @@
 			threshold: d.threshold,
 			arrivalOffset: CARD_ARRIVAL_OFFSET
 		})),
-		{ title: 'Meet The Team', threshold: EXIT_THRESHOLD }
+		// Also needs the arrival nudge, but for the opposite reason: exiting a card is a
+		// strict `progress > exitThreshold` check (project-card.ts), so a seek that lands
+		// exactly on the threshold — same value as this marker's own — never actually
+		// crosses it and leaves the Constellation graph stuck formed.
+		{ title: 'Meet The Team', threshold: EXIT_THRESHOLD, arrivalOffset: CARD_ARRIVAL_OFFSET }
 	];
 
 	// Subtle cursor-repel-with-spring-back at rest. It and the drift take turns on
@@ -372,6 +376,10 @@
 			scrolled = y > 0;
 			scrollProgress = progress;
 			stage.setScrollProgress(progress);
+			// Re-evaluate after setScrollProgress: a card's onStateChange (fired above)
+			// may have just changed cardsOnScreen, and sectionVisible already reflects
+			// the scrollProgress write above.
+			glyphs.setBottomBiasActive(cardsOnScreen > 0 || sectionVisible);
 
 			if (!reduceMotion) {
 				if (autoReturning) {
@@ -451,9 +459,9 @@
 
 {#snippet jacksonDesc()}
 	<span
-		>I thrive off of being enabled to learn new tech stacks, solving niche problems, and being let
-		loose on an end-to-end solution. In particular, I love web-based products and architecting
-		solutions that allow me to be creative.</span
+		>I thrive off of learning new tech stacks, solving niche problems, and being let loose on an
+		end-to-end solution. In particular, I love web-based products and architecting solutions that
+		allow me to be creative.</span
 	>
 	<span
 		>My best days usually consist of making music, spending time with my friends and family, and
@@ -480,34 +488,39 @@
 		glass={false}
 		class="relative sticky top-16 h-[calc(100dvh-4rem)] items-center justify-center gap-3 overflow-clip"
 	>
-		<div
-			class="flex flex-col items-center gap-4 transition-opacity duration-700"
-			class:opacity-0={sectionVisible}
-			class:pointer-events-none={sectionVisible}
-		>
-			<h1
-				class="pointer-events-none text-5xl font-bold select-none sm:text-7xl lg:text-8xl"
-				aria-label={heroTitle}
+		<div class="flex flex-col items-center gap-4">
+			<div
+				class="flex flex-col items-center gap-4 transition-opacity duration-700"
+				class:opacity-0={sectionVisible}
+				class:pointer-events-none={sectionVisible}
 			>
-				{#each titleChars as ch, i (i)}<span
-						use:driftNode={titleMeta[i]}
-						use:nudge
-						aria-hidden="true"
-						style="display:inline-block;white-space:pre">{ch === ' ' ? '\u00A0' : ch}</span
-					>{/each}
-			</h1>
-			<p
-				class="pointer-events-none px-2 text-center text-lg select-none sm:text-2xl"
-				aria-label={heroSubtitle}
-			>
-				{#each subtitleChars as ch, i (i)}<span
-						use:driftNode={subtitleMeta[i]}
-						use:nudge
-						aria-hidden="true"
-						style="display:inline-block;white-space:pre">{ch === ' ' ? '\u00A0' : ch}</span
-					>{/each}
-			</p>
-			<div use:drift bind:this={githubRef} class="inline-block">
+				<h1
+					class="pointer-events-none text-5xl font-bold select-none max-[600px]:text-4xl sm:text-7xl lg:text-8xl"
+					aria-label={heroTitle}
+				>
+					{#each titleChars as ch, i (i)}<span
+							use:driftNode={titleMeta[i]}
+							use:nudge
+							aria-hidden="true"
+							style="display:inline-block;white-space:pre">{ch === ' ' ? '\u00A0' : ch}</span
+						>{/each}
+				</h1>
+				<p
+					class="pointer-events-none px-2 text-center text-lg select-none sm:text-2xl"
+					aria-label={heroSubtitle}
+				>
+					{#each subtitleChars as ch, i (i)}<span
+							use:driftNode={subtitleMeta[i]}
+							use:nudge
+							aria-hidden="true"
+							style="display:inline-block;white-space:pre">{ch === ' ' ? '\u00A0' : ch}</span
+						>{/each}
+				</p>
+			</div>
+			<!-- Deliberately outside the fading div above: unlike the title/subtitle, the
+			     GitHub button should stay up (and clickable) through the Meet The Team
+			     section - z-20 lifts it above that section's own z-10 panel. -->
+			<div use:drift bind:this={githubRef} class="relative z-20 inline-block">
 				<Button
 					href={GITHUB_URL}
 					target="_blank"
@@ -551,47 +564,16 @@
 			<ChevronDown class="size-6 animate-bounce opacity-70" />
 		</div>
 		<div
-			class="absolute inset-0 z-10 flex flex-col items-center justify-center transition-opacity duration-700"
+			class="absolute inset-0 z-10 mb-10 flex flex-col items-center justify-center transition-opacity duration-700"
 			class:opacity-0={!sectionVisible}
 			class:pointer-events-none={!sectionVisible}
 			aria-hidden={!sectionVisible}
 		>
-			<!-- Desktop (> 600px): stacked list -->
-			<div class="hidden min-[601px]:flex flex-col items-center gap-10 px-8 py-6">
-				<ProfileCard
-					src="src/lib/assets/larryProfilePicture2024.jpg"
-					alt="Larry Jones"
-					name="Larry Jones"
-					role="Co-Founder"
-					email="larryjones@voidprojects.ai"
-					linkedin="https://www.linkedin.com/in/lrryjns/"
-					desc={larryDesc}
-				/>
-				<ProfileCard
-					src="src/lib/assets/IMG_2021.JPEG"
-					alt="Blake Hastings"
-					name="Blake Hastings"
-					role="Co-Founder"
-					email="blakehastings@voidprojects.ai"
-					linkedin="https://www.linkedin.com/in/the-blake-hastings/"
-					desc={blakeDesc}
-				/>
-				<ProfileCard
-					src="src/lib/assets/100_2013.JPEG"
-					alt="Jackson Torregrossa"
-					name="Jackson Torregrossa"
-					role="Co-Founder"
-					email="jacksontorregrossa@voidprojects.ai"
-					linkedin="https://www.linkedin.com/in/jackson-torregrossa/"
-					desc={jacksonDesc}
-				/>
-			</div>
-			<!-- Mobile (≤ 600px): swipeable carousel -->
-			<div class="contents min-[601px]:hidden">
+			<div class="contents">
 				<div
 					bind:this={carouselRef}
 					onscroll={onCarouselScroll}
-					class="flex w-full snap-x snap-mandatory overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+					class="flex w-full snap-x snap-mandatory [scrollbar-width:none] overflow-x-auto [&::-webkit-scrollbar]:hidden"
 				>
 					<div class="flex w-full shrink-0 snap-center items-center justify-center px-8 py-6">
 						<ProfileCard
@@ -599,6 +581,8 @@
 							alt="Larry Jones"
 							name="Larry Jones"
 							role="Co-Founder"
+							subrole="Constellation Technical Lead"
+							skills={['C#', 'SQL', 'Data Engineering', 'Graph Databases']}
 							email="larryjones@voidprojects.ai"
 							linkedin="https://www.linkedin.com/in/lrryjns/"
 							desc={larryDesc}
@@ -610,6 +594,8 @@
 							alt="Blake Hastings"
 							name="Blake Hastings"
 							role="Co-Founder"
+							subrole="Protostar Technical Lead"
+							skills={['C#', 'TypeScript', 'AI/Agentic Systems', 'Refactoring', 'Modular Design']}
 							email="blakehastings@voidprojects.ai"
 							linkedin="https://www.linkedin.com/in/the-blake-hastings/"
 							desc={blakeDesc}
@@ -621,6 +607,8 @@
 							alt="Jackson Torregrossa"
 							name="Jackson Torregrossa"
 							role="Co-Founder"
+							subrole="Full Stack Developer"
+							skills={['C#', 'TypeScript', 'React', 'Svelte', 'Tailwind', 'Front End Design']}
 							email="jacksontorregrossa@voidprojects.ai"
 							linkedin="https://www.linkedin.com/in/jackson-torregrossa/"
 							desc={jacksonDesc}
@@ -632,7 +620,11 @@
 						<button
 							type="button"
 							aria-label="View profile {i + 1}"
-							onclick={() => carouselRef?.scrollTo({ left: i * (carouselRef?.offsetWidth ?? 0), behavior: 'smooth' })}
+							onclick={() =>
+								carouselRef?.scrollTo({
+									left: i * (carouselRef?.offsetWidth ?? 0),
+									behavior: 'smooth'
+								})}
 							class="size-2 rounded-full transition-all duration-300 {i === activeTeamIndex
 								? 'scale-125 bg-primary'
 								: 'bg-foreground/30'}"
