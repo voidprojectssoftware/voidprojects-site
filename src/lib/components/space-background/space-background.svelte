@@ -10,7 +10,8 @@
 
 	Dev console (when dark): `skyView.list()`, `skyView.setVantage(i)`,
 	`skyView.setTimeScale(n)` (1 = real time; raise to speed the drift for capture),
-	`skyView.useMyLocation()`.
+	`skyView.setPan(azRate, altRate)` (constant camera pan, deg/sec; altRate = vertical),
+	`skyView.setLook(az, alt)` (re-point the camera), `skyView.useMyLocation()`.
 -->
 <script lang="ts">
 	import { onMount } from 'svelte';
@@ -18,14 +19,22 @@
 	import { lstHours, ciToRgb, type GeoLocation } from '$lib/sky/astro.js';
 	import { decode as decodeCatalog } from '$lib/sky/catalog-format.js';
 
-	let { showLabel = true, timeScale = 1 } = $props(); // showLabel: bottom-left location label / geolocation button. timeScale: sky-drift speed (1 = real time; raise to make the field visibly move, e.g. for video capture)
+	let {
+		showLabel = true, // bottom-left location label / geolocation button
+		timeScale = 1, // sky-drift speed (1 = real time; raise to make the field visibly move, e.g. for video capture)
+		panAz = 0, // constant camera pan, deg/sec of azimuth (horizontal)
+		panAlt = 0 // constant camera pan, deg/sec of altitude (vertical)
+	} = $props();
 
 	let canvas: HTMLCanvasElement;
 
-	// Bridge the reactive `timeScale` prop into the onMount render loop (which owns
-	// CONFIG). Reassigned once the loop is live; the effect re-runs to push updates.
+	// Bridge the reactive motion props into the onMount render loop (which owns CONFIG
+	// and the pan state). Each is reassigned once the loop is live; the effect re-runs
+	// to push updates.
 	let applyTimeScale = $state<(n: number) => void>(() => {});
 	$effect(() => applyTimeScale(timeScale));
+	let applyPan = $state<(az: number, alt: number) => void>(() => {});
+	$effect(() => applyPan(panAz, panAlt));
 
 	const DEFAULT_LABEL = 'Our Sky - Memphis, TN';
 	let skyLabel = $state(DEFAULT_LABEL);
@@ -127,6 +136,30 @@
 			CONFIG.timeScale = Number.isFinite(n) && n >= 0 ? n : 1;
 		};
 		setTimeScale(timeScale);
+
+		// Camera pan: sweep the look direction at a constant rate, independent of the
+		// sky's rotation. Rates are deg/sec of real time; the accumulators hold how far
+		// we've panned so far so the rate can change mid-flight without a jump. Vertical
+		// pan rides `panAlt` (altitude), horizontal rides `panAz` (azimuth).
+		let panAz = 0;
+		let panAlt = 0;
+		let panAzRate = 0; // deg/sec, + = swing east
+		let panAltRate = 0; // deg/sec, + = tilt up
+		const num = (n: number, fallback: number) => (Number.isFinite(n) ? n : fallback);
+		const setPan = (azRate: number, altRate: number) => {
+			panAzRate = num(azRate, 0);
+			panAltRate = num(altRate, 0);
+		};
+		// Re-point the camera (compass azimuth, altitude above horizon). This changes
+		// the character of the sidereal drift: south ≈ sideways, east/west ≈ near-
+		// vertical rise/set, near the pole ≈ circular. Clears any accumulated pan.
+		const setLook = (azimuth: number, altitude: number) => {
+			CONFIG.lookAzimuth = num(azimuth, CONFIG.lookAzimuth);
+			CONFIG.lookAltitude = Math.max(2, Math.min(88, num(altitude, CONFIG.lookAltitude)));
+			panAz = 0;
+			panAlt = 0;
+			projectDirty = true;
+		};
 
 		// pointer parallax, eased toward target
 		let px = 0;
@@ -247,17 +280,24 @@
 		// across the frames in between. Parallax is a uniform offset applied per frame,
 		// so it doesn't need a reprojection.
 		const project = (now: number) => {
-			// advance the sky clock by the real time since the last reprojection, scaled
-			if (lastClockNow) skyClock += (now - lastClockNow) * CONFIG.timeScale;
+			// real ms since the last reprojection, shared by the sky clock and the pan
+			const dt = lastClockNow ? now - lastClockNow : 0;
 			lastClockNow = now;
+
+			// advance the (optionally sped-up) sky clock and the camera pan
+			skyClock += dt * CONFIG.timeScale;
+			panAz += (dt / 1000) * panAzRate;
+			panAlt += (dt / 1000) * panAltRate;
 
 			// local sidereal time for the current (optionally sped-up) instant
 			const date = new Date(epoch + skyClock);
 			const lst = lstHours(date, location.lon);
 
-			// virtual camera basis in (north, east, up)
-			const a0 = CONFIG.lookAzimuth * DEG;
-			const t0 = CONFIG.lookAltitude * DEG;
+			// virtual camera basis in (north, east, up); pan offsets ride the look
+			// direction, altitude clamped shy of the zenith where cosT → 0 blows up.
+			const a0 = (CONFIG.lookAzimuth + panAz) * DEG;
+			const altDeg = Math.max(2, Math.min(88, CONFIG.lookAltitude + panAlt));
+			const t0 = altDeg * DEG;
 			const cosT = Math.cos(t0);
 			const fN = cosT * Math.cos(a0);
 			const fE = cosT * Math.sin(a0);
@@ -314,9 +354,14 @@
 			const offY = py * CONFIG.parallax;
 
 			// Cap the drift between reprojections to a small angular step so a sped-up
-			// sky glides instead of stepping at the 10 Hz base cadence. At timeScale 1
-			// this stays at PROJECT_MS; the faster the sky, the more often we reproject.
-			const projectInterval = Math.min(PROJECT_MS, 12000 / CONFIG.timeScale);
+			// sky (or a fast camera pan) glides instead of stepping at the 10 Hz base
+			// cadence. drift is degrees of movement per real ms — sidereal rotation
+			// (15°/hr × timeScale) plus the faster pan axis; the faster it moves, the
+			// more often we reproject. At timeScale 1 with no pan this stays at PROJECT_MS.
+			const drift =
+				CONFIG.timeScale * (15 / 3_600_000) +
+				Math.max(Math.abs(panAzRate), Math.abs(panAltRate)) / 1000;
+			const projectInterval = drift > 0 ? Math.min(PROJECT_MS, 0.05 / drift) : PROJECT_MS;
 			if (projectDirty || now - lastProjectAt >= projectInterval) project(now);
 
 			const twAmt = CONFIG.twinkle;
@@ -420,12 +465,15 @@
 		win.skyView = {
 			list: () => CONFIG.vantages.map((v, i) => `${i}: ${v.name}`),
 			setVantage: (i: number) => CONFIG.vantages[i] && setLocation(CONFIG.vantages[i]),
-			setTimeScale, // live-tune the drift speed while recording (1 = real time)
+			setTimeScale, // live-tune the sidereal drift speed (1 = real time)
+			setPan, // constant camera pan, deg/sec: setPan(azimuthRate, altitudeRate); altitude = vertical
+			setLook, // re-point the camera: setLook(azimuthDeg, altitudeDeg); changes the drift's direction
 			useMyLocation
 		};
 
-		// Now that the loop owns setTimeScale, let the reactive prop drive it.
+		// Now that the loop owns the setters, let the reactive props drive them.
 		applyTimeScale = setTimeScale;
+		applyPan = setPan;
 
 		window.addEventListener('resize', resize);
 		window.addEventListener('pointermove', onPointer, { passive: true });

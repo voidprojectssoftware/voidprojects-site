@@ -42,11 +42,16 @@
 
 <!--
 	On the capture page, hide the location label so it stays out of recordings, and
-	speed up the sky's drift (real-time rotation is too slow to read on video) so the
-	stars visibly move on their own. ~720× = a full sky rotation every two minutes;
-	tune live in the console with skyView.setTimeScale(n).
+	give the field visible autonomous motion for video: a sped-up sidereal drift plus a
+	gentle horizontal camera pan (deg/sec). Real-time rotation alone is too slow to read.
+	Azimuth panning wraps around forever, so it never runs out mid-clip.
+	Tune live in the console with skyView.setTimeScale(n) / skyView.setPan(az, alt).
 -->
-<SpaceBackground showLabel={!isCapture} timeScale={isCapture ? 300 : 1} />
+<SpaceBackground
+	showLabel={!isCapture}
+	timeScale={isCapture ? 300 : 1}
+	panAz={isCapture ? 0.3 : 0}
+/>
 
 <div class="flex flex-col">
 	{@render children()}
