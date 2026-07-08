@@ -2,6 +2,7 @@
 	import './layout.css';
 	import { SpaceBackground } from '$lib/components/space-background/index.js';
 	import { afterNavigate } from '$app/navigation';
+	import { page } from '$app/state';
 	import { onMount } from 'svelte';
 
 	let { children } = $props();
@@ -36,7 +37,8 @@
 	{#if faviconHref}<link rel="icon" href={faviconHref} />{/if}
 </svelte:head>
 
-<SpaceBackground />
+<!-- larrystuff is a bare star-field capture page: hide the location label so it stays out of recordings. -->
+<SpaceBackground showLabel={page.route.id !== '/larrystuff'} />
 
 <div class="flex flex-col">
 	{@render children()}

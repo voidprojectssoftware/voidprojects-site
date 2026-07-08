@@ -17,6 +17,8 @@
 	import { lstHours, ciToRgb, type GeoLocation } from '$lib/sky/astro.js';
 	import { decode as decodeCatalog } from '$lib/sky/catalog-format.js';
 
+	let { showLabel = true } = $props(); // bottom-left location label / geolocation button
+
 	let canvas: HTMLCanvasElement;
 
 	const DEFAULT_LABEL = 'Our Sky - Memphis, TN';
@@ -426,15 +428,17 @@
 	<div class="grain absolute inset-0"></div>
 </div>
 
-<button
-	type="button"
-	onclick={() => requestLocation()}
-	disabled={locating}
-	title="Use my location"
-	class="fixed bottom-4 left-4 z-10 hidden cursor-pointer text-xs tracking-wide text-foreground/25 transition-opacity hover:text-foreground/60 disabled:cursor-progress dark:sm:block"
->
-	{locating ? 'Locating…' : skyLabel}
-</button>
+{#if showLabel}
+	<button
+		type="button"
+		onclick={() => requestLocation()}
+		disabled={locating}
+		title="Use my location"
+		class="fixed bottom-4 left-4 z-10 hidden cursor-pointer text-xs tracking-wide text-foreground/25 transition-opacity hover:text-foreground/60 disabled:cursor-progress dark:sm:block"
+	>
+		{locating ? 'Locating…' : skyLabel}
+	</button>
+{/if}
 
 <style>
 	/* flat deep-space backdrop */
