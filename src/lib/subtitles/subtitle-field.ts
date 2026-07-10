@@ -196,7 +196,7 @@ export class SubtitleField implements Actor {
 		this.started = true;
 		this.lastT = this.audio.currentTime;
 		this.lastNow = 0; // first frame measures no gap
-		this.cursor = this.cueIndexAfter(this.audio.currentTime + this.cfg.leadMs / 1000);
+		this.cursor = this.cueIndexAtOrAfter(this.audio.currentTime);
 		if (!this.reduceMotion) this.buildContainer();
 		await this.audio.play();
 		this.stage?.wake();
@@ -341,17 +341,22 @@ export class SubtitleField implements Actor {
 	private resync(t: number, now: number) {
 		for (const p of this.phrases) this.despawnPhrase(p);
 		this.phrases.length = 0;
-		this.cursor = this.cueIndexAfter(t + this.cfg.leadMs / 1000);
+		this.cursor = this.cueIndexAtOrAfter(t);
 		this.lastNow = now;
 	}
 
-	/** First cue starting strictly after `t` (binary search; the cues are sorted). */
-	private cueIndexAfter(t: number): number {
+	/**
+	 * First cue not yet begun at `t` (binary search; the cues are sorted). Pass the raw
+	 * clock, never `t + lead`: `step()` already spawns everything inside the lead window,
+	 * so biasing the cursor forward by the lead skips those cues instead of spawning them
+	 * early. A cue starting exactly at `t` has not begun, and is the cursor.
+	 */
+	private cueIndexAtOrAfter(t: number): number {
 		let lo = 0;
 		let hi = this.cues.length;
 		while (lo < hi) {
 			const mid = (lo + hi) >> 1;
-			if (this.cues[mid].start <= t) lo = mid + 1;
+			if (this.cues[mid].start < t) lo = mid + 1;
 			else hi = mid;
 		}
 		return lo;

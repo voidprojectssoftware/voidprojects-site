@@ -1,22 +1,33 @@
 <!--
 	Bare capture page: the root layout's night-sky SpaceBackground, plus the
 	voiceover subtitles drifting in it. Used to record clean visuals for a blog
-	video. Both buttons hide themselves while fullscreen is active so they stay out
-	of the recording; press Esc to exit.
+	video. Press Esc to exit fullscreen.
 
-	Playback needs a click: autoplay is blocked without a user gesture.
+	Fullscreen keeps the play button — playback needs a click, and autoplay is
+	blocked without a user gesture — but drops it the moment it is used, so the
+	recording sees an empty sky. START_DELAY_MS covers the frame the button takes
+	to leave, before the first word arrives.
 -->
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { PhysicsStage } from '$lib/physics/index.js';
 	import { SubtitleField, loadCues } from '$lib/subtitles/index.js';
 
+	const START_DELAY_MS = 1200;
+
 	let isFullscreen = $state(false);
 	let playing = $state(false);
+	let pending = $state(false);
 	let ready = $state(false);
 	let error = $state<string | null>(null);
 
+	// Latched by the click, so the fullscreen button hides for the whole take —
+	// including the tail after the audio ends, where it would pop back into frame.
+	// An explicit stop, or leaving fullscreen, brings it back.
+	let started = $state(false);
+
 	let field: SubtitleField | null = null;
+	let startTimer: ReturnType<typeof setTimeout> | null = null;
 
 	function enterFullscreen() {
 		document.documentElement.requestFullscreen?.();
@@ -24,12 +35,30 @@
 
 	function syncState() {
 		isFullscreen = document.fullscreenElement !== null;
+		if (!isFullscreen) started = false;
+	}
+
+	function cancelStart() {
+		if (startTimer !== null) clearTimeout(startTimer);
+		startTimer = null;
+		pending = false;
 	}
 
 	function toggle() {
 		if (!field) return;
-		if (playing) field.stop();
-		else field.play().catch((e) => (error = `playback blocked: ${e.message}`));
+		if (pending || playing) {
+			cancelStart();
+			field.stop();
+			started = false;
+			return;
+		}
+		started = true;
+		pending = true;
+		startTimer = setTimeout(() => {
+			startTimer = null;
+			pending = false;
+			field?.play().catch((e) => (error = `playback blocked: ${e.message}`));
+		}, START_DELAY_MS);
 	}
 
 	onMount(() => {
@@ -61,6 +90,7 @@
 
 		return () => {
 			disposed = true;
+			cancelStart();
 			delete w.voDebug;
 			delete w.voState;
 			delete w.voPlay;
@@ -76,15 +106,17 @@
 
 <svelte:document onfullscreenchange={syncState} />
 
-{#if !isFullscreen}
+{#if !isFullscreen || !started}
 	<div class="controls">
 		{#if error}
 			<span class="err">{error}</span>
 		{/if}
 		<button class="btn" onclick={toggle} disabled={!ready}>
-			{playing ? 'Stop voiceover' : 'Play voiceover'}
+			{pending ? 'Starting…' : playing ? 'Stop voiceover' : 'Play voiceover'}
 		</button>
-		<button class="btn" onclick={enterFullscreen}>Go fullscreen</button>
+		{#if !isFullscreen}
+			<button class="btn" onclick={enterFullscreen}>Go fullscreen</button>
+		{/if}
 	</div>
 {/if}
 
