@@ -58,7 +58,7 @@ export type GraphSpec = {
 
 /** Tunable knobs for how the graph pulls together and looks. */
 export type GraphConfig = {
-	/** Stiffness of the springs within a cluster — how rigidly a run holds shape. */
+	/** Stiffness of the springs within a cluster — how rigidly a run holds shape. Zero draws the edges without springing them, for an owner that positions the nodes itself. */
 	intraStiffness: number;
 	/** Damping of the intra-cluster springs. */
 	intraDamping: number;
@@ -140,6 +140,8 @@ export type GraphConfig = {
 	webWidth: number;
 	/** Width (px) of hub edges. */
 	hubWidth: number;
+	clipIntraEdges: boolean; // draw intra edges between the nodes' box edges, not their centers, so a line spans the gap between two text boxes instead of running through the glyphs
+	clipPad: number; // px of clearance left between a clipped endpoint and the box it was clipped to
 	/** Fill of the edge labels. */
 	labelColor: string;
 	/** Font size (px) of the prominent hub labels. */
@@ -193,6 +195,8 @@ export const GRAPH_DEFAULTS: GraphConfig = {
 	hubColor: 'rgba(196, 162, 255, 0.85)', // brand violet (matches the warp quasar core)
 	webWidth: 1,
 	hubWidth: 1.5,
+	clipIntraEdges: false, // the hero's letters are chained through their centers
+	clipPad: 0,
 	labelColor: 'rgba(214, 224, 255, 0.92)',
 	hubLabelSize: 17,
 	intraLabelSize: 11,
@@ -214,9 +218,10 @@ type Edge = {
 	b: Matter.Body;
 	line: SVGLineElement;
 	label: SVGTextElement | null;
-	constraint: Matter.Constraint;
-	/** Which endpoint to draw at its body's box edge (the hub) rather than its center. */
-	clip: 'a' | 'b' | null;
+	/** Null for a zero-stiffness edge: a drawn relationship that pulls on nothing. */
+	constraint: Matter.Constraint | null;
+	/** Which endpoints to draw at their body's box edge rather than its center. */
+	clip: 'a' | 'b' | 'both' | null;
 };
 
 /**
@@ -381,7 +386,8 @@ export class RelationGraph implements Actor {
 					width: this.cfg.webWidth,
 					label: cluster.intraLabel,
 					labelSize: this.cfg.intraLabelSize,
-					labelOpacity: this.cfg.intraLabelOpacity
+					labelOpacity: this.cfg.intraLabelOpacity,
+					clip: this.cfg.clipIntraEdges ? 'both' : undefined
 				});
 			}
 
@@ -446,7 +452,7 @@ export class RelationGraph implements Actor {
 	/** Tear the graph down: drop the constraints, restore damping, remove the overlay. */
 	deactivate() {
 		if (!this.active) return;
-		for (const e of this.edges) this.stage?.removeConstraint(e.constraint);
+		for (const e of this.edges) if (e.constraint) this.stage?.removeConstraint(e.constraint);
 		this.edges.length = 0;
 		this.nodeBodies = [];
 		this.hubBody = null;
@@ -588,13 +594,28 @@ export class RelationGraph implements Actor {
 		this.group.style.opacity = `${clamp01((ctx.now - this.activatedAt) / this.cfg.fadeMs) * this.fade}`;
 
 		for (const e of this.edges) {
-			let ax = e.a.position.x;
-			let ay = e.a.position.y;
-			let bx = e.b.position.x;
-			let by = e.b.position.y;
-			// Clip the hub endpoint to the card's box edge so the line stops at its border.
-			if (e.clip === 'b') [bx, by] = this.clipToBox(e.b, ax, ay);
-			else if (e.clip === 'a') [ax, ay] = this.clipToBox(e.a, bx, by);
+			const acx = e.a.position.x;
+			const acy = e.a.position.y;
+			const bcx = e.b.position.x;
+			const bcy = e.b.position.y;
+			let ax = acx;
+			let ay = acy;
+			let bx = bcx;
+			let by = bcy;
+			// Clip to the box edge so the line stops at a border (the card's, or both
+			// words' boxes) instead of running to the center. Both ends are measured from
+			// the raw centers, never from an already-clipped endpoint.
+			if (e.clip === 'b' || e.clip === 'both') [bx, by] = this.clipToBox(e.b, acx, acy);
+			if (e.clip === 'a' || e.clip === 'both') [ax, ay] = this.clipToBox(e.a, bcx, bcy);
+
+			// Two padded boxes close enough to overlap push their clipped endpoints past
+			// each other, which would draw the segment reversed. Hide it until they part.
+			if (e.clip === 'both') {
+				const crossed = (bx - ax) * (bcx - acx) + (by - ay) * (bcy - acy) <= 0;
+				e.line.style.visibility = crossed ? 'hidden' : '';
+				if (e.label) e.label.style.visibility = crossed ? 'hidden' : '';
+				if (crossed) continue;
+			}
 			e.line.setAttribute('x1', `${ax}`);
 			e.line.setAttribute('y1', `${ay}`);
 			e.line.setAttribute('x2', `${bx}`);
@@ -749,18 +770,25 @@ export class RelationGraph implements Actor {
 			label?: string;
 			labelSize: number;
 			labelOpacity: number;
-			clip?: 'a' | 'b';
+			clip?: 'a' | 'b' | 'both';
 		}
 	) {
-		const constraint = Constraint.create({
-			bodyA: a,
-			bodyB: b,
-			length: opts.length,
-			stiffness: opts.stiffness,
-			damping: opts.damping,
-			render: { visible: false } // we draw our own line; hide Matter's
-		});
-		this.stage?.addConstraint(constraint);
+		// A zero-stiffness edge is drawn but never sprung — the owner positions these
+		// nodes itself. Matter cannot express that: `Constraint.create` reads a falsy
+		// stiffness as "unset" and substitutes 1, welding the bodies rigidly. So the
+		// constraint is omitted rather than created limp.
+		let constraint: Matter.Constraint | null = null;
+		if (opts.stiffness > 0) {
+			constraint = Constraint.create({
+				bodyA: a,
+				bodyB: b,
+				length: opts.length,
+				stiffness: opts.stiffness,
+				damping: opts.damping,
+				render: { visible: false } // we draw our own line; hide Matter's
+			});
+			this.stage?.addConstraint(constraint);
+		}
 
 		const line = document.createElementNS(SVG_NS, 'line');
 		line.setAttribute('stroke', opts.color);
@@ -788,15 +816,16 @@ export class RelationGraph implements Actor {
 	}
 
 	/**
-	 * The point on a body's axis-aligned box edge along the ray from its center
-	 * toward (tx, ty), so a line meets the card's border instead of its center.
-	 * If the target is already inside the box, returns it unchanged.
+	 * The point on a body's axis-aligned box edge (grown by {@link GraphConfig.clipPad})
+	 * along the ray from its center toward (tx, ty), so a line meets the card's border
+	 * instead of its center. If the target is already inside the box, returns it unchanged.
 	 */
 	private clipToBox(body: Matter.Body, tx: number, ty: number): [number, number] {
+		const pad = this.cfg.clipPad;
 		const cx = body.position.x;
 		const cy = body.position.y;
-		const hw = (body.bounds.max.x - body.bounds.min.x) / 2 || 1;
-		const hh = (body.bounds.max.y - body.bounds.min.y) / 2 || 1;
+		const hw = (body.bounds.max.x - body.bounds.min.x) / 2 + pad || 1;
+		const hh = (body.bounds.max.y - body.bounds.min.y) / 2 + pad || 1;
 		const dx = tx - cx;
 		const dy = ty - cy;
 		const m = Math.max(Math.abs(dx) / hw, Math.abs(dy) / hh);
