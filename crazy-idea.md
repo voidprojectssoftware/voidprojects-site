@@ -47,6 +47,16 @@ Playback starts on a click. Autoplay is blocked without a user gesture, and the 
 - Tab-hide is the real bug. RAF pauses while audio keeps playing, so on return `t` has jumped and the `while` loop dumps thirty words into the world at once. On a frame gap over threshold, fast-forward the cursor without spawning.
 - Backward seeks mean `t < lastT`. Binary-search the cursor back and despawn anything ahead of it.
 
+**Coloring by part of speech.** `scripts/build-cues.mjs` runs the whole voiceover through [compromise](https://github.com/spencermountain/compromise) and writes a `p` tag onto every word, which `SubtitleField` maps to a fill in `POS_COLORS`. Tagging is a build step for the same reason alignment is: the words never change, so the browser should not ship a 200KB NLP library to rediscover that "stars" is a noun.
+
+The document is tagged whole, not cue by cue — a cue is a fragment, and compromise reads "code," as a verb or a noun depending on the sentence around it. Terms come back with character offsets into the input, which is what lets them be matched to the words that produced them even though compromise does not hand back the tokens it was given: a contraction expands ("there's" becomes "there" plus a zero-length "is" carrying the verb tags) and a hyphenate splits ("how-to" becomes "how" plus "to"). Both land inside the word's span, so a word takes the first part of speech among the terms overlapping it.
+
+Content words are bright and hued, grammatical scaffolding is desaturated and dim, and nouns keep the near-white the subtitles had before there was a palette — they are a quarter of the script, and the sky should not turn into a highlighter. The connector lines stay neutral: colored words on colored edges is soup. `npm run build:cues -- --pos` prints the tag chosen for every word.
+
+The tagger is right about 97% of the time, and `POS_OVERRIDES` corrects the rest: it reads the "code," ending a list of nouns as a bare infinitive, "tell" in "let us tell stories" as the noun, and the sentence-final "now." as the "now that" conjunction. "what" it declines to tag at all. Keys are the word, lowercased and stripped of edge punctuation; `word#n` corrects only the nth occurrence, for a word that is genuinely two parts of speech in two places.
+
+An override that matches no word, or that agrees with the tagger, fails the build. Both are how a table like this rots: the first is a typo or a line left behind by a script edit, and the second outlives the bug it was written for, so that upgrading compromise silently makes it a lie. `--pos` stars the words the table corrected.
+
 **Why not WebVTT.** It supports karaoke-style inline word timings (`<00:01.240>we <00:01.450>build`) and the browser fires `cuechange` for free, but `cuechange` only fires at cue granularity — the inline timings still have to be parsed by hand. JSON is simpler and skips the `<track>` element.
 
 ## Voice Over file and script

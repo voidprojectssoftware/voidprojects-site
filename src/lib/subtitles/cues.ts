@@ -4,11 +4,28 @@
  * springs into a legible chain; a word is the unit that enters on its own beat.
  */
 
+/**
+ * The part of speech `scripts/build-cues.mjs` assigned, via compromise. `other` is
+ * both the tagger's shrug and the fallback for a cue file written before tagging.
+ */
+export type PartOfSpeech =
+	| 'noun'
+	| 'verb'
+	| 'adjective'
+	| 'adverb'
+	| 'pronoun'
+	| 'determiner'
+	| 'preposition'
+	| 'conjunction'
+	| 'numeral'
+	| 'other';
+
 /** One spoken word: when it starts, how long it lasts, and the text to draw. */
 export type CueWord = {
 	t: number; // start (seconds into the audio)
 	d: number; // spoken duration (seconds)
 	w: string; // display text, punctuation and all
+	p?: PartOfSpeech; // part of speech; absent in a cue file built before tagging
 };
 
 /** One phrase: a run of words short enough to read as a floating chain. */

@@ -2,9 +2,38 @@ import Matter from 'matter-js';
 import type { Actor, StepCtx } from '../physics/actor.js';
 import type { PhysicsStage } from '../physics/stage.js';
 import { RelationGraph, type GraphConfig, type GraphSpec } from '../physics/relation-graph.js';
-import type { Cue, CueWord, VoCues } from './cues.js';
+import type { Cue, CueWord, PartOfSpeech, VoCues } from './cues.js';
 
 const { Bodies, Body } = Matter;
+
+/**
+ * A word's fill, by part of speech. Six-digit hex, because {@link withAlpha} derives
+ * each word's glow from it.
+ *
+ * Content words are bright and hued; the grammatical scaffolding — determiners,
+ * prepositions, conjunctions — is desaturated and dim, so a phrase still reads
+ * meaning-first rather than as nine colors of equal shout. Nouns stay near the
+ * white the subtitles used before there was a palette, since they are the plurality
+ * of the script and the sky should not turn into a highlighter.
+ */
+export const POS_COLORS: Record<PartOfSpeech, string> = {
+	noun: '#e2e8ff', // near-white: the old subtitle color, kept as the baseline
+	verb: '#ffc978', // amber
+	adjective: '#8fe3c3', // mint
+	adverb: '#f4a8d8', // pink
+	pronoun: '#8fd8ff', // cyan
+	numeral: '#ffe08a', // gold
+	determiner: '#9aa3b8', // grey, recessive
+	preposition: '#7f93c4', // slate blue, recessive
+	conjunction: '#a48fc8', // violet, recessive
+	other: '#b6c0d6' // neutral: the tagger had no answer
+};
+
+/** `#rrggbb` -> `rgba(r, g, b, a)`. */
+function withAlpha(hex: string, alpha: number): string {
+	const n = parseInt(hex.slice(1), 16);
+	return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${alpha})`;
+}
 
 /** Tunable knobs for how the subtitles enter, read, and leave. */
 export type SubtitleConfig = {
@@ -31,7 +60,9 @@ export type SubtitleConfig = {
 	density: number;
 	frictionAir: number;
 	restitution: number;
-	color: string; // word fill
+	posColors: Record<PartOfSpeech, string>; // word fill, by part of speech; six-digit hex
+	glowRadius: number; // px of colored bloom behind a word, so its part of speech reads at subtitle sizes where the fill alone is too thin a signal; 0 disables
+	glowAlpha: number;
 	fontWeight: string;
 	graph: Partial<GraphConfig>; // overrides merged into each phrase's {@link RelationGraph} config
 };
@@ -60,7 +91,9 @@ export const SUBTITLE_DEFAULTS: SubtitleConfig = {
 	density: 0.001,
 	frictionAir: 0.05,
 	restitution: 0.2,
-	color: 'rgba(222, 230, 255, 0.96)',
+	posColors: POS_COLORS,
+	glowRadius: 14,
+	glowAlpha: 0.34,
 	fontWeight: '500',
 	graph: {
 		// The row springs own the layout, so these edges are drawn but never sprung —
@@ -181,6 +214,7 @@ export class SubtitleField implements Actor {
 		this.cfg = {
 			...SUBTITLE_DEFAULTS,
 			...config,
+			posColors: { ...SUBTITLE_DEFAULTS.posColors, ...config.posColors },
 			graph: { ...SUBTITLE_DEFAULTS.graph, ...config.graph }
 		};
 		this.cues = cues.cues;
@@ -429,10 +463,16 @@ export class SubtitleField implements Actor {
 		const els = cues.map((w) => {
 			const span = document.createElement('span');
 			span.textContent = w.w;
+			const color = this.cfg.posColors[w.p ?? 'other'] ?? this.cfg.posColors.other;
+			// The dark halo is what makes a word legible against a star, so it stays
+			// innermost; the colored bloom sits behind it and never between it and the text.
+			const glow = this.cfg.glowRadius
+				? `,0 0 ${this.cfg.glowRadius}px ${withAlpha(color, this.cfg.glowAlpha)}`
+				: '';
 			span.style.cssText =
 				`position:absolute;left:0;top:0;opacity:0;will-change:transform,opacity;white-space:pre;` +
-				`font-size:${size}px;font-weight:${this.cfg.fontWeight};color:${this.cfg.color};` +
-				`text-shadow:0 0 6px rgba(8,10,20,0.9),0 0 2px rgba(8,10,20,0.9)`;
+				`font-size:${size}px;font-weight:${this.cfg.fontWeight};color:${color};` +
+				`text-shadow:0 0 6px rgba(8,10,20,0.9),0 0 2px rgba(8,10,20,0.9)${glow}`;
 			parent.appendChild(span);
 			return span;
 		});
