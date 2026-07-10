@@ -12,7 +12,7 @@
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"lint": "prettier --check . && eslint .",
 		"format": "prettier --write .",
-		"align:vo": "uv run --script scripts/align_vo.py --audio Main_VO_04.wav --transcript scripts/vo/hero.txt --out scripts/vo/hero.cues.txt",
+		"align:vo": "uv run --script scripts/align_vo.py --audio fullVoFromVideo.wav --transcript scripts/vo/hero.txt --out scripts/vo/hero.cues.txt",
 		"build:cues": "node scripts/build-cues.mjs",
 		"gen:stars": "node scripts/gen-star-catalog.mjs",
 		"gen:trajectories": "node scripts/fetch-trajectories.mjs",

@@ -61,7 +61,9 @@ An override that matches no word, or that agrees with the tagger, fails the buil
 
 ## Voice Over file and script
 
-`Main_VO_04.wav`
+`fullVoFromVideo.wav`, the VO track lifted whole from the video, superseding the `Main_VO_04.wav` the first cues were timed against. Cue times are in its timeline, so they carry its shape: 1.37s of silence before the first word, and 18s more between "...work on now." and "We've been yelling..." — a hole where the video's VO track is empty, not a pause anyone performed. The track then runs 10s past the last word.
+
+The old recording is a bit-exact copy inside the new one, offset by 1.3667s. That is why the existing cues were shifted by a flat +1.37 rather than realigned: a rounded shift preserves every hand-tuned grouping and every relative word timing exactly, and lands 3ms from the truth — an order of magnitude inside the `leadMs` the words already spawn early by. Only the two closing sentences were force-aligned, against a slice of the tail, and appended.
 
 The great thing about being in a group like Void Projects is that I can work on whatever I want. The downside is that there's so much stuff I want.
 
@@ -69,8 +71,10 @@ There's so much stuff at any job, really. You could drown in all the emails, tic
 
 But sometimes I look at all this stuff and wonder, "Where's the information?" I know it's in there somewhere. It's just buried in layers of chaos.
 
-When we look up at the stars, we draw lines that aren't really there. They let us tell stories and point our ships the right way. 
+When we look up at the stars, we draw lines that aren't really there. They let us tell stories and point our ships the right way.
 
 I'm gonna draw lines of my own. I'm gonna build a new kind of map.
 
 I know what to work on now.
+
+We've been yelling into the void for a long time. Now we make it answer.

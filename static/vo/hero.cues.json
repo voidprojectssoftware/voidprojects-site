@@ -1,38 +1,38 @@
 {
 	"audio": "/vo/hero.m4a",
-	"duration": 46.13,
+	"duration": 72.18,
 	"cues": [
 		{
-			"start": 0.02,
-			"end": 1.24,
+			"start": 1.39,
+			"end": 2.61,
 			"text": "The great thing about being",
 			"words": [
 				{
-					"t": 0.02,
+					"t": 1.39,
 					"d": 0.08,
 					"w": "The",
 					"p": "determiner"
 				},
 				{
-					"t": 0.1,
+					"t": 1.47,
 					"d": 0.28,
 					"w": "great",
 					"p": "adjective"
 				},
 				{
-					"t": 0.38,
+					"t": 1.75,
 					"d": 0.38,
 					"w": "thing",
 					"p": "noun"
 				},
 				{
-					"t": 0.76,
+					"t": 2.13,
 					"d": 0.26,
 					"w": "about",
 					"p": "preposition"
 				},
 				{
-					"t": 1.02,
+					"t": 2.39,
 					"d": 0.22,
 					"w": "being",
 					"p": "verb"
@@ -40,24 +40,24 @@
 			]
 		},
 		{
-			"start": 1.26,
-			"end": 1.62,
+			"start": 2.63,
+			"end": 2.99,
 			"text": "in a group",
 			"words": [
 				{
-					"t": 1.26,
+					"t": 2.63,
 					"d": 0.08,
 					"w": "in",
 					"p": "preposition"
 				},
 				{
-					"t": 1.34,
+					"t": 2.71,
 					"d": 0.08,
 					"w": "a",
 					"p": "determiner"
 				},
 				{
-					"t": 1.42,
+					"t": 2.79,
 					"d": 0.2,
 					"w": "group",
 					"p": "noun"
@@ -65,24 +65,24 @@
 			]
 		},
 		{
-			"start": 1.66,
-			"end": 3.06,
+			"start": 3.03,
+			"end": 4.43,
 			"text": "like Void Projects",
 			"words": [
 				{
-					"t": 1.66,
+					"t": 3.03,
 					"d": 0.2,
 					"w": "like",
 					"p": "preposition"
 				},
 				{
-					"t": 1.86,
+					"t": 3.23,
 					"d": 0.28,
 					"w": "Void",
 					"p": "noun"
 				},
 				{
-					"t": 2.14,
+					"t": 3.51,
 					"d": 0.92,
 					"w": "Projects",
 					"p": "noun"
@@ -90,42 +90,42 @@
 			]
 		},
 		{
-			"start": 3.06,
-			"end": 4.02,
+			"start": 4.43,
+			"end": 5.39,
 			"text": "is that I can work on",
 			"words": [
 				{
-					"t": 3.06,
+					"t": 4.43,
 					"d": 0.08,
 					"w": "is",
 					"p": "verb"
 				},
 				{
-					"t": 3.14,
+					"t": 4.51,
 					"d": 0.26,
 					"w": "that",
 					"p": "conjunction"
 				},
 				{
-					"t": 3.4,
+					"t": 4.77,
 					"d": 0.04,
 					"w": "I",
 					"p": "pronoun"
 				},
 				{
-					"t": 3.44,
+					"t": 4.81,
 					"d": 0.18,
 					"w": "can",
 					"p": "verb"
 				},
 				{
-					"t": 3.62,
+					"t": 4.99,
 					"d": 0.26,
 					"w": "work",
 					"p": "verb"
 				},
 				{
-					"t": 3.88,
+					"t": 5.25,
 					"d": 0.14,
 					"w": "on",
 					"p": "preposition"
@@ -133,24 +133,24 @@
 			]
 		},
 		{
-			"start": 4.02,
-			"end": 4.96,
+			"start": 5.39,
+			"end": 6.33,
 			"text": "whatever I want.",
 			"words": [
 				{
-					"t": 4.02,
+					"t": 5.39,
 					"d": 0.56,
 					"w": "whatever",
 					"p": "determiner"
 				},
 				{
-					"t": 4.58,
+					"t": 5.95,
 					"d": 0.08,
 					"w": "I",
 					"p": "pronoun"
 				},
 				{
-					"t": 4.66,
+					"t": 6.03,
 					"d": 0.3,
 					"w": "want.",
 					"p": "verb"
@@ -158,18 +158,18 @@
 			]
 		},
 		{
-			"start": 5.44,
-			"end": 6.4,
+			"start": 6.81,
+			"end": 7.77,
 			"text": "The downside",
 			"words": [
 				{
-					"t": 5.44,
+					"t": 6.81,
 					"d": 0.12,
 					"w": "The",
 					"p": "determiner"
 				},
 				{
-					"t": 5.56,
+					"t": 6.93,
 					"d": 0.84,
 					"w": "downside",
 					"p": "noun"
@@ -177,54 +177,54 @@
 			]
 		},
 		{
-			"start": 6.4,
-			"end": 8.1,
+			"start": 7.77,
+			"end": 9.47,
 			"text": "is that there's so much stuff I want.",
 			"words": [
 				{
-					"t": 6.4,
+					"t": 7.77,
 					"d": 0.12,
 					"w": "is",
 					"p": "verb"
 				},
 				{
-					"t": 6.52,
+					"t": 7.89,
 					"d": 0.16,
 					"w": "that",
 					"p": "determiner"
 				},
 				{
-					"t": 6.68,
+					"t": 8.05,
 					"d": 0.28,
 					"w": "there's",
 					"p": "pronoun"
 				},
 				{
-					"t": 6.96,
+					"t": 8.33,
 					"d": 0.16,
 					"w": "so",
 					"p": "adverb"
 				},
 				{
-					"t": 7.12,
+					"t": 8.49,
 					"d": 0.24,
 					"w": "much",
 					"p": "determiner"
 				},
 				{
-					"t": 7.36,
+					"t": 8.73,
 					"d": 0.36,
 					"w": "stuff",
 					"p": "noun"
 				},
 				{
-					"t": 7.72,
+					"t": 9.09,
 					"d": 0.08,
 					"w": "I",
 					"p": "pronoun"
 				},
 				{
-					"t": 7.8,
+					"t": 9.17,
 					"d": 0.3,
 					"w": "want.",
 					"p": "verb"
@@ -232,30 +232,30 @@
 			]
 		},
 		{
-			"start": 8.62,
-			"end": 9.46,
+			"start": 9.99,
+			"end": 10.83,
 			"text": "There's so much stuff",
 			"words": [
 				{
-					"t": 8.62,
+					"t": 9.99,
 					"d": 0.18,
 					"w": "There's",
 					"p": "pronoun"
 				},
 				{
-					"t": 8.8,
+					"t": 10.17,
 					"d": 0.14,
 					"w": "so",
 					"p": "adverb"
 				},
 				{
-					"t": 8.94,
+					"t": 10.31,
 					"d": 0.22,
 					"w": "much",
 					"p": "determiner"
 				},
 				{
-					"t": 9.16,
+					"t": 10.53,
 					"d": 0.3,
 					"w": "stuff",
 					"p": "noun"
@@ -263,30 +263,30 @@
 			]
 		},
 		{
-			"start": 9.54,
-			"end": 10.64,
+			"start": 10.91,
+			"end": 12.01,
 			"text": "at any job, really.",
 			"words": [
 				{
-					"t": 9.54,
+					"t": 10.91,
 					"d": 0.32,
 					"w": "at",
 					"p": "preposition"
 				},
 				{
-					"t": 9.86,
+					"t": 11.23,
 					"d": 0.22,
 					"w": "any",
 					"p": "determiner"
 				},
 				{
-					"t": 10.08,
+					"t": 11.45,
 					"d": 0.32,
 					"w": "job,",
 					"p": "noun"
 				},
 				{
-					"t": 10.4,
+					"t": 11.77,
 					"d": 0.24,
 					"w": "really.",
 					"p": "adverb"
@@ -294,42 +294,42 @@
 			]
 		},
 		{
-			"start": 11.1,
-			"end": 12.18,
+			"start": 12.47,
+			"end": 13.55,
 			"text": "You could drown in all the",
 			"words": [
 				{
-					"t": 11.1,
+					"t": 12.47,
 					"d": 0.1,
 					"w": "You",
 					"p": "pronoun"
 				},
 				{
-					"t": 11.2,
+					"t": 12.57,
 					"d": 0.16,
 					"w": "could",
 					"p": "verb"
 				},
 				{
-					"t": 11.36,
+					"t": 12.73,
 					"d": 0.44,
 					"w": "drown",
 					"p": "verb"
 				},
 				{
-					"t": 11.8,
+					"t": 13.17,
 					"d": 0.1,
 					"w": "in",
 					"p": "preposition"
 				},
 				{
-					"t": 11.9,
+					"t": 13.27,
 					"d": 0.1,
 					"w": "all",
 					"p": "noun"
 				},
 				{
-					"t": 12,
+					"t": 13.37,
 					"d": 0.18,
 					"w": "the",
 					"p": "determiner"
@@ -337,72 +337,72 @@
 			]
 		},
 		{
-			"start": 12.18,
-			"end": 18.35,
+			"start": 13.55,
+			"end": 19.72,
 			"text": "emails, tickets, database schemas, architectural diagrams, how-to manuals, code, documentation, reports",
 			"words": [
 				{
-					"t": 12.18,
+					"t": 13.55,
 					"d": 0.54,
 					"w": "emails,",
 					"p": "noun"
 				},
 				{
-					"t": 12.72,
+					"t": 14.09,
 					"d": 0.58,
 					"w": "tickets,",
 					"p": "noun"
 				},
 				{
-					"t": 13.3,
+					"t": 14.67,
 					"d": 0.44,
 					"w": "database",
 					"p": "noun"
 				},
 				{
-					"t": 13.74,
+					"t": 15.11,
 					"d": 0.56,
 					"w": "schemas,",
 					"p": "noun"
 				},
 				{
-					"t": 14.3,
+					"t": 15.67,
 					"d": 0.63,
 					"w": "architectural",
 					"p": "adjective"
 				},
 				{
-					"t": 14.93,
+					"t": 16.3,
 					"d": 0.69,
 					"w": "diagrams,",
 					"p": "noun"
 				},
 				{
-					"t": 15.62,
+					"t": 16.99,
 					"d": 0.36,
 					"w": "how-to",
 					"p": "conjunction"
 				},
 				{
-					"t": 15.98,
+					"t": 17.35,
 					"d": 0.61,
 					"w": "manuals,",
 					"p": "noun"
 				},
 				{
-					"t": 16.59,
+					"t": 17.96,
 					"d": 0.36,
 					"w": "code,",
 					"p": "noun"
 				},
 				{
-					"t": 16.95,
+					"t": 18.32,
 					"d": 0.84,
 					"w": "documentation,",
 					"p": "noun"
 				},
 				{
-					"t": 17.79,
+					"t": 19.16,
 					"d": 0.56,
 					"w": "reports",
 					"p": "noun"
@@ -410,30 +410,30 @@
 			]
 		},
 		{
-			"start": 19.25,
-			"end": 20.07,
+			"start": 20.62,
+			"end": 21.44,
 			"text": "the list goes on.",
 			"words": [
 				{
-					"t": 19.25,
+					"t": 20.62,
 					"d": 0.12,
 					"w": "the",
 					"p": "determiner"
 				},
 				{
-					"t": 19.37,
+					"t": 20.74,
 					"d": 0.24,
 					"w": "list",
 					"p": "noun"
 				},
 				{
-					"t": 19.61,
+					"t": 20.98,
 					"d": 0.26,
 					"w": "goes",
 					"p": "verb"
 				},
 				{
-					"t": 19.87,
+					"t": 21.24,
 					"d": 0.2,
 					"w": "on.",
 					"p": "verb"
@@ -441,36 +441,36 @@
 			]
 		},
 		{
-			"start": 20.83,
-			"end": 21.79,
+			"start": 22.2,
+			"end": 23.16,
 			"text": "And we need all this",
 			"words": [
 				{
-					"t": 20.83,
+					"t": 22.2,
 					"d": 0.12,
 					"w": "And",
 					"p": "conjunction"
 				},
 				{
-					"t": 20.95,
+					"t": 22.32,
 					"d": 0.16,
 					"w": "we",
 					"p": "pronoun"
 				},
 				{
-					"t": 21.11,
+					"t": 22.48,
 					"d": 0.24,
 					"w": "need",
 					"p": "verb"
 				},
 				{
-					"t": 21.35,
+					"t": 22.72,
 					"d": 0.14,
 					"w": "all",
 					"p": "adjective"
 				},
 				{
-					"t": 21.49,
+					"t": 22.86,
 					"d": 0.3,
 					"w": "this",
 					"p": "determiner"
@@ -478,30 +478,30 @@
 			]
 		},
 		{
-			"start": 21.79,
-			"end": 23.09,
+			"start": 23.16,
+			"end": 24.46,
 			"text": "to build anything useful.",
 			"words": [
 				{
-					"t": 21.79,
+					"t": 23.16,
 					"d": 0.14,
 					"w": "to",
 					"p": "conjunction"
 				},
 				{
-					"t": 21.93,
+					"t": 23.3,
 					"d": 0.38,
 					"w": "build",
 					"p": "verb"
 				},
 				{
-					"t": 22.31,
+					"t": 23.68,
 					"d": 0.46,
 					"w": "anything",
 					"p": "noun"
 				},
 				{
-					"t": 22.77,
+					"t": 24.14,
 					"d": 0.32,
 					"w": "useful.",
 					"p": "adjective"
@@ -509,30 +509,30 @@
 			]
 		},
 		{
-			"start": 23.53,
-			"end": 24.63,
+			"start": 24.9,
+			"end": 26,
 			"text": "But sometimes I look",
 			"words": [
 				{
-					"t": 23.53,
+					"t": 24.9,
 					"d": 0.18,
 					"w": "But",
 					"p": "conjunction"
 				},
 				{
-					"t": 23.71,
+					"t": 25.08,
 					"d": 0.74,
 					"w": "sometimes",
 					"p": "adverb"
 				},
 				{
-					"t": 24.45,
+					"t": 25.82,
 					"d": 0.06,
 					"w": "I",
 					"p": "pronoun"
 				},
 				{
-					"t": 24.51,
+					"t": 25.88,
 					"d": 0.12,
 					"w": "look",
 					"p": "verb"
@@ -540,42 +540,42 @@
 			]
 		},
 		{
-			"start": 24.67,
-			"end": 25.89,
+			"start": 26.04,
+			"end": 27.26,
 			"text": "at all this stuff and wonder,",
 			"words": [
 				{
-					"t": 24.67,
+					"t": 26.04,
 					"d": 0.1,
 					"w": "at",
 					"p": "preposition"
 				},
 				{
-					"t": 24.77,
+					"t": 26.14,
 					"d": 0.1,
 					"w": "all",
 					"p": "noun"
 				},
 				{
-					"t": 24.87,
+					"t": 26.24,
 					"d": 0.2,
 					"w": "this",
 					"p": "determiner"
 				},
 				{
-					"t": 25.07,
+					"t": 26.44,
 					"d": 0.38,
 					"w": "stuff",
 					"p": "noun"
 				},
 				{
-					"t": 25.45,
+					"t": 26.82,
 					"d": 0.14,
 					"w": "and",
 					"p": "conjunction"
 				},
 				{
-					"t": 25.59,
+					"t": 26.96,
 					"d": 0.3,
 					"w": "wonder,",
 					"p": "verb"
@@ -583,24 +583,24 @@
 			]
 		},
 		{
-			"start": 26.73,
-			"end": 27.61,
+			"start": 28.1,
+			"end": 28.98,
 			"text": "Where's the information?",
 			"words": [
 				{
-					"t": 26.73,
+					"t": 28.1,
 					"d": 0.26,
 					"w": "Where's",
 					"p": "noun"
 				},
 				{
-					"t": 26.99,
+					"t": 28.36,
 					"d": 0.1,
 					"w": "the",
 					"p": "determiner"
 				},
 				{
-					"t": 27.09,
+					"t": 28.46,
 					"d": 0.52,
 					"w": "information?",
 					"p": "noun"
@@ -608,42 +608,42 @@
 			]
 		},
 		{
-			"start": 28.35,
-			"end": 29.59,
+			"start": 29.72,
+			"end": 30.96,
 			"text": "I know it's in there somewhere.",
 			"words": [
 				{
-					"t": 28.35,
+					"t": 29.72,
 					"d": 0.08,
 					"w": "I",
 					"p": "pronoun"
 				},
 				{
-					"t": 28.43,
+					"t": 29.8,
 					"d": 0.24,
 					"w": "know",
 					"p": "verb"
 				},
 				{
-					"t": 28.67,
+					"t": 30.04,
 					"d": 0.16,
 					"w": "it's",
 					"p": "pronoun"
 				},
 				{
-					"t": 28.83,
+					"t": 30.2,
 					"d": 0.08,
 					"w": "in",
 					"p": "preposition"
 				},
 				{
-					"t": 28.91,
+					"t": 30.28,
 					"d": 0.24,
 					"w": "there",
 					"p": "noun"
 				},
 				{
-					"t": 29.15,
+					"t": 30.52,
 					"d": 0.44,
 					"w": "somewhere.",
 					"p": "adverb"
@@ -651,24 +651,24 @@
 			]
 		},
 		{
-			"start": 30.27,
-			"end": 31.29,
+			"start": 31.64,
+			"end": 32.66,
 			"text": "It's just buried",
 			"words": [
 				{
-					"t": 30.27,
+					"t": 31.64,
 					"d": 0.12,
 					"w": "It's",
 					"p": "pronoun"
 				},
 				{
-					"t": 30.39,
+					"t": 31.76,
 					"d": 0.22,
 					"w": "just",
 					"p": "adverb"
 				},
 				{
-					"t": 30.61,
+					"t": 31.98,
 					"d": 0.68,
 					"w": "buried",
 					"p": "verb"
@@ -676,30 +676,30 @@
 			]
 		},
 		{
-			"start": 31.29,
-			"end": 32.39,
+			"start": 32.66,
+			"end": 33.76,
 			"text": "in layers of chaos.",
 			"words": [
 				{
-					"t": 31.29,
+					"t": 32.66,
 					"d": 0.14,
 					"w": "in",
 					"p": "preposition"
 				},
 				{
-					"t": 31.43,
+					"t": 32.8,
 					"d": 0.36,
 					"w": "layers",
 					"p": "noun"
 				},
 				{
-					"t": 31.79,
+					"t": 33.16,
 					"d": 0.14,
 					"w": "of",
 					"p": "preposition"
 				},
 				{
-					"t": 31.93,
+					"t": 33.3,
 					"d": 0.46,
 					"w": "chaos.",
 					"p": "noun"
@@ -707,30 +707,30 @@
 			]
 		},
 		{
-			"start": 33.47,
-			"end": 33.97,
+			"start": 34.84,
+			"end": 35.34,
 			"text": "When we look up",
 			"words": [
 				{
-					"t": 33.47,
+					"t": 34.84,
 					"d": 0.14,
 					"w": "When",
 					"p": "preposition"
 				},
 				{
-					"t": 33.61,
+					"t": 34.98,
 					"d": 0.14,
 					"w": "we",
 					"p": "pronoun"
 				},
 				{
-					"t": 33.75,
+					"t": 35.12,
 					"d": 0.14,
 					"w": "look",
 					"p": "verb"
 				},
 				{
-					"t": 33.89,
+					"t": 35.26,
 					"d": 0.08,
 					"w": "up",
 					"p": "verb"
@@ -738,24 +738,24 @@
 			]
 		},
 		{
-			"start": 34.01,
-			"end": 34.63,
+			"start": 35.38,
+			"end": 36,
 			"text": "at the stars,",
 			"words": [
 				{
-					"t": 34.01,
+					"t": 35.38,
 					"d": 0.06,
 					"w": "at",
 					"p": "preposition"
 				},
 				{
-					"t": 34.07,
+					"t": 35.44,
 					"d": 0.14,
 					"w": "the",
 					"p": "determiner"
 				},
 				{
-					"t": 34.21,
+					"t": 35.58,
 					"d": 0.42,
 					"w": "stars,",
 					"p": "noun"
@@ -763,24 +763,24 @@
 			]
 		},
 		{
-			"start": 34.93,
-			"end": 35.55,
+			"start": 36.3,
+			"end": 36.92,
 			"text": "we draw lines",
 			"words": [
 				{
-					"t": 34.93,
+					"t": 36.3,
 					"d": 0.12,
 					"w": "we",
 					"p": "pronoun"
 				},
 				{
-					"t": 35.05,
+					"t": 36.42,
 					"d": 0.24,
 					"w": "draw",
 					"p": "verb"
 				},
 				{
-					"t": 35.29,
+					"t": 36.66,
 					"d": 0.26,
 					"w": "lines",
 					"p": "noun"
@@ -788,30 +788,30 @@
 			]
 		},
 		{
-			"start": 35.55,
-			"end": 36.29,
+			"start": 36.92,
+			"end": 37.66,
 			"text": "that aren't really there.",
 			"words": [
 				{
-					"t": 35.55,
+					"t": 36.92,
 					"d": 0.14,
 					"w": "that",
 					"p": "preposition"
 				},
 				{
-					"t": 35.69,
+					"t": 37.06,
 					"d": 0.14,
 					"w": "aren't",
 					"p": "verb"
 				},
 				{
-					"t": 35.83,
+					"t": 37.2,
 					"d": 0.24,
 					"w": "really",
 					"p": "adverb"
 				},
 				{
-					"t": 36.07,
+					"t": 37.44,
 					"d": 0.22,
 					"w": "there.",
 					"p": "noun"
@@ -819,36 +819,36 @@
 			]
 		},
 		{
-			"start": 36.91,
-			"end": 38.03,
+			"start": 38.28,
+			"end": 39.4,
 			"text": "They let us tell stories",
 			"words": [
 				{
-					"t": 36.91,
+					"t": 38.28,
 					"d": 0.14,
 					"w": "They",
 					"p": "pronoun"
 				},
 				{
-					"t": 37.05,
+					"t": 38.42,
 					"d": 0.16,
 					"w": "let",
 					"p": "verb"
 				},
 				{
-					"t": 37.21,
+					"t": 38.58,
 					"d": 0.16,
 					"w": "us",
 					"p": "pronoun"
 				},
 				{
-					"t": 37.37,
+					"t": 38.74,
 					"d": 0.24,
 					"w": "tell",
 					"p": "verb"
 				},
 				{
-					"t": 37.61,
+					"t": 38.98,
 					"d": 0.42,
 					"w": "stories",
 					"p": "noun"
@@ -856,30 +856,30 @@
 			]
 		},
 		{
-			"start": 38.17,
-			"end": 38.81,
+			"start": 39.54,
+			"end": 40.18,
 			"text": "and point our ships",
 			"words": [
 				{
-					"t": 38.17,
+					"t": 39.54,
 					"d": 0.1,
 					"w": "and",
 					"p": "conjunction"
 				},
 				{
-					"t": 38.27,
+					"t": 39.64,
 					"d": 0.2,
 					"w": "point",
 					"p": "verb"
 				},
 				{
-					"t": 38.47,
+					"t": 39.84,
 					"d": 0.1,
 					"w": "our",
 					"p": "pronoun"
 				},
 				{
-					"t": 38.57,
+					"t": 39.94,
 					"d": 0.24,
 					"w": "ships",
 					"p": "noun"
@@ -887,24 +887,24 @@
 			]
 		},
 		{
-			"start": 38.87,
-			"end": 39.33,
+			"start": 40.24,
+			"end": 40.7,
 			"text": "the right way.",
 			"words": [
 				{
-					"t": 38.87,
+					"t": 40.24,
 					"d": 0.1,
 					"w": "the",
 					"p": "determiner"
 				},
 				{
-					"t": 38.97,
+					"t": 40.34,
 					"d": 0.2,
 					"w": "right",
 					"p": "adjective"
 				},
 				{
-					"t": 39.17,
+					"t": 40.54,
 					"d": 0.16,
 					"w": "way.",
 					"p": "noun"
@@ -912,30 +912,30 @@
 			]
 		},
 		{
-			"start": 40.11,
-			"end": 40.83,
+			"start": 41.48,
+			"end": 42.2,
 			"text": "I'm gonna draw lines",
 			"words": [
 				{
-					"t": 40.11,
+					"t": 41.48,
 					"d": 0.08,
 					"w": "I'm",
 					"p": "pronoun"
 				},
 				{
-					"t": 40.19,
+					"t": 41.56,
 					"d": 0.18,
 					"w": "gonna",
 					"p": "verb"
 				},
 				{
-					"t": 40.37,
+					"t": 41.74,
 					"d": 0.22,
 					"w": "draw",
 					"p": "verb"
 				},
 				{
-					"t": 40.59,
+					"t": 41.96,
 					"d": 0.24,
 					"w": "lines",
 					"p": "noun"
@@ -943,24 +943,24 @@
 			]
 		},
 		{
-			"start": 40.85,
-			"end": 41.31,
+			"start": 42.22,
+			"end": 42.68,
 			"text": "of my own.",
 			"words": [
 				{
-					"t": 40.85,
+					"t": 42.22,
 					"d": 0.08,
 					"w": "of",
 					"p": "preposition"
 				},
 				{
-					"t": 40.93,
+					"t": 42.3,
 					"d": 0.22,
 					"w": "my",
 					"p": "pronoun"
 				},
 				{
-					"t": 41.15,
+					"t": 42.52,
 					"d": 0.16,
 					"w": "own.",
 					"p": "adjective"
@@ -968,24 +968,24 @@
 			]
 		},
 		{
-			"start": 41.89,
-			"end": 42.47,
+			"start": 43.26,
+			"end": 43.84,
 			"text": "I'm gonna build",
 			"words": [
 				{
-					"t": 41.89,
+					"t": 43.26,
 					"d": 0.1,
 					"w": "I'm",
 					"p": "pronoun"
 				},
 				{
-					"t": 41.99,
+					"t": 43.36,
 					"d": 0.22,
 					"w": "gonna",
 					"p": "verb"
 				},
 				{
-					"t": 42.21,
+					"t": 43.58,
 					"d": 0.26,
 					"w": "build",
 					"p": "verb"
@@ -993,36 +993,36 @@
 			]
 		},
 		{
-			"start": 42.57,
-			"end": 43.39,
+			"start": 43.94,
+			"end": 44.76,
 			"text": "a new kind of map.",
 			"words": [
 				{
-					"t": 42.57,
+					"t": 43.94,
 					"d": 0.12,
 					"w": "a",
 					"p": "determiner"
 				},
 				{
-					"t": 42.69,
+					"t": 44.06,
 					"d": 0.18,
 					"w": "new",
 					"p": "adjective"
 				},
 				{
-					"t": 42.87,
+					"t": 44.24,
 					"d": 0.2,
 					"w": "kind",
 					"p": "noun"
 				},
 				{
-					"t": 43.07,
+					"t": 44.44,
 					"d": 0.08,
 					"w": "of",
 					"p": "preposition"
 				},
 				{
-					"t": 43.15,
+					"t": 44.52,
 					"d": 0.24,
 					"w": "map.",
 					"p": "noun"
@@ -1030,51 +1030,169 @@
 			]
 		},
 		{
-			"start": 45.07,
-			"end": 46.13,
+			"start": 46.44,
+			"end": 47.5,
 			"text": "I know what to work on now.",
 			"words": [
 				{
-					"t": 45.07,
+					"t": 46.44,
 					"d": 0.04,
 					"w": "I",
 					"p": "pronoun"
 				},
 				{
-					"t": 45.11,
+					"t": 46.48,
 					"d": 0.18,
 					"w": "know",
 					"p": "verb"
 				},
 				{
-					"t": 45.29,
+					"t": 46.66,
 					"d": 0.14,
 					"w": "what",
 					"p": "pronoun"
 				},
 				{
-					"t": 45.43,
+					"t": 46.8,
 					"d": 0.12,
 					"w": "to",
 					"p": "conjunction"
 				},
 				{
-					"t": 45.55,
+					"t": 46.92,
 					"d": 0.24,
 					"w": "work",
 					"p": "verb"
 				},
 				{
-					"t": 45.79,
+					"t": 47.16,
 					"d": 0.14,
 					"w": "on",
 					"p": "preposition"
 				},
 				{
-					"t": 45.93,
+					"t": 47.3,
 					"d": 0.2,
 					"w": "now.",
 					"p": "adverb"
+				}
+			]
+		},
+		{
+			"start": 65.78,
+			"end": 66.48,
+			"text": "We've been yelling",
+			"words": [
+				{
+					"t": 65.78,
+					"d": 0.18,
+					"w": "We've",
+					"p": "pronoun"
+				},
+				{
+					"t": 65.96,
+					"d": 0.16,
+					"w": "been",
+					"p": "verb"
+				},
+				{
+					"t": 66.12,
+					"d": 0.36,
+					"w": "yelling",
+					"p": "verb"
+				}
+			]
+		},
+		{
+			"start": 66.59,
+			"end": 67.31,
+			"text": "into the void",
+			"words": [
+				{
+					"t": 66.59,
+					"d": 0.22,
+					"w": "into",
+					"p": "preposition"
+				},
+				{
+					"t": 66.81,
+					"d": 0.14,
+					"w": "the",
+					"p": "determiner"
+				},
+				{
+					"t": 66.95,
+					"d": 0.36,
+					"w": "void",
+					"p": "noun"
+				}
+			]
+		},
+		{
+			"start": 67.59,
+			"end": 68.59,
+			"text": "for a long time.",
+			"words": [
+				{
+					"t": 67.59,
+					"d": 0.18,
+					"w": "for",
+					"p": "preposition"
+				},
+				{
+					"t": 67.77,
+					"d": 0.12,
+					"w": "a",
+					"p": "determiner"
+				},
+				{
+					"t": 67.89,
+					"d": 0.34,
+					"w": "long",
+					"p": "adjective"
+				},
+				{
+					"t": 68.23,
+					"d": 0.36,
+					"w": "time.",
+					"p": "noun"
+				}
+			]
+		},
+		{
+			"start": 71.05,
+			"end": 72.18,
+			"text": "Now we make it answer.",
+			"words": [
+				{
+					"t": 71.05,
+					"d": 0.24,
+					"w": "Now",
+					"p": "adverb"
+				},
+				{
+					"t": 71.29,
+					"d": 0.14,
+					"w": "we",
+					"p": "pronoun"
+				},
+				{
+					"t": 71.43,
+					"d": 0.23,
+					"w": "make",
+					"p": "verb"
+				},
+				{
+					"t": 71.66,
+					"d": 0.18,
+					"w": "it",
+					"p": "pronoun"
+				},
+				{
+					"t": 71.84,
+					"d": 0.34,
+					"w": "answer.",
+					"p": "verb"
 				}
 			]
 		}
