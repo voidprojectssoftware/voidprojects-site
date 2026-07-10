@@ -9,6 +9,7 @@
 		Copy,
 		Download,
 		ImageDown,
+		LayoutGrid,
 		Lock,
 		LockOpen,
 		RefreshCw,
@@ -286,7 +287,16 @@
 		<ArrowLeft class="size-4" />
 		Brand assets
 	</a>
-	<span class="text-xs tracking-[0.22em] text-foreground/40 uppercase">Orbit Mark Lab</span>
+	<div class="flex items-center gap-5">
+		<a
+			href="/brand/trajectory-logo-lab/wall"
+			class="flex items-center gap-1.5 text-sm text-foreground/70 transition-colors hover:text-foreground"
+		>
+			<LayoutGrid class="size-4" />
+			Wall
+		</a>
+		<span class="text-xs tracking-[0.22em] text-foreground/40 uppercase">Orbit Mark Lab</span>
+	</div>
 </header>
 
 <main class="mx-auto grid max-w-[1400px] gap-6 px-6 pb-24 sm:px-12 lg:grid-cols-[300px_1fr] lg:px-20">
