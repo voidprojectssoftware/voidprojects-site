@@ -281,6 +281,8 @@ export class RelationGraph implements Actor {
 	 */
 	hubLengthFor?: (width: number, height: number) => number;
 
+	fade = 1; // multiplied into the drawn opacity, so an owner can fade the whole overlay out
+
 	private svg: SVGSVGElement | null = null;
 	private group: SVGGElement | null = null;
 	private readonly edges: Edge[] = [];
@@ -583,7 +585,7 @@ export class RelationGraph implements Actor {
 
 	sync(ctx: StepCtx) {
 		if (!this.active || !this.group) return;
-		this.group.style.opacity = `${clamp01((ctx.now - this.activatedAt) / this.cfg.fadeMs)}`;
+		this.group.style.opacity = `${clamp01((ctx.now - this.activatedAt) / this.cfg.fadeMs) * this.fade}`;
 
 		for (const e of this.edges) {
 			let ax = e.a.position.x;
