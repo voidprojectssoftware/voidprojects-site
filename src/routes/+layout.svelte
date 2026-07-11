@@ -28,7 +28,8 @@
 	// A URL hash still wins: we leave deep links alone so they land on their anchor.
 	// afterNavigate runs after SvelteKit applies its own scroll, so this isn't undone.
 	afterNavigate((nav) => {
-		if (nav.type === 'enter' && !location.hash) window.scrollTo(0, 0);
+		const backToHome = nav.type === 'popstate' && nav.to?.url.pathname === '/';
+		if ((nav.type === 'enter' || backToHome) && !location.hash) window.scrollTo(0, 0);
 	});
 </script>
 

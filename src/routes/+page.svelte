@@ -6,7 +6,6 @@
 	import {
 		PhysicsStage,
 		GlyphField,
-		GLYPH_DEFAULTS,
 		ProjectCard as ProjectCardActor,
 		RelationGraph
 	} from '$lib/physics/index.js';
@@ -16,14 +15,23 @@
 	import { ProjectCard } from '$lib/components/project-card/index.js';
 	import { ScrollTimeline } from '$lib/components/scroll-timeline/index.js';
 	import { SiteHeader } from '$lib/components/site-header/index.js';
+	import { ProfileCard } from '$lib/components/profile-card/index.js';
+	import larryProfilePicture from '$lib/assets/larryProfilePicture2024.jpg';
+	import blakeProfilePicture from '$lib/assets/IMG_2021.JPEG';
+	import jacksonProfilePicture from '$lib/assets/100_2013.JPEG';
 
 	let heroRef = $state<HTMLElement | null>(null);
 	let githubRef = $state<HTMLElement | null>(null);
+	let carouselRef = $state<HTMLElement | null>(null);
+	let activeTeamIndex = $state(0);
 
 	let scrolled = $state(false);
 	// Total page-scroll progress (0-1), mirrored into state so the timeline rail can
 	// track it; the same value is fanned to the physics stage in onScroll.
 	let scrollProgress = $state(0);
+	const DRIFT_THRESHOLD = 0.25;
+	const EXIT_THRESHOLD = 0.75;
+	const sectionVisible = $derived(scrollProgress >= EXIT_THRESHOLD);
 
 	const heroTitle = 'Void Projects';
 	const titleChars = [...heroTitle];
@@ -66,7 +74,7 @@
 	// The shared Matter world. The glyph title and the project cards are actors on
 	// it, so the free-floating glyphs actually collide with the heavy cards.
 	const stage = new PhysicsStage();
-	const glyphs = new GlyphField();
+	const glyphs = new GlyphField({ driftThreshold: DRIFT_THRESHOLD });
 	stage.add(glyphs);
 
 	// Each card tosses in from below as scroll crosses its threshold, one after the
@@ -76,31 +84,18 @@
 	// drives both the actor and the scroll-timeline marker (one source of truth).
 	const cardDefs = [
 		{
-			threshold: 0.3,
+			threshold: 0.5,
+			exitThreshold: EXIT_THRESHOLD,
 			title: 'Constellation',
 			desc: 'Transform disjointed, amorphic systems into accessible graphs of knowledge.',
 			// Private for now: the card shows "Coming soon" instead of a live repo link.
 			repo: null,
 			class: 'top-[18%]'
-		},
-		{
-			threshold: 0.5,
-			title: 'Protostar',
-			desc: 'Shareable, private, and internal agent skills that get better as you use them.',
-			repo: 'https://github.com/voidprojectssoftware/protostar-cli',
-			class: 'top-[42%]'
-		},
-		{
-			threshold: 0.7,
-			title: 'Wormhole',
-			desc: "Query a teammate's local notes in your favorite agent harness.",
-			repo: 'https://github.com/voidprojectssoftware/wormhole',
-			class: 'top-[66%]'
 		}
 	];
 	const cards = cardDefs.map((d) => ({
 		...d,
-		actor: new ProjectCardActor({ threshold: d.threshold })
+		actor: new ProjectCardActor({ threshold: d.threshold, exitThreshold: d.exitThreshold })
 	}));
 	for (const c of cards) stage.add(c.actor);
 
@@ -114,12 +109,17 @@
 	// begin drifting apart (the glyph drift threshold), an instant trigger so it takes no
 	// arrival nudge — then one marker per project at the scroll fraction it tosses in at.
 	const timelinePoints = [
-		{ title: 'The Void', threshold: GLYPH_DEFAULTS.driftThreshold },
+		{ title: 'The Void', threshold: DRIFT_THRESHOLD },
 		...cardDefs.map((d) => ({
 			title: d.title,
 			threshold: d.threshold,
 			arrivalOffset: CARD_ARRIVAL_OFFSET
-		}))
+		})),
+		// Also needs the arrival nudge, but for the opposite reason: exiting a card is a
+		// strict `progress > exitThreshold` check (project-card.ts), so a seek that lands
+		// exactly on the threshold — same value as this marker's own — never actually
+		// crosses it and leaves the Constellation graph stuck formed.
+		{ title: 'Meet The Team', threshold: EXIT_THRESHOLD, arrivalOffset: CARD_ARRIVAL_OFFSET }
 	];
 
 	// Subtle cursor-repel-with-spring-back at rest. It and the drift take turns on
@@ -340,6 +340,11 @@
 		});
 	}
 
+	function onCarouselScroll(e: Event) {
+		const el = e.currentTarget as HTMLElement;
+		activeTeamIndex = Math.round(el.scrollLeft / el.offsetWidth);
+	}
+
 	// Jump the page to a timeline point's scroll position (a project's arrival).
 	function seekTo(threshold: number) {
 		const scrollable = document.documentElement.scrollHeight - window.innerHeight;
@@ -374,6 +379,10 @@
 			scrolled = y > 0;
 			scrollProgress = progress;
 			stage.setScrollProgress(progress);
+			// Re-evaluate after setScrollProgress: a card's onStateChange (fired above)
+			// may have just changed cardsOnScreen, and sectionVisible already reflects
+			// the scrollProgress write above.
+			glyphs.setBottomBiasActive(cardsOnScreen > 0 || sectionVisible);
 
 			if (!reduceMotion) {
 				if (autoReturning) {
@@ -439,7 +448,43 @@
 	});
 </script>
 
-<SiteHeader scrolled={scrolled}></SiteHeader>
+{#snippet larryDesc()}
+	<span
+		>I'm a seasoned, multi-disciplinary engineer with a broad depth of expertise and experience.
+		I've spent time with point-of-sale systems, cash recyclers, and incredibly complex
+		enterprise-level microservice architecture.</span
+	>
+	<span
+		>I love to walk for a ridiculous amount of time, play tennis, and aggressively sell my dusty
+		music gear.</span
+	>
+{/snippet}
+
+{#snippet jacksonDesc()}
+	<span
+		>I thrive off of learning new tech stacks, solving niche problems, and being let loose on an
+		end-to-end solution. In particular, I love web-based products and architecting solutions that
+		allow me to be creative.</span
+	>
+	<span
+		>My best days usually consist of making music, spending time with my friends and family, and
+		reading books related to whatever interests me.</span
+	>
+{/snippet}
+
+{#snippet blakeDesc()}
+	<span
+		>I love to engage with emerging technologies, push myself with challenging projects, and
+		continually chase the cool stuff. Experimenting with AI agents, automating my life away,
+		breaking websites. I do it all passionately!</span
+	>
+	<span
+		>You might find me traveling to new cities, hiking, camping, and playing far too many video
+		games.</span
+	>
+{/snippet}
+
+<SiteHeader {scrolled}></SiteHeader>
 <main class="flex flex-col">
 	<Section
 		bind:ref={heroRef}
@@ -447,29 +492,38 @@
 		class="relative sticky top-16 h-[calc(100dvh-4rem)] items-center justify-center gap-3 overflow-clip"
 	>
 		<div class="flex flex-col items-center gap-4">
-			<h1
-				class="pointer-events-none text-5xl font-bold select-none sm:text-7xl lg:text-8xl"
-				aria-label={heroTitle}
+			<div
+				class="flex flex-col items-center gap-4 transition-opacity duration-700"
+				class:opacity-0={sectionVisible}
+				class:pointer-events-none={sectionVisible}
 			>
-				{#each titleChars as ch, i (i)}<span
-						use:driftNode={titleMeta[i]}
-						use:nudge
-						aria-hidden="true"
-						style="display:inline-block;white-space:pre">{ch === ' ' ? '\u00A0' : ch}</span
-					>{/each}
-			</h1>
-			<p
-				class="pointer-events-none px-2 text-center text-lg select-none sm:text-2xl"
-				aria-label={heroSubtitle}
-			>
-				{#each subtitleChars as ch, i (i)}<span
-						use:driftNode={subtitleMeta[i]}
-						use:nudge
-						aria-hidden="true"
-						style="display:inline-block;white-space:pre">{ch === ' ' ? '\u00A0' : ch}</span
-					>{/each}
-			</p>
-			<div use:drift bind:this={githubRef} class="inline-block">
+				<h1
+					class="pointer-events-none text-5xl font-bold select-none max-[600px]:text-4xl sm:text-7xl lg:text-8xl"
+					aria-label={heroTitle}
+				>
+					{#each titleChars as ch, i (i)}<span
+							use:driftNode={titleMeta[i]}
+							use:nudge
+							aria-hidden="true"
+							style="display:inline-block;white-space:pre">{ch === ' ' ? '\u00A0' : ch}</span
+						>{/each}
+				</h1>
+				<p
+					class="pointer-events-none px-2 text-center text-lg select-none sm:text-2xl"
+					aria-label={heroSubtitle}
+				>
+					{#each subtitleChars as ch, i (i)}<span
+							use:driftNode={subtitleMeta[i]}
+							use:nudge
+							aria-hidden="true"
+							style="display:inline-block;white-space:pre">{ch === ' ' ? '\u00A0' : ch}</span
+						>{/each}
+				</p>
+			</div>
+			<!-- Deliberately outside the fading div above: unlike the title/subtitle, the
+			     GitHub button should stay up (and clickable) through the Meet The Team
+			     section - z-20 lifts it above that section's own z-10 panel. -->
+			<div use:drift bind:this={githubRef} class="relative z-20 inline-block">
 				<Button
 					href={GITHUB_URL}
 					target="_blank"
@@ -511,6 +565,76 @@
 		>
 			<span class="text-sm tracking-wide opacity-70">Scroll for our work</span>
 			<ChevronDown class="size-6 animate-bounce opacity-70" />
+		</div>
+		<div
+			class="absolute inset-0 z-10 mb-10 flex flex-col items-center justify-center transition-opacity duration-700"
+			class:opacity-0={!sectionVisible}
+			class:pointer-events-none={!sectionVisible}
+			aria-hidden={!sectionVisible}
+		>
+			<div class="contents">
+				<div
+					bind:this={carouselRef}
+					onscroll={onCarouselScroll}
+					class="flex w-full snap-x snap-mandatory [scrollbar-width:none] overflow-x-auto [&::-webkit-scrollbar]:hidden"
+				>
+					<div class="flex w-full shrink-0 snap-center items-center justify-center px-8 py-6">
+						<ProfileCard
+							src={larryProfilePicture}
+							alt="Larry Jones"
+							name="Larry Jones"
+							role="Co-Founder"
+							subrole="Constellation Technical Lead"
+							skills={['C#', 'SQL', 'Data Engineering', 'Graph Databases']}
+							email="larryjones@voidprojects.ai"
+							linkedin="https://www.linkedin.com/in/lrryjns/"
+							desc={larryDesc}
+						/>
+					</div>
+					<div class="flex w-full shrink-0 snap-center items-center justify-center px-8 py-6">
+						<ProfileCard
+							src={blakeProfilePicture}
+							alt="Blake Hastings"
+							name="Blake Hastings"
+							role="Co-Founder"
+							subrole="Protostar Technical Lead"
+							skills={['C#', 'TypeScript', 'AI/Agentic Systems', 'Refactoring', 'Modular Design']}
+							email="blakehastings@voidprojects.ai"
+							linkedin="https://www.linkedin.com/in/the-blake-hastings/"
+							desc={blakeDesc}
+						/>
+					</div>
+					<div class="flex w-full shrink-0 snap-center items-center justify-center px-8 py-6">
+						<ProfileCard
+							src={jacksonProfilePicture}
+							alt="Jackson Torregrossa"
+							name="Jackson Torregrossa"
+							role="Co-Founder"
+							subrole="Full Stack Developer"
+							skills={['C#', 'TypeScript', 'React', 'Svelte', 'Tailwind', 'Front End Design']}
+							email="jacksontorregrossa@voidprojects.ai"
+							linkedin="https://www.linkedin.com/in/jackson-torregrossa/"
+							desc={jacksonDesc}
+						/>
+					</div>
+				</div>
+				<div class="flex gap-2" aria-hidden="true">
+					{#each [0, 1, 2] as i}
+						<button
+							type="button"
+							aria-label="View profile {i + 1}"
+							onclick={() =>
+								carouselRef?.scrollTo({
+									left: i * (carouselRef?.offsetWidth ?? 0),
+									behavior: 'smooth'
+								})}
+							class="size-2 rounded-full transition-all duration-300 {i === activeTeamIndex
+								? 'scale-125 bg-primary'
+								: 'bg-foreground/30'}"
+						></button>
+					{/each}
+				</div>
+			</div>
 		</div>
 	</Section>
 	<div class="h-1250"></div>

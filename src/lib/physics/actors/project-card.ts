@@ -9,6 +9,7 @@ const { Bodies, Body } = Matter;
 export type CardConfig = {
 	/** Fraction of total page scroll at which this card tosses in (and below which it ejects). */
 	threshold: number;
+	exitThreshold?: number; // upper bound: also ejects when scrolling past this going down
 	/** Mass per unit area — cards are heavy so they shove glyphs around, not the reverse. */
 	density: number;
 	/** Bounciness on impact. */
@@ -127,14 +128,16 @@ export class ProjectCard implements Actor {
 
 	onScroll(progress: number) {
 		const past = progress > this.cfg.threshold;
+		const exited = this.cfg.exitThreshold != null && progress > this.cfg.exitThreshold;
 
 		// Reduced motion: no physics, just reveal the card at its home position.
 		if (this.reduceMotion) {
-			if (this.el) this.el.style.opacity = past ? '1' : '0';
+			if (this.el) this.el.style.opacity = past && !exited ? '1' : '0';
 			return;
 		}
 
-		if (past && this.state === 'dormant') this.toss();
+		if (exited && this.state === 'active') this.eject();
+		else if (past && this.state === 'dormant') this.toss();
 		else if (!past && this.state === 'active') this.eject();
 	}
 

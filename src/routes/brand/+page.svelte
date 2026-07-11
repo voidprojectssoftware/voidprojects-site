@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { browser } from '$app/environment';
 	import { page } from '$app/state';
 	import BrandArt from '$lib/brand/assets/BrandArt.svelte';
 	import VoidMark from '$lib/brand/VoidMark.svelte';
@@ -16,9 +17,12 @@
 
 	// ?asset=<id>&raw=1 renders that single asset alone at exact pixel size (no page
 	// chrome) — this is what scripts/export-brand.mjs screenshots. With no params we
-	// show the full brand guide + gallery.
-	const rawId = $derived(page.url.searchParams.get('asset'));
-	const isRaw = $derived(page.url.searchParams.get('raw') === '1' && !!rawId);
+	// show the full brand guide + gallery. Gated on `browser`: the whole site is
+	// prerendered, and SvelteKit forbids reading url.searchParams during prerendering
+	// (a static file can't vary by query string) — raw mode only ever runs against
+	// the dev server, so resolving it client-side after hydration is fine.
+	const rawId = $derived(browser ? page.url.searchParams.get('asset') : null);
+	const isRaw = $derived(browser ? page.url.searchParams.get('raw') === '1' && !!rawId : false);
 	const rawSpec = $derived(rawId ? assetById(rawId) : undefined);
 
 	let showSafe = $state(true);

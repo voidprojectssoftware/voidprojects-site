@@ -18,8 +18,14 @@
 			class:pointer-events-none={!scrolled}
 			aria-hidden={!scrolled}
 		>
-			<span class="text-base font-bold whitespace-nowrap sm:text-xl">Void Projects</span>
-			<a href="/blog" class="text-base whitespace-nowrap hover:opacity-60 sm:text-lg">Blog</a>
+			<a
+				href="/"
+				class="text-base font-bold whitespace-nowrap hover:opacity-60 sm:text-xl xl:text-3xl"
+				>Void Projects</a
+			>
+			<a href="/blog" class="text-base whitespace-nowrap hover:opacity-60 sm:text-lg xl:text-2xl"
+				>Blog</a
+			>
 		</div>
 	</div>
 </header>
