@@ -22,7 +22,7 @@
 	const goToPost = () => goto(`/blog/${slug}`);
 </script>
 
-<GlassCard onclick={goToPost} class="w-full gap-3 px-6 py-5 {className}">
+<GlassCard onclick={goToPost} class="w-full cursor-pointer gap-3 px-6 py-5 {className}">
 	<div class="flex flex-col gap-1">
 		<h3 class="text-xl leading-tight font-semibold tracking-tight text-foreground">{meta.title}</h3>
 		<div class="flex flex-row items-center gap-3">
