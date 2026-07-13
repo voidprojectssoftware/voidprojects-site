@@ -23,7 +23,7 @@ Constellation and Void Projects as a whole is an effort to utilize our understan
 
 We have come to describe this trudge through context as **yelling into the void**.
 
-With constellation, we bring together these disjointed contexts across worlds (Jira, Azure DevOps, Github, SQL Server, Raw Code, Confluence) into what we call **Universes** of connected **Galaxies** you can now programatically traverse. The question of why a stored procedure is the way it is becomes a query rather than a series of meetings. Who you should talk to about a production problem with an application is no longer sifting through SharePoint documents or Confluence spaces; it is now a single query that traverses **The Void**.
+With Constellation, we bring together these disjointed contexts across worlds (Jira, Azure DevOps, Github, SQL Server, Raw Code, Confluence) into what we call **Universes** of connected **Galaxies** you can now programatically traverse. The question of why a stored procedure is the way it is becomes a query rather than a series of meetings. Who you should talk to about a production problem with an application is no longer sifting through SharePoint documents or Confluence spaces; it is now a single query that traverses **The Void**.
 
 
 ### Humans & AI
