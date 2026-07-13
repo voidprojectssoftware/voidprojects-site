@@ -17,44 +17,20 @@ tags:
 	allowfullscreen
 ></iframe>
 
-## The Dilemma
+### The connections between worlds
 
-The great thing about being in a group like Void Projects is that I can work on whatever I want.
+Constellation and Void Projects as a whole is an effort to utilize our understanding as developers to fix some of the most frustrating parts of our job. We have worked in environments where documentation, code changes, business context, and original intent are captured in disjointed systems, and we spend more time navigating them than actually writing the solution.
 
-The downside is that there is so much stuff I want.
+We have come to describe this trudge through context as **yelling into the void**.
 
-## Stuff
+With constellation, we bring together these disjointed contexts across worlds (Jira, Azure DevOps, Github, SQL Server, Raw Code, Confluence) into what we call **Universes** of connected **Galaxies** you can now programatically traverse. The question of why a stored procedure is the way it is becomes a query rather than a series of meetings. Who you should talk to about a production problem with an application is no longer sifting through SharePoint documents or Confluence spaces; it is now a single query that traverses **The Void**.
 
-There's so much stuff at any job, really.
 
-You could drown in all the
+### Humans & AI
 
-- emails
-- tickets
-- database schemas
-- architectural diagrams
-- how-to manuals
-- code
-- documentation
-- reports
+While working on this, we learned this problem really hurts human productivity, but it **decimates AI functionality**. A human can navigate to an answer via meetings, manually opening disjointed systems, and otherwise piecing together answers. AI fundamentally fails without relative context. 
 
-The list goes on.
-
-## Information
-
-And we need all this to build anything useful.
-
-But sometimes I look at all this stuff and wonder, "Where is the **information**?"
-
-I know it's in there somewhere. It's just buried in layers of chaos.
-
-## Lines
-
-When we look up at the stars, we draw lines that aren't really there. They let us tell stories and point our ships the right way.
-
-I'm gonna draw lines of my own. I'm gonna build a new kind of map.
-
-I know what to work on now.
+Constellation now gives AI, like humans, a single point to query for relationships from data points in stored procedures to ideation in Jira.
 
 ## Constellation
 
