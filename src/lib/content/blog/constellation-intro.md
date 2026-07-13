@@ -2,55 +2,62 @@
 title: Constellation
 author: Larry Jones
 description: What are we building?
-date: '2026-07-08'
+date: '2026-07-13'
 published: true
 tags:
   - constellation
 ---
 
+<iframe
+	class="aspect-video h-auto w-full rounded-lg border border-white/10"
+	src="https://www.youtube-nocookie.com/embed/skRWXZwitAY"
+	title="Constellation"
+	allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+	referrerpolicy="strict-origin-when-cross-origin"
+	allowfullscreen
+></iframe>
+
 ## The Dilemma
 
 The great thing about being in a group like Void Projects is that I can work on whatever I want.
 
-The downside is that there is so much stuff I want. It's hard to choose.
+The downside is that there is so much stuff I want.
 
 ## Stuff
 
-This is like walking into a new job, and seeing:
+There's so much stuff at any job, really.
+
+You could drown in all the
+
 - emails
-- tickets 
+- tickets
 - database schemas
 - architectural diagrams
 - how-to manuals
-- all types of code
+- code
 - documentation
 - reports
-- more...
 
-So much stuff.
+The list goes on.
 
 ## Information
 
-Sometimes I look at all this stuff and wonder, "Where is the **information**?"
+And we need all this to build anything useful.
 
-It's in there somewhere, right? Buried in the depths.
+But sometimes I look at all this stuff and wonder, "Where is the **information**?"
 
-## Data
-
-There is another way to look at all this stuff.
-
-It's data.
-
-That's good news. Because now we can load it up and transform it. We can build user experiences to navigate a chasm of stuff back to the real information.
+I know it's in there somewhere. It's just buried in layers of chaos.
 
 ## Lines
 
-When we look up at the stars, we draw lines that aren't really there, but they do have a purpose. Lines allow us to build stories and point our ships the right way. I'd like to construct lines of my own for the digital realm.
+When we look up at the stars, we draw lines that aren't really there. They let us tell stories and point our ships the right way.
 
-This project is Constellation, and it's what I'm working on now.
+I'm gonna draw lines of my own. I'm gonna build a new kind of map.
 
----
+I know what to work on now.
 
-Human understanding is the final speed limit.
+## Constellation
 
-Let's build it a motor.
+We've been yelling into the void for a long time.
+
+Now we make it answer.
