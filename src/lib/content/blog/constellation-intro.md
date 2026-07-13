@@ -17,47 +17,30 @@ tags:
 	allowfullscreen
 ></iframe>
 
-## The Dilemma
+### Starlight arrives late
 
-The great thing about being in a group like Void Projects is that I can work on whatever I want.
+Every light you have ever steered by is a message from something that has already moved on. The star burned, the light left, and only now does it reach you. By the time the answer arrives, the question has drifted somewhere else.
 
-The downside is that there is so much stuff I want.
+That is most of the work, if you are honest about it. You read one line and ask why. The why is still out there, traveling, scattered across rooms that do not speak to each other. And you keep your heading by fires that may no longer be where you think they are.
 
-## Stuff
+We started calling the distance between a thing and its reason **the void**. Not empty. Full. Just dark.
 
-There's so much stuff at any job, really.
+### Drawing the lines
 
-You could drown in all the
+The lines between stars were never really there. Someone looked up, decided two far-apart fires belonged together, and the story held its shape long enough to cross an ocean and bring the ships home.
 
-- emails
-- tickets
-- database schemas
-- architectural diagrams
-- how-to manuals
-- code
-- documentation
-- reports
+So we draw our own. Between the ticket and the commit, the schema and the room it was argued in, the answer and the two-year-old page nobody has opened. Wherever there is a fire, we lay a line to another. Enough lines and the dark takes on a shape. The shape becomes a place you can walk through. You ask why the thing is the way it is, and something answers, with no meeting and no name to go hunting for.
 
-The list goes on.
+### The one that cannot look up
 
-## Information
+We were never the only ones lost out here.
 
-And we need all this to build anything useful.
+A person can wander. Knock on a door, sit through the meeting, carry three half-answers until they fold into one. The other kind of mind cannot do any of that. It has no doors. Hand it only the fires and none of the lines and it will be certain, and wrong, and fast about it.
 
-But sometimes I look at all this stuff and wonder, "Where is the **information**?"
-
-I know it's in there somewhere. It's just buried in layers of chaos.
-
-## Lines
-
-When we look up at the stars, we draw lines that aren't really there. They let us tell stories and point our ships the right way.
-
-I'm gonna draw lines of my own. I'm gonna build a new kind of map.
-
-I know what to work on now.
+So we drew the lines for both of us.
 
 ## Constellation
 
-We've been yelling into the void for a long time.
+We have been yelling into the void for a long time.
 
-Now we make it answer.
+Now something out there is starting to answer.
