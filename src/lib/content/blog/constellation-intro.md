@@ -10,7 +10,7 @@ tags:
 
 <iframe
 	class="aspect-video h-auto w-full rounded-lg border border-white/10"
-	src="https://www.youtube-nocookie.com/embed/Hke7uJAkYlk"
+	src="https://www.youtube-nocookie.com/embed/skRWXZwitAY"
 	title="Constellation"
 	allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
 	referrerpolicy="strict-origin-when-cross-origin"
