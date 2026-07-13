@@ -2,7 +2,7 @@
 title: Constellation
 author: Larry Jones
 description: What are we building?
-date: '2026-07-08'
+date: '2026-07-13'
 published: true
 tags:
   - constellation
