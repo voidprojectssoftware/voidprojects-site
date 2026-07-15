@@ -85,5 +85,5 @@ Since our secrets live at the Organization level, you can pass a flag when you c
 
 ### Post-Mortem
 
-In retrospect, this felt like a small project compared to what we have cooking at Void Projects. My biggest takeaways were mostly underscored by my how I implemented a solution and not necessarily the solution itself. If anything, I have a better understanding of how I’d like to work going forward—which I will always take as a win.
+In retrospect, this felt like a small project compared to what we have cooking at Void Projects. My biggest takeaways were mostly underscored by how I implemented a solution and not necessarily the solution itself. If anything, I have a better understanding of how I’d like to work going forward—which I will always take as a win.
 
