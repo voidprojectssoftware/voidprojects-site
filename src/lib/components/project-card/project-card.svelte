@@ -82,15 +82,6 @@
 			box-shadow 0.4s ease;
 	}
 
-	/* A gentle lift and a touch of violet on the rim when hovered. */
-	.card:hover .panel {
-		transform: translateY(-2px);
-		box-shadow:
-			inset 0 1px 0 0 oklch(1 0 0 / 0.12),
-			inset 0 0 0 1px oklch(0.6534 0.1876 301.62 / 0.22),
-			0 20px 44px -20px oklch(0 0 0 / 0.7);
-	}
-
 	@media (prefers-reduced-motion: reduce) {
 		.panel,
 		a {
