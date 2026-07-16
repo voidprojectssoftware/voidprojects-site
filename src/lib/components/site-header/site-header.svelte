@@ -9,7 +9,7 @@
 <header
 	class="sticky top-0 z-2 h-16 {transparent
 		? 'bg-transparent'
-		: 'bg-background'} px-6 pt-4 sm:px-page-sm lg:px-page-lg xl:px-page-xl"
+		: 'bg-background'} px-6 pt-4 sm:px-page-sm lg:px-page-lg xl:px-page-xl 2xl:px-page-2xl"
 >
 	<div class="flex flex-row items-center justify-between">
 		<div

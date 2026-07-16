@@ -31,7 +31,7 @@
 	);
 </script>
 
-<article class="mx-auto prose max-w-2xl py-8 prose-invert">
+<article class="mx-auto prose max-w-full py-8 prose-invert">
 	<header class="not-prose mb-8 flex flex-col gap-2">
 		<h1 class="text-4xl font-bold tracking-tight text-foreground">{title}</h1>
 		{#if description}
@@ -47,3 +47,10 @@
 
 	{@render children()}
 </article>
+
+<style>
+	img :global(img) {
+		max-width: 100%;
+		width: 100%;
+	}
+</style>
