@@ -6,7 +6,8 @@
 
 <section
 	bind:this={ref}
-	class="flex flex-col px-6 pt-4 sm:px-page-sm lg:px-page-lg xl:px-page-xl {rest.class ?? ''}"
+	class="flex flex-col px-6 pt-4 sm:px-page-sm lg:px-page-lg xl:px-page-xl 2xl:px-page-2xl {rest.class ??
+		''}"
 >
 	{@render children()}
 </section>
