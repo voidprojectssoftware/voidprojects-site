@@ -18,7 +18,7 @@
 	import { ProfileCard } from '$lib/components/profile-card/index.js';
 	import larryProfilePicture from '$lib/assets/larryProfilePicture2024.jpg';
 	import blakeProfilePicture from '$lib/assets/IMG_2021.JPEG';
-	import jacksonProfilePicture from '$lib/assets/100_2013.JPEG';
+	// import jacksonProfilePicture from '$lib/assets/100_2013.JPEG';
 
 	let heroRef = $state<HTMLElement | null>(null);
 	let githubRef = $state<HTMLElement | null>(null);
@@ -460,17 +460,17 @@
 	>
 {/snippet}
 
-{#snippet jacksonDesc()}
-	<span
-		>I thrive off of learning new tech stacks, solving niche problems, and being let loose on an
-		end-to-end solution. In particular, I love web-based products and architecting solutions that
-		allow me to be creative.</span
-	>
-	<span
-		>My best days usually consist of making music, spending time with my friends and family, and
-		reading books related to whatever interests me.</span
-	>
-{/snippet}
+<!--{#snippet jacksonDesc()}-->
+<!--	<span-->
+<!--		>I thrive off of learning new tech stacks, solving niche problems, and being let loose on an-->
+<!--		end-to-end solution. In particular, I love web-based products and architecting solutions that-->
+<!--		allow me to be creative.</span-->
+<!--	>-->
+<!--	<span-->
+<!--		>My best days usually consist of making music, spending time with my friends and family, and-->
+<!--		reading books related to whatever interests me.</span-->
+<!--	>-->
+<!--{/snippet}-->
 
 {#snippet blakeDesc()}
 	<span
@@ -604,22 +604,23 @@
 							desc={blakeDesc}
 						/>
 					</div>
-					<div class="flex w-full shrink-0 snap-center items-center justify-center px-8 py-6">
-						<ProfileCard
-							src={jacksonProfilePicture}
-							alt="Jackson Torregrossa"
-							name="Jackson Torregrossa"
-							role="Co-Founder"
-							subrole="Full Stack Developer"
-							skills={['C#', 'TypeScript', 'React', 'Svelte', 'Tailwind', 'Front End Design']}
-							email="jacksontorregrossa@voidprojects.ai"
-							linkedin="https://www.linkedin.com/in/jackson-torregrossa/"
-							desc={jacksonDesc}
-						/>
-					</div>
+					<!--					<div class="flex w-full shrink-0 snap-center items-center justify-center px-8 py-6">-->
+					<!--						<ProfileCard-->
+					<!--							src={jacksonProfilePicture}-->
+					<!--							alt="Jackson Torregrossa"-->
+					<!--							name="Jackson Torregrossa"-->
+					<!--							role="Co-Founder"-->
+					<!--							subrole="Full Stack Developer"-->
+					<!--							skills={['C#', 'TypeScript', 'React', 'Svelte', 'Tailwind', 'Front End Design']}-->
+					<!--							email="jacksontorregrossa@voidprojects.ai"-->
+					<!--							linkedin="https://www.linkedin.com/in/jackson-torregrossa/"-->
+					<!--							desc={jacksonDesc}-->
+					<!--						/>-->
+					<!--					</div>-->
 				</div>
 				<div class="flex gap-2" aria-hidden="true">
-					{#each [0, 1, 2] as i}
+					<!--{#each [0, 1, 2] as i}-->
+					{#each [0, 1] as i}
 						<button
 							type="button"
 							aria-label="View profile {i + 1}"
