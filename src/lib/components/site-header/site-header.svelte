@@ -25,14 +25,19 @@
 			class:pointer-events-none={!scrolled}
 			aria-hidden={!scrolled}
 		>
-			<a
-				href="/"
-				class="flex items-center gap-2 text-base font-bold whitespace-nowrap hover:opacity-60 sm:text-xl xl:gap-3 xl:text-3xl"
-			>
+			<!-- leading-none so each item's box is just its glyphs; items-center then
+			     lines the mark and both links up on one center line. -->
+			<div class="flex items-center gap-2 xl:gap-3">
 				<OrbitMark class="size-6 sm:size-7 xl:size-9" />
-				Void Projects
-			</a>
-			<a href="/blog" class="text-base whitespace-nowrap hover:opacity-60 sm:text-lg xl:text-2xl"
+				<a
+					href="/"
+					class="text-base leading-none font-bold whitespace-nowrap hover:opacity-60 sm:text-xl xl:text-3xl"
+					>Void Projects</a
+				>
+			</div>
+			<a
+				href="/blog"
+				class="text-base leading-none whitespace-nowrap hover:opacity-60 sm:text-lg xl:text-2xl"
 				>Blog</a
 			>
 		</div>
