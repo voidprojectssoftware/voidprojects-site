@@ -31,7 +31,12 @@ const config = {
 		// See https://svelte.dev/docs/kit/adapters for more information about adapters.
 		adapter: adapter(),
 		prerender: {
-			handleUnseenRoutes: 'ignore'
+			handleUnseenRoutes: 'ignore',
+			// /api/* is the managed Azure Function (api/), served at runtime, not prerendered.
+			handleHttpError: ({ path, message }) => {
+				if (path.startsWith('/api/')) return;
+				throw new Error(message);
+			}
 		}
 	},
 	extensions: ['.svelte', '.md']
