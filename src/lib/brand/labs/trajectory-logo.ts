@@ -282,12 +282,12 @@ export function deriveSpec(seed: number, g: TLGlobals): TLSpec {
 	};
 }
 
-export function renderSpec(spec: TLSpec): BuiltTL {
+// One arm of the emblem in viewBox coordinates: the craft's path cropped to the
+// reach, windowed to the segment, projected through the radial scale.
+function projectArm(spec: TLSpec): [number, number][] {
 	const craft = craftById(spec.craftId);
-	const w = 1.1 * spec.stroke;
 	const rot = (spec.rotationDeg * Math.PI) / 180;
 
-	// Crop the arm to the reach, then window a segment of that.
 	let cut = craft.points.length;
 	for (let i = 0; i < craft.points.length; i++) {
 		if (Math.hypot(craft.points[i][0], craft.points[i][1]) > spec.reach) {
@@ -296,12 +296,32 @@ export function renderSpec(spec: TLSpec): BuiltTL {
 		}
 	}
 	const windowed = windowSlice(craft.points.slice(0, cut), spec.segment);
-	const proj = windowed.map(([x, y]) => {
+	return windowed.map(([x, y]) => {
 		const r = Math.hypot(x, y);
 		const pr = scaleR(r, spec.reach, spec.scale);
 		const a = Math.atan2(y, x) + rot;
 		return [C + pr * Math.cos(a), C - pr * Math.sin(a)] as [number, number];
 	});
+}
+
+// How much a spec actually draws, as fractions of the content radius: `extent` is
+// how far the arm reaches from the center, `length` is the arm's path length.
+// Low values mean the symmetric copies collapse into a small blob.
+export function armDetail(spec: TLSpec): { extent: number; length: number } {
+	const proj = projectArm(spec);
+	let extent = 0;
+	let length = 0;
+	for (let i = 0; i < proj.length; i++) {
+		extent = Math.max(extent, Math.hypot(proj[i][0] - C, proj[i][1] - C));
+		if (i) length += Math.hypot(proj[i][0] - proj[i - 1][0], proj[i][1] - proj[i - 1][1]);
+	}
+	return { extent: extent / R, length: length / R };
+}
+
+export function renderSpec(spec: TLSpec): BuiltTL {
+	const craft = craftById(spec.craftId);
+	const w = 1.1 * spec.stroke;
+	const proj = projectArm(spec);
 
 	let fragment = '';
 	if (spec.style !== 'dots') {
