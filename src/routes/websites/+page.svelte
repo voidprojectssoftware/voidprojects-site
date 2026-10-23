@@ -34,7 +34,7 @@
 		<OrbitMark class="size-[22rem] opacity-[0.12] sm:size-[34rem]" />
 	</div>
 	<h1 class="max-w-4xl text-4xl font-bold tracking-tight text-balance sm:text-6xl">
-		The website you need, without the price tag or the headache.
+		The website you need, without effort.
 	</h1>
 	<p class="pt-6 text-2xl font-semibold tracking-tight text-primary sm:text-3xl">
 		Free if we can. Fair if we can’t.
