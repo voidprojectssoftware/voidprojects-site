@@ -81,7 +81,7 @@ export const PRICING: { figure: string; body: string }[] = [
 	},
 	{
 		figure: 'Free',
-		body: 'when we can make it so, and simple sites for a cause are. Once a site grows complex enough, it can’t reasonably stay free, and we’ll talk that through with you.'
+		body: 'when we can make it so. Once a site grows complex enough, it can’t reasonably stay free, and we’ll talk that through with you.'
 	}
 ];
 
@@ -118,6 +118,45 @@ export const AFTER_LAUNCH = {
 	title: 'Live doesn’t mean done.',
 	body: 'The same loop keeps running after launch. Tell us what you’d like changed and it’s live again the same day, often within the hour, without the back-and-forth. Your site changes whenever you want it to.',
 	requests: ['Swap the front page photo', 'Try a warmer font', 'Rework the services section']
+};
+
+// Sites for causes (memorials, medical support, fundraisers): teased on /websites,
+// told in full on /websites/causes.
+export const CAUSES = {
+	href: '/websites/causes',
+	title: 'Building something for a cause?',
+	body: 'A memorial, a cancer support site, a fundraiser, a community group. If your site exists to help people, we’ll do our best to build it for free.',
+	kinds: [
+		{
+			title: 'Memorials',
+			body: 'A place to remember someone, share their story, and gather photos and messages from the people who loved them.'
+		},
+		{
+			title: 'Medical and cancer support',
+			body: 'Keep family and friends updated through treatment, and give them real ways to help.'
+		},
+		{
+			title: 'Fundraisers',
+			body: 'Explain the need, share progress, and point every visitor to where they can give.'
+		},
+		{
+			title: 'Community groups',
+			body: 'Neighborhood efforts, clubs, and volunteer groups that need a home online.'
+		},
+		{
+			title: 'Animal rescue',
+			body: 'Show the animals who need homes and make it easy to adopt, foster, or donate.'
+		},
+		{
+			title: 'Awareness campaigns',
+			body: 'Get the word out about a cause, an event, or something your community needs to know.'
+		}
+	],
+	promise: [
+		'We’ll do our best to build it for free: design, build, and every round of changes.',
+		'You get the same engineers and the same process as every other site we build.',
+		'If your site needs something that genuinely costs money, we’ll tell you up front and talk it through. Never a surprise.'
+	]
 };
 
 // The "how is this possible?" answer.

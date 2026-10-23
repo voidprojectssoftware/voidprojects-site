@@ -3,13 +3,18 @@
 
 	// No backend yet: submitting composes an email in the visitor's mail client.
 	// Swap `submit` for a POST once a form endpoint exists.
-	let { class: className = '', compact = false }: { class?: string; compact?: boolean } = $props();
-
 	const KINDS = ['A business', 'A cause', 'Something personal', 'Not sure yet'];
+
+	let {
+		class: className = '',
+		compact = false,
+		initialKind = KINDS[0]
+	}: { class?: string; compact?: boolean; initialKind?: (typeof KINDS)[number] } = $props();
 
 	let name = $state('');
 	let email = $state('');
-	let kind = $state(KINDS[0]);
+	// svelte-ignore state_referenced_locally
+	let kind = $state(initialKind); // seeded once; the visitor can change it
 	let message = $state('');
 	let sent = $state(false);
 

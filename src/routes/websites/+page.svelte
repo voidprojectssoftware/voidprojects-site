@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Bot, MessagesSquare, Zap } from '@lucide/svelte';
+	import { ArrowRight, Bot, HandHeart, MessagesSquare, Zap } from '@lucide/svelte';
 	import { SiteHeader } from '$lib/components/site-header/index.js';
 	import OrbitMark from '$lib/brand/OrbitMark.svelte';
 	import { Section } from '$lib/components/voidprojects/section/index.js';
@@ -10,7 +10,7 @@
 	import { Splash } from '$lib/components/splash/index.js';
 	import { AfterLaunch } from '$lib/components/after-launch/index.js';
 	import { NeverGrid } from '$lib/components/never-grid/index.js';
-	import { SHOWCASE, PRICING, HOW, SPLASHES } from '$lib/content/websites.js';
+	import { SHOWCASE, PRICING, HOW, SPLASHES, CAUSES } from '$lib/content/websites.js';
 
 	const HOW_ICONS = [Bot, Zap, MessagesSquare];
 </script>
@@ -26,7 +26,7 @@
 <SiteHeader wide />
 
 <!-- Order follows the visitor's questions: what is it, what's it like for me, how
-     does it run, what does it cost, how is that possible, show me, let's talk. -->
+     does it run, what does it cost (and is it free for causes), how is that possible, show me, let's talk. -->
 
 <Section
 	wide
@@ -120,6 +120,34 @@
 			{/each}
 		</dl>
 	</GlassCard>
+</Section>
+
+<Section wide class="pb-24">
+	<a
+		href={CAUSES.href}
+		class="group flex flex-col gap-6 rounded-4xl bg-linear-to-br from-primary/18 via-primary/6 to-transparent p-6 ring-1 ring-primary/30 transition-colors hover:ring-primary/60 sm:p-10 lg:flex-row lg:items-center lg:gap-16"
+	>
+		<div class="flex flex-col gap-4 lg:max-w-xl">
+			<span class="grid size-12 place-items-center rounded-2xl bg-primary/20 text-primary">
+				<HandHeart class="size-6" aria-hidden="true" />
+			</span>
+			<h2 class="text-3xl font-bold tracking-tight">{CAUSES.title}</h2>
+			<p class="text-lg leading-relaxed text-foreground/70">{CAUSES.body}</p>
+			<span
+				class="inline-flex items-center gap-2 pt-1 text-sm font-semibold text-primary group-hover:gap-3"
+				>How we help causes <ArrowRight class="size-4 transition-all" aria-hidden="true" /></span
+			>
+		</div>
+		<ul class="flex flex-wrap gap-2 lg:flex-1 lg:justify-end">
+			{#each CAUSES.kinds as k (k.title)}
+				<li
+					class="rounded-full bg-foreground/6 px-3.5 py-1.5 text-sm text-foreground/75 ring-1 ring-foreground/10"
+				>
+					{k.title}
+				</li>
+			{/each}
+		</ul>
+	</a>
 </Section>
 
 <Section wide class="items-center pb-24">
