@@ -48,7 +48,7 @@
 </Section>
 
 <Section wide class="pb-24">
-	<GlassCard class="grid gap-8 p-6 sm:p-10 md:grid-cols-2 md:items-center md:gap-12">
+	<div class="grid gap-8 md:grid-cols-2 md:items-center md:gap-12 lg:gap-20">
 		<div class="flex flex-col gap-4">
 			<h2 class="text-3xl font-bold tracking-tight text-balance sm:text-4xl">
 				AI doesn’t have to replace people. It can make room for them.
@@ -62,7 +62,7 @@
 				what you need, and shows you every step. You bring the vision. We handle everything else.
 			</p>
 		</div>
-		<div class="flex flex-col gap-4">
+		<GlassCard class="gap-4 p-6 sm:p-8">
 			<p class="text-sm font-semibold tracking-[0.14em] text-foreground/50 uppercase">
 				You’ll never have to
 			</p>
@@ -84,8 +84,8 @@
 					<span class="font-medium">{INSTEAD}</span>
 				</li>
 			</ul>
-		</div>
-	</GlassCard>
+		</GlassCard>
+	</div>
 </Section>
 
 <Section wide class="pb-24">
