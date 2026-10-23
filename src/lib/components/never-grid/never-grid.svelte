@@ -1,19 +1,25 @@
 <script lang="ts">
-	import { Check, Hand, TriangleAlert, UserRound, X } from '@lucide/svelte';
-	import { NEVER, INSTEAD } from '$lib/content/websites.js';
+	import { Hand, TriangleAlert, X } from '@lucide/svelte';
+	import { NEVER } from '$lib/content/websites.js';
+
+	const TILT = ['-rotate-3', 'rotate-2', 'rotate-[1.5deg]', '-rotate-2']; // parallel to NEVER
 </script>
 
-<!-- @container so the scenes pair up by the card's width, not the viewport's:
-     the card sits in a half-width column from md. -->
-<div class="@container flex flex-col gap-5">
+<!-- @container so the scenes pair up by the column's width, not the viewport's. -->
+<div class="@container flex flex-col gap-6">
 	<p class="text-sm font-semibold tracking-[0.14em] text-foreground/50 uppercase">
 		You’ll never have to
 	</p>
-	<ul class="grid gap-4 @md:grid-cols-2">
-		{#each NEVER as item (item.scene)}
-			<li class="flex flex-col gap-2">
+	<ul class="grid items-start gap-6 @md:grid-cols-2 @md:gap-x-8">
+		{#each NEVER as item, i (item.scene)}
+			<li
+				class="float flex flex-col gap-3 rounded-2xl bg-background/70 p-3 shadow-[0_24px_50px_-24px_oklch(0_0_0/0.9)] ring-1 ring-red-400/30 backdrop-blur-sm {TILT[
+					i
+				]} {i % 2 ? '@md:mt-8' : ''}"
+				style:animation-delay="{i * -1.3}s"
+			>
 				<div
-					class="relative h-32 overflow-hidden rounded-xl bg-foreground/[0.04] p-3 text-[11px] leading-snug text-foreground/60 ring-1 ring-red-400/25 select-none"
+					class="relative h-32 overflow-hidden rounded-xl bg-foreground/[0.04] p-3 text-[11px] leading-snug text-foreground/60 select-none"
 					aria-hidden="true"
 				>
 					{#if item.scene === 'chat'}
@@ -67,18 +73,31 @@
 						><X class="size-3.5" strokeWidth={3} /></span
 					>
 				</div>
-				<span class="text-foreground/55 line-through decoration-foreground/30">{item.text}</span>
+				<span class="px-1 pb-1 text-foreground/55 line-through decoration-foreground/30"
+					>{item.text}</span
+				>
 			</li>
 		{/each}
 	</ul>
-	<div class="flex items-center gap-3 rounded-xl bg-primary/12 p-4 ring-1 ring-primary/40">
-		<span class="grid size-10 shrink-0 place-items-center rounded-full bg-primary text-white"
-			><UserRound class="size-5" aria-hidden="true" /></span
-		>
-		<div class="flex flex-col">
-			<span class="text-xs font-semibold tracking-[0.14em] text-primary uppercase">Instead</span>
-			<span class="text-base font-medium">{INSTEAD}</span>
-		</div>
-		<Check class="ml-auto size-5 shrink-0 text-primary" aria-hidden="true" />
-	</div>
 </div>
+
+<style>
+	/* Each scene bobs on its own phase (negative animation-delay), so the set reads
+	   as loose floating examples. `translate` composes with the Tailwind rotate. */
+	.float {
+		animation: float 5.2s ease-in-out infinite alternate;
+	}
+	@keyframes float {
+		from {
+			translate: 0 0;
+		}
+		to {
+			translate: 0 -8px;
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.float {
+			animation: none;
+		}
+	}
+</style>

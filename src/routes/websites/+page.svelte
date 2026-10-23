@@ -10,7 +10,17 @@
 	import { Splash } from '$lib/components/splash/index.js';
 	import { AfterLaunch } from '$lib/components/after-launch/index.js';
 	import { NeverGrid } from '$lib/components/never-grid/index.js';
-	import { SHOWCASE, PRICING, HOW, SPLASHES, CAUSES } from '$lib/content/websites.js';
+	import { ProfileCard } from '$lib/components/profile-card/index.js';
+	import engineerPicture from '$lib/assets/IMG_2021.JPEG';
+	import {
+		SHOWCASE,
+		PRICING,
+		HOW,
+		SPLASHES,
+		CAUSES,
+		INSTEAD,
+		ENGINEER
+	} from '$lib/content/websites.js';
 
 	const HOW_ICONS = [Bot, Zap, MessagesSquare];
 </script>
@@ -78,8 +88,26 @@
 				what you need, and shows you every step. You bring the vision. We handle everything else.
 			</p>
 		</div>
-		<GlassCard class="p-6 sm:p-8">
-			<NeverGrid />
+		<NeverGrid />
+	</div>
+	<div class="flex flex-col items-center gap-3 pt-20 text-center">
+		<p class="text-sm font-semibold tracking-[0.14em] text-primary uppercase">Instead</p>
+		<h3 class="text-3xl font-bold tracking-tight text-balance sm:text-4xl">{INSTEAD}</h3>
+		<GlassCard class="mt-8 items-center p-6 sm:p-10">
+			<ProfileCard
+				src={engineerPicture}
+				alt={ENGINEER.name}
+				name={ENGINEER.name}
+				role={ENGINEER.role}
+				subrole={ENGINEER.subrole}
+				skills={ENGINEER.skills}
+				email={ENGINEER.email}
+				linkedin={ENGINEER.linkedin}
+			>
+				{#snippet desc()}
+					{#each ENGINEER.bio as line (line)}<span>{line}</span>{/each}
+				{/snippet}
+			</ProfileCard>
 		</GlassCard>
 	</div>
 </Section>

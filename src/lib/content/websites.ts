@@ -58,8 +58,8 @@ export interface Point {
 	body: string;
 }
 
-// What the client is spared. Each is drawn as a small struck-out scene (NeverGrid),
-// ending in the one thing they do instead (INSTEAD).
+// What the client is spared, drawn as floating struck-out scenes (NeverGrid) and
+// answered by the one thing they do instead (INSTEAD, with ENGINEER).
 export const NEVER: { scene: 'chat' | 'builder' | 'code' | 'hosting'; text: string }[] = [
 	{ scene: 'chat', text: 'Go back and forth with an AI agent in a chat window' },
 	{ scene: 'builder', text: 'Drag and drop your own site together in a buggy builder' },
@@ -67,7 +67,21 @@ export const NEVER: { scene: 'chat' | 'builder' | 'code' | 'hosting'; text: stri
 	{ scene: 'hosting', text: 'Figure out hosting, domains, or any other technical answer' }
 ];
 
-export const INSTEAD = 'Talk with an actual engineer, start to finish';
+export const INSTEAD = 'Talk with an actual engineer, start to finish.';
+
+// The engineer shown as the answer to NEVER; mirrors Blake's card on the homepage team section.
+export const ENGINEER = {
+	name: 'Blake Hastings',
+	role: 'Co-Founder',
+	subrole: 'Protostar Technical Lead',
+	skills: ['C#', 'TypeScript', 'AI/Agentic Systems', 'Refactoring', 'Modular Design'],
+	email: 'blakehastings@voidprojects.ai',
+	linkedin: 'https://www.linkedin.com/in/the-blake-hastings/',
+	bio: [
+		'I love to engage with emerging technologies, push myself with challenging projects, and continually chase the cool stuff. Experimenting with AI agents, automating my life away, breaking websites. I do it all passionately!',
+		'You might find me traveling to new cities, hiking, camping, and playing far too many video games.'
+	]
+};
 
 // "What it costs": a big figure with its explanation.
 export const PRICING: { figure: string; body: string }[] = [
