@@ -8,6 +8,7 @@
 	import { ContactForm } from '$lib/components/contact-form/index.js';
 	import { ProcessFlow } from '$lib/components/process-flow/index.js';
 	import { Splash } from '$lib/components/splash/index.js';
+	import { AfterLaunch } from '$lib/components/after-launch/index.js';
 	import { SHOWCASE, PRICING, NEVER, INSTEAD, HOW, SPLASHES } from '$lib/content/websites.js';
 
 	const HOW_ICONS = [Bot, Zap, MessagesSquare];
@@ -110,6 +111,9 @@
 		</p>
 	</div>
 	<ProcessFlow />
+	<div class="pt-20">
+		<AfterLaunch variant="a" />
+	</div>
 </Section>
 
 <Section wide class="pb-24">

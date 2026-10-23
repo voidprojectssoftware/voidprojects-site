@@ -15,7 +15,6 @@ export const SPLASHES = [
 	'Zero lines of code for you!',
 	'Your nephew can relax now!',
 	'Better than a template!',
-	'Free if we can!',
 	'Talk to an actual engineer!',
 	'No buggy builders!',
 	'Hand-built, AI-boosted!'
@@ -118,7 +117,8 @@ export const FLOW = {
 export const AFTER_LAUNCH = {
 	title: 'Live doesn’t mean done.',
 	body: 'The same loop keeps running after launch. Tell us what you’d like changed and it’s live again the same day, often within the hour, without the back-and-forth. Your site changes whenever you want it to.',
-	examples: ['Swap a photo', 'Try a new font', 'Rework a section']
+	examples: ['Swap a photo', 'Try a new font', 'Rework a section'],
+	requests: ['Swap the front page photo', 'Try a warmer font', 'Rework the services section']
 };
 
 // The "how is this possible?" answer.
