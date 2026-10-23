@@ -65,6 +65,34 @@ export const PRINCIPLES: Point[] = [
 	}
 ];
 
+// The "How we work" flow: one conversation in, a build/review/feedback loop that
+// repeats until the client is happy, then launch.
+export const FLOW = {
+	start: {
+		title: 'We talk',
+		body: 'Tell a person on our team what you need, in your own words.'
+	},
+	loop: [
+		{
+			title: 'We build',
+			body: 'Our agentic system turns the conversation into a working site.'
+		},
+		{
+			title: 'You see it',
+			body: 'A live preview at every step. Never a black box.'
+		},
+		{
+			title: 'You mark it up',
+			body: 'Point at the page itself with our own feedback tools. No long email threads.'
+		}
+	],
+	loopLabel: 'Feedback becomes changes fast. Repeat until it’s right.',
+	end: {
+		title: 'It goes live',
+		body: 'When you’re happy, we launch it and handle the technical side.'
+	}
+};
+
 // The "how is this possible?" answer.
 export const HOW: Point[] = [
 	{

@@ -6,6 +6,7 @@
 	import { GlassCard } from '$lib/components/voidprojects/glass-card/index.js';
 	import { BrowserFrame } from '$lib/components/browser-frame/index.js';
 	import { ContactForm } from '$lib/components/contact-form/index.js';
+	import { ProcessFlow } from '$lib/components/process-flow/index.js';
 	import { SHOWCASE, PRINCIPLES, NEVER, HOW, MARGIN_PERCENT } from '$lib/content/websites.js';
 
 	const HOW_ICONS = [Bot, Zap, MessagesSquare];
@@ -40,51 +41,6 @@
 			class="inline-flex h-11 items-center rounded-full border border-foreground/15 px-6 text-sm font-semibold hover:bg-foreground/5"
 			>See our work</a
 		>
-	</div>
-</Section>
-
-<Section wide class="pb-24">
-	<div
-		id="work"
-		class="mx-auto flex max-w-2xl scroll-mt-24 flex-col items-center gap-3 pb-10 text-center"
-	>
-		<h2 class="text-3xl font-bold tracking-tight">Our work</h2>
-		<p class="text-lg leading-relaxed text-balance text-foreground/65">
-			Sites we’ve built, live today.
-		</p>
-	</div>
-	<div class="grid gap-8 lg:grid-cols-2">
-		{#each SHOWCASE as site, i (site.url)}
-			<a href={site.url} target="_blank" rel="noopener" class="group block">
-				<GlassCard class="h-full gap-5 p-4 sm:p-5">
-					<BrowserFrame
-						src={site.screenshot}
-						host={site.host}
-						alt="The {site.name} homepage"
-						eager={i === 0}
-					/>
-					<div class="flex flex-col gap-2 px-1 pb-1">
-						<div class="flex flex-wrap items-center gap-x-3 gap-y-1">
-							<h3 class="text-xl font-semibold">{site.name}</h3>
-							<span
-								class="rounded-full bg-foreground/8 px-2.5 py-0.5 text-xs font-medium text-foreground/65"
-								>{site.kind}</span
-							>
-							{#if site.free}
-								<span
-									class="rounded-full bg-primary/15 px-2.5 py-0.5 text-xs font-medium text-primary"
-									>Built free</span
-								>
-							{/if}
-						</div>
-						<p class="text-sm leading-relaxed text-foreground/65">{site.blurb}</p>
-						<span class="pt-1 text-sm font-medium text-foreground/80 group-hover:text-primary"
-							>Visit {site.host} ↗</span
-						>
-					</div>
-				</GlassCard>
-			</a>
-		{/each}
 	</div>
 </Section>
 
@@ -158,10 +114,16 @@
 	<div class="mx-auto flex max-w-2xl flex-col items-center gap-3 pb-10 text-center">
 		<h2 class="text-3xl font-bold tracking-tight">How we work</h2>
 		<p class="text-lg leading-relaxed text-balance text-foreground/65">
-			If we can build your site for free, we will. If we can’t, you pay what it costs us plus
-			{MARGIN_PERCENT}%, and nothing for our time.
+			You see your site at every step, and every round of your feedback shapes the next one.
 		</p>
 	</div>
+	<ProcessFlow />
+	<p
+		class="mx-auto max-w-2xl pt-16 pb-8 text-center text-lg leading-relaxed text-balance text-foreground/65"
+	>
+		If we can build your site for free, we will. If we can’t, you pay what it costs us plus
+		{MARGIN_PERCENT}%, and nothing for our time.
+	</p>
 	<div class="grid gap-5 md:grid-cols-3">
 		{#each PRINCIPLES as p, i (p.title)}
 			<GlassCard class="gap-3 p-6">
@@ -169,6 +131,51 @@
 				<h3 class="text-lg font-semibold">{p.title}</h3>
 				<p class="text-sm leading-relaxed text-foreground/65">{p.body}</p>
 			</GlassCard>
+		{/each}
+	</div>
+</Section>
+
+<Section wide class="pb-24">
+	<div
+		id="work"
+		class="mx-auto flex max-w-2xl scroll-mt-24 flex-col items-center gap-3 pb-10 text-center"
+	>
+		<h2 class="text-3xl font-bold tracking-tight">Our work</h2>
+		<p class="text-lg leading-relaxed text-balance text-foreground/65">
+			Sites we’ve built, live today.
+		</p>
+	</div>
+	<div class="grid gap-8 lg:grid-cols-2">
+		{#each SHOWCASE as site, i (site.url)}
+			<a href={site.url} target="_blank" rel="noopener" class="group block">
+				<GlassCard class="h-full gap-5 p-4 sm:p-5">
+					<BrowserFrame
+						src={site.screenshot}
+						host={site.host}
+						alt="The {site.name} homepage"
+						eager={i === 0}
+					/>
+					<div class="flex flex-col gap-2 px-1 pb-1">
+						<div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+							<h3 class="text-xl font-semibold">{site.name}</h3>
+							<span
+								class="rounded-full bg-foreground/8 px-2.5 py-0.5 text-xs font-medium text-foreground/65"
+								>{site.kind}</span
+							>
+							{#if site.free}
+								<span
+									class="rounded-full bg-primary/15 px-2.5 py-0.5 text-xs font-medium text-primary"
+									>Built free</span
+								>
+							{/if}
+						</div>
+						<p class="text-sm leading-relaxed text-foreground/65">{site.blurb}</p>
+						<span class="pt-1 text-sm font-medium text-foreground/80 group-hover:text-primary"
+							>Visit {site.host} ↗</span
+						>
+					</div>
+				</GlassCard>
+			</a>
 		{/each}
 	</div>
 </Section>
