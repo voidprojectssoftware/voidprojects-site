@@ -1,13 +1,14 @@
 <script>
-	// `glass` adds the translucent blurred-panel look. Turn it off (e.g. the hero)
-	// when you want the page background to show through crisply.
-	let { children, ref = $bindable(null), ...rest } = $props();
+	// `wide` trades the site's deep gutters for a broader content area on large
+	// screens; see SiteHeader `wide` for the matching nav.
+	let { children, ref = $bindable(null), wide = false, ...rest } = $props();
 </script>
 
 <section
 	bind:this={ref}
-	class="flex flex-col px-6 pt-4 sm:px-page-sm lg:px-page-lg xl:px-page-xl 2xl:px-page-2xl {rest.class ??
-		''}"
+	class="flex flex-col px-6 pt-4 sm:px-page-sm {wide
+		? 'lg:px-16 xl:px-28 2xl:px-60'
+		: 'lg:px-page-lg xl:px-page-xl 2xl:px-page-2xl'} {rest.class ?? ''}"
 >
 	{@render children()}
 </section>
