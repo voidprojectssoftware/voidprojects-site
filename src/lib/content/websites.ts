@@ -5,6 +5,22 @@ export const CONTACT_EMAIL = 'hello@voidprojects.ai';
 
 export const MARGIN_PERCENT = 30;
 
+// Minecraft-style splash on the hero headline; one is picked at random per load.
+export const SPLASHES = [
+	'We hate Wix too!',
+	'Squarespace is just squares!',
+	'No drag and drop!',
+	'Now with 100% more humans!',
+	'Not a chatbot!',
+	'Zero lines of code for you!',
+	'Your nephew can relax now!',
+	'Better than a template!',
+	'Free if we can!',
+	'Talk to an actual engineer!',
+	'No buggy builders!',
+	'Hand-built, AI-boosted!'
+];
+
 export interface ShowcaseSite {
 	name: string;
 	url: string;

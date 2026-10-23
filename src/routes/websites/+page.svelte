@@ -7,7 +7,8 @@
 	import { BrowserFrame } from '$lib/components/browser-frame/index.js';
 	import { ContactForm } from '$lib/components/contact-form/index.js';
 	import { ProcessFlow } from '$lib/components/process-flow/index.js';
-	import { SHOWCASE, PRICING, NEVER, INSTEAD, HOW } from '$lib/content/websites.js';
+	import { Splash } from '$lib/components/splash/index.js';
+	import { SHOWCASE, PRICING, NEVER, INSTEAD, HOW, SPLASHES } from '$lib/content/websites.js';
 
 	const HOW_ICONS = [Bot, Zap, MessagesSquare];
 </script>
@@ -25,16 +26,23 @@
 <!-- Order follows the visitor's questions: what is it, what's it like for me, how
      does it run, what does it cost, how is that possible, show me, let's talk. -->
 
-<Section wide class="relative isolate items-center pt-24 pb-24 text-center sm:pt-36 sm:pb-32">
+<Section
+	wide
+	class="relative isolate items-center overflow-x-clip pt-24 pb-24 text-center sm:pt-36 sm:pb-32"
+>
 	<!-- This visit's orbit mark, oversized and faint behind the headline. -->
 	<div
 		class="pointer-events-none absolute inset-0 -z-10 flex items-center justify-center overflow-hidden"
 		aria-hidden="true"
 	>
-		<OrbitMark class="size-[22rem] opacity-[0.12] sm:size-[34rem]" />
+		<OrbitMark class="size-[22rem] opacity-[0.06] sm:size-[34rem]" />
 	</div>
-	<h1 class="max-w-4xl text-4xl font-bold tracking-tight text-balance sm:text-6xl">
-		The website you need, without effort.
+	<!-- Explicit lines + w-fit so the box ends where the text does, giving the
+	     splash a real corner to sit on. -->
+	<h1 class="relative w-fit text-4xl font-bold tracking-tight sm:text-6xl">
+		<span class="block">The website you</span>
+		<span class="block">need, without effort.</span>
+		<Splash lines={SPLASHES} />
 	</h1>
 	<p class="pt-6 text-2xl font-semibold tracking-tight text-primary sm:text-3xl">
 		Free if we can. Fair if we can’t.
