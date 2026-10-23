@@ -1,4 +1,6 @@
 <script lang="ts">
+	import OrbitMark from '$lib/brand/OrbitMark.svelte';
+
 	// The compact nav that fades in once the hero has scrolled past, showing the
 	// site name and secondary links. Hidden (but kept in the layout, `aria-hidden`)
 	// while at rest so it doesn't compete with the hero title.
@@ -25,9 +27,11 @@
 		>
 			<a
 				href="/"
-				class="text-base font-bold whitespace-nowrap hover:opacity-60 sm:text-xl xl:text-3xl"
-				>Void Projects</a
+				class="flex items-center gap-2 text-base font-bold whitespace-nowrap hover:opacity-60 sm:text-xl xl:gap-3 xl:text-3xl"
 			>
+				<OrbitMark class="size-6 sm:size-7 xl:size-9" />
+				Void Projects
+			</a>
 			<a href="/blog" class="text-base whitespace-nowrap hover:opacity-60 sm:text-lg xl:text-2xl"
 				>Blog</a
 			>

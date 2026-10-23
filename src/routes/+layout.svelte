@@ -12,8 +12,11 @@
 	let faviconHref = $state<string | undefined>(undefined);
 	onMount(() => {
 		const roll = async () => {
-			const { generateFaviconDataUri } = await import('$lib/brand/favicon.js');
-			faviconHref = generateFaviconDataUri();
+			const [{ generateFaviconDataUri }, { VISIT_SEED }] = await Promise.all([
+				import('$lib/brand/favicon.js'),
+				import('$lib/brand/visit-seed.js')
+			]);
+			faviconHref = generateFaviconDataUri(VISIT_SEED); // same mark as OrbitMark this visit
 		};
 		if ('requestIdleCallback' in window) {
 			window.requestIdleCallback(() => roll(), { timeout: 2000 });
