@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Bot, Check, MessagesSquare, X, Zap } from '@lucide/svelte';
+	import { Bot, MessagesSquare, Zap } from '@lucide/svelte';
 	import { SiteHeader } from '$lib/components/site-header/index.js';
 	import OrbitMark from '$lib/brand/OrbitMark.svelte';
 	import { Section } from '$lib/components/voidprojects/section/index.js';
@@ -9,7 +9,8 @@
 	import { ProcessFlow } from '$lib/components/process-flow/index.js';
 	import { Splash } from '$lib/components/splash/index.js';
 	import { AfterLaunch } from '$lib/components/after-launch/index.js';
-	import { SHOWCASE, PRICING, NEVER, INSTEAD, HOW, SPLASHES } from '$lib/content/websites.js';
+	import { NeverGrid } from '$lib/components/never-grid/index.js';
+	import { SHOWCASE, PRICING, HOW, SPLASHES } from '$lib/content/websites.js';
 
 	const HOW_ICONS = [Bot, Zap, MessagesSquare];
 </script>
@@ -63,7 +64,7 @@
 </Section>
 
 <Section wide class="pb-24">
-	<div class="grid gap-8 md:grid-cols-2 md:items-center md:gap-12 lg:gap-20">
+	<div class="grid gap-8 lg:grid-cols-[1fr_1.3fr] lg:items-center lg:gap-16">
 		<div class="flex flex-col gap-4">
 			<h2 class="text-3xl font-bold tracking-tight text-balance sm:text-4xl">
 				AI doesn’t have to replace people. It can make room for them.
@@ -77,28 +78,8 @@
 				what you need, and shows you every step. You bring the vision. We handle everything else.
 			</p>
 		</div>
-		<GlassCard class="gap-4 p-6 sm:p-8">
-			<p class="text-sm font-semibold tracking-[0.14em] text-foreground/50 uppercase">
-				You’ll never have to
-			</p>
-			<ul class="flex flex-col gap-3">
-				{#each NEVER as item (item)}
-					<li class="flex items-start gap-3">
-						<span
-							class="mt-0.5 grid size-6 shrink-0 place-items-center rounded-full bg-foreground/8 text-foreground/45"
-							><X class="size-3.5" aria-hidden="true" /></span
-						>
-						<span class="text-foreground/55 line-through decoration-foreground/30">{item}</span>
-					</li>
-				{/each}
-				<li class="flex items-start gap-3">
-					<span
-						class="mt-0.5 grid size-6 shrink-0 place-items-center rounded-full bg-primary/20 text-primary"
-						><Check class="size-3.5" aria-hidden="true" /></span
-					>
-					<span class="font-medium">{INSTEAD}</span>
-				</li>
-			</ul>
+		<GlassCard class="p-6 sm:p-8">
+			<NeverGrid />
 		</GlassCard>
 	</div>
 </Section>

@@ -58,13 +58,13 @@ export interface Point {
 	body: string;
 }
 
-// What the client is spared. Rendered as a struck-through "you'll never have to"
-// list, ending in the one thing they do instead (INSTEAD).
-export const NEVER = [
-	'Go back and forth with an AI agent in a chat window',
-	'Drag and drop your own site together in a buggy builder',
-	'See a line of code',
-	'Figure out hosting, domains, or any other technical answer'
+// What the client is spared. Each is drawn as a small struck-out scene (NeverGrid),
+// ending in the one thing they do instead (INSTEAD).
+export const NEVER: { scene: 'chat' | 'builder' | 'code' | 'hosting'; text: string }[] = [
+	{ scene: 'chat', text: 'Go back and forth with an AI agent in a chat window' },
+	{ scene: 'builder', text: 'Drag and drop your own site together in a buggy builder' },
+	{ scene: 'code', text: 'See a line of code' },
+	{ scene: 'hosting', text: 'Figure out hosting, domains, or any other technical answer' }
 ];
 
 export const INSTEAD = 'Talk with an actual engineer, start to finish';
