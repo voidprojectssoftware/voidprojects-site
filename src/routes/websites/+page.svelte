@@ -7,7 +7,7 @@
 	import { BrowserFrame } from '$lib/components/browser-frame/index.js';
 	import { ContactForm } from '$lib/components/contact-form/index.js';
 	import { ProcessFlow } from '$lib/components/process-flow/index.js';
-	import { SHOWCASE, PRINCIPLES, NEVER, HOW, MARGIN_PERCENT } from '$lib/content/websites.js';
+	import { SHOWCASE, PRICING, NEVER, HOW } from '$lib/content/websites.js';
 
 	const HOW_ICONS = [Bot, Zap, MessagesSquare];
 </script>
@@ -22,10 +22,13 @@
 
 <SiteHeader wide />
 
+<!-- Order follows the visitor's questions: what is it, what's it like for me, how
+     does it run, what does it cost, how is that possible, show me, let's talk. -->
+
 <Section wide class="items-center pt-16 pb-20 text-center sm:pt-24">
 	<OrbitMark size={64} />
-	<h1 class="max-w-3xl pt-4 text-4xl font-bold tracking-tight text-balance sm:text-6xl">
-		Websites made by people, built faster with AI.
+	<h1 class="max-w-4xl pt-4 text-4xl font-bold tracking-tight text-balance sm:text-6xl">
+		The website you need, without the price tag or the headache.
 	</h1>
 	<p class="pt-6 text-2xl font-semibold tracking-tight text-primary sm:text-3xl">
 		Free if we can. Fair if we can’t.
@@ -52,7 +55,8 @@
 			</h2>
 			<p class="leading-relaxed text-foreground/65">
 				Tell a person on our team what you need, in your own words. We take it from there and build
-				it with you, one conversation at a time.
+				it with you, one conversation at a time. AI speeds up the build; it never replaces the
+				conversation.
 			</p>
 		</div>
 		<div class="flex flex-col gap-4">
@@ -81,6 +85,41 @@
 	</GlassCard>
 </Section>
 
+<Section wide class="pb-24">
+	<div class="mx-auto flex max-w-2xl flex-col items-center gap-3 pb-10 text-center">
+		<h2 class="text-3xl font-bold tracking-tight">How we work</h2>
+		<p class="text-lg leading-relaxed text-balance text-foreground/65">
+			You see your site at every step, and every round of your feedback shapes the next one.
+		</p>
+	</div>
+	<ProcessFlow />
+</Section>
+
+<Section wide class="pb-24">
+	<GlassCard class="grid gap-10 p-6 sm:p-10 lg:grid-cols-[1fr_1.4fr] lg:items-center lg:gap-16">
+		<div class="flex flex-col gap-4">
+			<h2 class="text-3xl font-bold tracking-tight">What it costs</h2>
+			<p class="text-2xl font-semibold tracking-tight text-primary">
+				Free if we can. Fair if we can’t.
+			</p>
+			<p class="leading-relaxed text-foreground/65">
+				If we can build your site for free, we will. If we can’t, you pay what it costs us, plus a
+				flat margin, and nothing for our time.
+			</p>
+		</div>
+		<dl class="flex flex-col divide-y divide-foreground/10">
+			{#each PRICING as row (row.figure)}
+				<div
+					class="flex flex-col gap-1 py-5 first:pt-0 last:pb-0 sm:flex-row sm:items-baseline sm:gap-6"
+				>
+					<dt class="w-28 shrink-0 text-4xl font-bold tracking-tight text-primary">{row.figure}</dt>
+					<dd class="leading-relaxed text-foreground/70">{row.body}</dd>
+				</div>
+			{/each}
+		</dl>
+	</GlassCard>
+</Section>
+
 <Section wide class="items-center pb-24">
 	<div class="flex max-w-3xl flex-col items-center gap-6 pb-12 text-center">
 		<h2 class="flex flex-col gap-2 font-bold tracking-tight">
@@ -105,31 +144,6 @@
 				</span>
 				<h3 class="pt-1 text-lg font-semibold">{h.title}</h3>
 				<p class="text-sm leading-relaxed text-foreground/65">{h.body}</p>
-			</GlassCard>
-		{/each}
-	</div>
-</Section>
-
-<Section wide class="pb-24">
-	<div class="mx-auto flex max-w-2xl flex-col items-center gap-3 pb-10 text-center">
-		<h2 class="text-3xl font-bold tracking-tight">How we work</h2>
-		<p class="text-lg leading-relaxed text-balance text-foreground/65">
-			You see your site at every step, and every round of your feedback shapes the next one.
-		</p>
-	</div>
-	<ProcessFlow />
-	<p
-		class="mx-auto max-w-2xl pt-16 pb-8 text-center text-lg leading-relaxed text-balance text-foreground/65"
-	>
-		If we can build your site for free, we will. If we can’t, you pay what it costs us plus
-		{MARGIN_PERCENT}%, and nothing for our time.
-	</p>
-	<div class="grid gap-5 md:grid-cols-3">
-		{#each PRINCIPLES as p, i (p.title)}
-			<GlassCard class="gap-3 p-6">
-				<span class="text-sm font-semibold text-primary">0{i + 1}</span>
-				<h3 class="text-lg font-semibold">{p.title}</h3>
-				<p class="text-sm leading-relaxed text-foreground/65">{p.body}</p>
 			</GlassCard>
 		{/each}
 	</div>

@@ -50,18 +50,19 @@ export const NEVER = [
 	'Figure out hosting, domains, or any other technical answer'
 ];
 
-export const PRINCIPLES: Point[] = [
+// "What it costs": a big figure with its explanation.
+export const PRICING: { figure: string; body: string }[] = [
 	{
-		title: 'A human on every message',
-		body: 'Our process is AI augmented, but you always talk to a person. AI speeds up the build; it never replaces the conversation.'
+		figure: `+${MARGIN_PERCENT}%`,
+		body: 'on top of what your site costs us. That’s the whole bill.'
 	},
 	{
-		title: 'Open billing',
-		body: `You pay what your site costs us plus ${MARGIN_PERCENT}%. Our time and work cost you $0.`
+		figure: '$0',
+		body: 'for our time and work. Design, build, and every round of changes.'
 	},
 	{
-		title: 'Free when we can',
-		body: 'If we can make your site free, we will, and simple sites for a cause are. Once a site grows complex enough, it can’t reasonably stay free, and we’ll talk that through with you.'
+		figure: 'Free',
+		body: 'when we can make it so, and simple sites for a cause are. Once a site grows complex enough, it can’t reasonably stay free, and we’ll talk that through with you.'
 	}
 ];
 
