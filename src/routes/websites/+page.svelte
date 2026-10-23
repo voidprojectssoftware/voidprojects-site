@@ -18,9 +18,9 @@
 	/>
 </svelte:head>
 
-<SiteHeader />
+<SiteHeader wide />
 
-<Section class="items-center pt-16 pb-20 text-center sm:pt-24">
+<Section wide class="items-center pt-16 pb-20 text-center sm:pt-24">
 	<p class="text-sm font-semibold tracking-[0.18em] text-primary uppercase">Void Projects</p>
 	<h1 class="max-w-3xl pt-4 text-4xl font-bold tracking-tight text-balance sm:text-6xl">
 		Websites made by people, built faster with AI.
@@ -28,12 +28,7 @@
 	<p class="pt-6 text-2xl font-semibold tracking-tight text-primary sm:text-3xl">
 		Free if we can. Fair if we can’t.
 	</p>
-	<p class="max-w-2xl pt-4 text-lg text-balance text-foreground/65">
-		Years of enterprise software experience, multiplied by AI tooling we built ourselves. If we can
-		build your site for free, we will. If we can’t, you pay what it costs us plus {MARGIN_PERCENT}%,
-		and nothing for our time.
-	</p>
-	<div class="flex flex-wrap justify-center gap-3 pt-9">
+	<div class="flex flex-wrap justify-center gap-3 pt-10">
 		<a
 			href="#contact"
 			class="inline-flex h-11 items-center rounded-full bg-primary px-6 text-sm font-semibold text-white hover:bg-primary/85"
@@ -47,7 +42,7 @@
 	</div>
 </Section>
 
-<Section class="pb-24">
+<Section wide class="pb-24">
 	<div id="work" class="grid scroll-mt-24 gap-8 lg:grid-cols-2">
 		{#each SHOWCASE as site, i (site.url)}
 			<a href={site.url} target="_blank" rel="noopener" class="group block">
@@ -83,7 +78,7 @@
 	</div>
 </Section>
 
-<Section class="pb-24">
+<Section wide class="pb-24">
 	<GlassCard class="grid gap-8 p-6 sm:p-10 md:grid-cols-2 md:items-center md:gap-12">
 		<div class="flex flex-col gap-4">
 			<h2 class="text-3xl font-bold tracking-tight text-balance">
@@ -120,8 +115,14 @@
 	</GlassCard>
 </Section>
 
-<Section class="pb-24">
-	<h2 class="pb-8 text-center text-3xl font-bold tracking-tight">How we work</h2>
+<Section wide class="pb-24">
+	<div class="mx-auto flex max-w-2xl flex-col items-center gap-3 pb-10 text-center">
+		<h2 class="text-3xl font-bold tracking-tight">How we work</h2>
+		<p class="text-lg leading-relaxed text-balance text-foreground/65">
+			If we can build your site for free, we will. If we can’t, you pay what it costs us plus
+			{MARGIN_PERCENT}%, and nothing for our time.
+		</p>
+	</div>
 	<div class="grid gap-5 md:grid-cols-3">
 		{#each PRINCIPLES as p, i (p.title)}
 			<GlassCard class="gap-3 p-6">
@@ -133,10 +134,14 @@
 	</div>
 </Section>
 
-<Section class="items-center pb-24">
-	<div class="flex max-w-2xl flex-col items-center gap-4 pb-10 text-center">
-		<h2 class="text-3xl font-bold tracking-tight text-balance">
-			Sounds too good to be true? Here’s how we do it.
+<Section wide class="items-center pb-24">
+	<div class="flex max-w-3xl flex-col items-center gap-6 pb-12 text-center">
+		<h2 class="flex flex-col gap-2 font-bold tracking-tight">
+			<span class="text-2xl text-foreground/55 sm:text-3xl">Sounds too good to be true?</span>
+			<span
+				class="bg-linear-to-r from-primary via-[oklch(0.78_0.14_330)] to-primary bg-clip-text pb-1 text-5xl text-transparent sm:text-7xl"
+				>Here’s how we do it.</span
+			>
 		</h2>
 		<p class="text-lg leading-relaxed text-balance text-foreground/65">
 			Everyone on the Void Projects team has years of enterprise application development behind
@@ -158,7 +163,7 @@
 	</div>
 </Section>
 
-<Section class="items-center pb-28">
+<Section wide class="items-center pb-28">
 	<div id="contact" class="w-full max-w-2xl scroll-mt-24">
 		<GlassCard class="gap-6 p-6 sm:p-10">
 			<div class="flex flex-col gap-2">
