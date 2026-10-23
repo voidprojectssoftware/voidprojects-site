@@ -7,7 +7,7 @@
 	import { BrowserFrame } from '$lib/components/browser-frame/index.js';
 	import { ContactForm } from '$lib/components/contact-form/index.js';
 	import { ProcessFlow } from '$lib/components/process-flow/index.js';
-	import { SHOWCASE, PRICING, NEVER, HOW } from '$lib/content/websites.js';
+	import { SHOWCASE, PRICING, NEVER, INSTEAD, HOW } from '$lib/content/websites.js';
 
 	const HOW_ICONS = [Bot, Zap, MessagesSquare];
 </script>
@@ -50,13 +50,16 @@
 <Section wide class="pb-24">
 	<GlassCard class="grid gap-8 p-6 sm:p-10 md:grid-cols-2 md:items-center md:gap-12">
 		<div class="flex flex-col gap-4">
-			<h2 class="text-3xl font-bold tracking-tight text-balance">
-				You bring the vision. We handle everything else.
+			<h2 class="text-3xl font-bold tracking-tight text-balance sm:text-4xl">
+				AI doesn’t have to replace people. It can make room for them.
 			</h2>
+			<p class="text-lg leading-relaxed text-foreground/70">
+				Building a website no longer takes significant engineering time. So we spend that time where
+				it matters: on you.
+			</p>
 			<p class="leading-relaxed text-foreground/65">
-				Tell a person on our team what you need, in your own words. We take it from there and build
-				it with you, one conversation at a time. AI speeds up the build; it never replaces the
-				conversation.
+				From the first conversation to launch, you talk with an actual engineer who listens, builds
+				what you need, and shows you every step. You bring the vision. We handle everything else.
 			</p>
 		</div>
 		<div class="flex flex-col gap-4">
@@ -78,7 +81,7 @@
 						class="mt-0.5 grid size-6 shrink-0 place-items-center rounded-full bg-primary/20 text-primary"
 						><Check class="size-3.5" aria-hidden="true" /></span
 					>
-					<span class="font-medium">Just talk with us about what you need</span>
+					<span class="font-medium">{INSTEAD}</span>
 				</li>
 			</ul>
 		</div>

@@ -43,12 +43,16 @@ export interface Point {
 	body: string;
 }
 
-// What the client is spared. Rendered as a struck-through "you'll never have to" list.
+// What the client is spared. Rendered as a struck-through "you'll never have to"
+// list, ending in the one thing they do instead (INSTEAD).
 export const NEVER = [
+	'Go back and forth with an AI agent in a chat window',
+	'Drag and drop your own site together in a buggy builder',
 	'See a line of code',
-	'Wrestle a drag-and-drop builder with a buggy UI',
 	'Figure out hosting, domains, or any other technical answer'
 ];
+
+export const INSTEAD = 'Talk with an actual engineer, start to finish';
 
 // "What it costs": a big figure with its explanation.
 export const PRICING: { figure: string; body: string }[] = [
