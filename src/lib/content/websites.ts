@@ -98,6 +98,13 @@ export const FLOW = {
 	}
 };
 
+// After launch the same loop keeps running; shown as a strip under the flow.
+export const AFTER_LAUNCH = {
+	title: 'Live doesn’t mean done.',
+	body: 'The same loop keeps running after launch. Tell us what you’d like changed and it’s live again the same day, often within the hour, without the back-and-forth. Your site changes whenever you want it to.',
+	examples: ['Swap a photo', 'Try a new font', 'Rework a section']
+};
+
 // The "how is this possible?" answer.
 export const HOW: Point[] = [
 	{

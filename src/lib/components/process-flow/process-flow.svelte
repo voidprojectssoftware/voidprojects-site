@@ -10,9 +10,9 @@
 		Rocket
 	} from '@lucide/svelte';
 	import { GlassCard } from '$lib/components/voidprojects/glass-card/index.js';
-	import { FLOW } from '$lib/content/websites.js';
+	import { AFTER_LAUNCH, FLOW } from '$lib/content/websites.js';
 
-	// The loop (build, see, mark up) runs as a row from md up, with its return arrow
+	// The loop (build, see, tell us) runs as a row from md up, with its return arrow
 	// drawn as a U-shaped border under its first and last nodes. The outer steps
 	// ("We talk" in, "It goes live" out) only join that row on 2xl screens, where
 	// all five fit; below that they stack above and below the loop.
@@ -87,3 +87,22 @@
 		{@render node(Rocket, FLOW.end.title, FLOW.end.body)}
 	</li>
 </ol>
+
+<div
+	class="mt-6 flex flex-col gap-5 rounded-3xl border border-dashed border-primary/40 bg-primary/[0.04] p-6 sm:p-8 lg:flex-row lg:items-center lg:gap-10"
+>
+	<span class="grid size-12 shrink-0 place-items-center rounded-2xl bg-primary/15 text-primary">
+		<RefreshCw class="size-6" aria-hidden="true" />
+	</span>
+	<div class="flex flex-1 flex-col gap-2">
+		<h3 class="text-xl font-semibold">{AFTER_LAUNCH.title}</h3>
+		<p class="leading-relaxed text-foreground/65">{AFTER_LAUNCH.body}</p>
+	</div>
+	<ul class="flex flex-wrap gap-2 lg:max-w-xs lg:justify-end">
+		{#each AFTER_LAUNCH.examples as ex (ex)}
+			<li class="rounded-full border border-primary/30 bg-background/60 px-3.5 py-1.5 text-sm">
+				{ex}
+			</li>
+		{/each}
+	</ul>
+</div>
