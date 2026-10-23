@@ -112,7 +112,7 @@
 	</div>
 	<ProcessFlow />
 	<div class="pt-20">
-		<AfterLaunch variant="a" />
+		<AfterLaunch />
 	</div>
 </Section>
 
@@ -131,7 +131,7 @@
 		<dl class="flex flex-col divide-y divide-foreground/10">
 			{#each PRICING as row (row.figure)}
 				<div
-					class="flex flex-col gap-1 py-5 first:pt-0 last:pb-0 sm:flex-row sm:items-baseline sm:gap-6"
+					class="flex flex-col gap-1 py-5 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:gap-6"
 				>
 					<dt class="w-28 shrink-0 text-4xl font-bold tracking-tight text-primary">{row.figure}</dt>
 					<dd class="leading-relaxed text-foreground/70">{row.body}</dd>

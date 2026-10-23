@@ -102,8 +102,8 @@ export const FLOW = {
 			body: 'A live preview at every step. Never a black box.'
 		},
 		{
-			title: 'You tell us',
-			body: 'Just react however is easiest for you. Our own tools capture every note precisely, so nothing gets lost in long email threads.'
+			title: 'Your feedback',
+			body: 'Just tell us what you think, however is easiest for you. That’s all we need; we take it from there.'
 		}
 	],
 	loopLabel: 'Feedback becomes changes fast. Repeat until it’s right.',
@@ -113,11 +113,10 @@ export const FLOW = {
 	}
 };
 
-// After launch the same loop keeps running; shown as a strip under the flow.
+// After launch the same loop keeps running; shown under the flow (AfterLaunch).
 export const AFTER_LAUNCH = {
 	title: 'Live doesn’t mean done.',
 	body: 'The same loop keeps running after launch. Tell us what you’d like changed and it’s live again the same day, often within the hour, without the back-and-forth. Your site changes whenever you want it to.',
-	examples: ['Swap a photo', 'Try a new font', 'Rework a section'],
 	requests: ['Swap the front page photo', 'Try a warmer font', 'Rework the services section']
 };
 
