@@ -14,7 +14,7 @@
 
 {#if text}
 	<span
-		class="splash pointer-events-none absolute -top-14 right-0 origin-right -rotate-[9deg] text-sm font-bold tracking-normal whitespace-nowrap text-[#ffe14d] [text-shadow:2px_2px_0_#3f3a00] sm:-top-16 sm:text-base lg:-top-12 lg:right-auto lg:left-[72%] lg:origin-left lg:-rotate-[12deg] lg:text-xl xl:text-2xl"
+		class="splash pointer-events-none absolute -top-12 right-0 origin-right rotate-[9deg] text-sm font-bold tracking-normal whitespace-nowrap text-[#ffe14d] [text-shadow:2px_2px_0_#3f3a00] sm:-top-16 sm:text-base lg:-top-16 lg:right-auto lg:left-[78%] lg:origin-left lg:rotate-[12deg] lg:text-xl xl:text-2xl"
 		aria-hidden="true">{text}</span
 	>
 {/if}
