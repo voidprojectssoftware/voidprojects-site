@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Bot, Check, MessagesSquare, X, Zap } from '@lucide/svelte';
 	import { SiteHeader } from '$lib/components/site-header/index.js';
+	import OrbitMark from '$lib/brand/OrbitMark.svelte';
 	import { Section } from '$lib/components/voidprojects/section/index.js';
 	import { GlassCard } from '$lib/components/voidprojects/glass-card/index.js';
 	import { BrowserFrame } from '$lib/components/browser-frame/index.js';
@@ -21,7 +22,7 @@
 <SiteHeader wide />
 
 <Section wide class="items-center pt-16 pb-20 text-center sm:pt-24">
-	<p class="text-sm font-semibold tracking-[0.18em] text-primary uppercase">Void Projects</p>
+	<OrbitMark size={64} />
 	<h1 class="max-w-3xl pt-4 text-4xl font-bold tracking-tight text-balance sm:text-6xl">
 		Websites made by people, built faster with AI.
 	</h1>

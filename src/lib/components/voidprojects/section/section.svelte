@@ -1,6 +1,6 @@
 <script>
 	// `wide` trades the site's deep gutters for a broader content area on large
-	// screens; pair it with a `wide` SiteHeader so the two stay aligned.
+	// screens; see SiteHeader `wide` for the matching nav.
 	let { children, ref = $bindable(null), wide = false, ...rest } = $props();
 </script>
 

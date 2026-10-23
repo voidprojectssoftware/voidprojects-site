@@ -2,7 +2,8 @@
 	// The compact nav that fades in once the hero has scrolled past, showing the
 	// site name and secondary links. Hidden (but kept in the layout, `aria-hidden`)
 	// while at rest so it doesn't compete with the hero title.
-	// `wide` matches a `wide` Section's gutters.
+	// `wide` pins the nav near the viewport edge instead of aligning it with the
+	// page's content gutters.
 	let {
 		scrolled = true,
 		transparent = true,
@@ -11,11 +12,9 @@
 </script>
 
 <header
-	class="sticky top-0 z-2 h-16 {transparent
-		? 'bg-transparent'
-		: 'bg-background'} px-6 pt-4 sm:px-page-sm {wide
-		? 'lg:px-16 xl:px-28 2xl:px-60'
-		: 'lg:px-page-lg xl:px-page-xl 2xl:px-page-2xl'}"
+	class="sticky top-0 z-2 h-16 {transparent ? 'bg-transparent' : 'bg-background'} px-6 pt-4 {wide
+		? 'sm:px-8 lg:px-10'
+		: 'sm:px-page-sm lg:px-page-lg xl:px-page-xl 2xl:px-page-2xl'}"
 >
 	<div class="flex flex-row items-center justify-between">
 		<div
