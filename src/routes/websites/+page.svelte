@@ -116,25 +116,6 @@
 	</GlassCard>
 </Section>
 
-<Section wide class="pb-24">
-	<div class="mx-auto flex max-w-2xl flex-col items-center gap-3 pb-10 text-center">
-		<h2 class="text-3xl font-bold tracking-tight">How we work</h2>
-		<p class="text-lg leading-relaxed text-balance text-foreground/65">
-			If we can build your site for free, we will. If we can’t, you pay what it costs us plus
-			{MARGIN_PERCENT}%, and nothing for our time.
-		</p>
-	</div>
-	<div class="grid gap-5 md:grid-cols-3">
-		{#each PRINCIPLES as p, i (p.title)}
-			<GlassCard class="gap-3 p-6">
-				<span class="text-sm font-semibold text-primary">0{i + 1}</span>
-				<h3 class="text-lg font-semibold">{p.title}</h3>
-				<p class="text-sm leading-relaxed text-foreground/65">{p.body}</p>
-			</GlassCard>
-		{/each}
-	</div>
-</Section>
-
 <Section wide class="items-center pb-24">
 	<div class="flex max-w-3xl flex-col items-center gap-6 pb-12 text-center">
 		<h2 class="flex flex-col gap-2 font-bold tracking-tight">
@@ -159,6 +140,25 @@
 				</span>
 				<h3 class="pt-1 text-lg font-semibold">{h.title}</h3>
 				<p class="text-sm leading-relaxed text-foreground/65">{h.body}</p>
+			</GlassCard>
+		{/each}
+	</div>
+</Section>
+
+<Section wide class="pb-24">
+	<div class="mx-auto flex max-w-2xl flex-col items-center gap-3 pb-10 text-center">
+		<h2 class="text-3xl font-bold tracking-tight">How we work</h2>
+		<p class="text-lg leading-relaxed text-balance text-foreground/65">
+			If we can build your site for free, we will. If we can’t, you pay what it costs us plus
+			{MARGIN_PERCENT}%, and nothing for our time.
+		</p>
+	</div>
+	<div class="grid gap-5 md:grid-cols-3">
+		{#each PRINCIPLES as p, i (p.title)}
+			<GlassCard class="gap-3 p-6">
+				<span class="text-sm font-semibold text-primary">0{i + 1}</span>
+				<h3 class="text-lg font-semibold">{p.title}</h3>
+				<p class="text-sm leading-relaxed text-foreground/65">{p.body}</p>
 			</GlassCard>
 		{/each}
 	</div>
