@@ -44,7 +44,16 @@
 </Section>
 
 <Section wide class="pb-24">
-	<div id="work" class="grid scroll-mt-24 gap-8 lg:grid-cols-2">
+	<div
+		id="work"
+		class="mx-auto flex max-w-2xl scroll-mt-24 flex-col items-center gap-3 pb-10 text-center"
+	>
+		<h2 class="text-3xl font-bold tracking-tight">Our work</h2>
+		<p class="text-lg leading-relaxed text-balance text-foreground/65">
+			Sites we’ve built, live today.
+		</p>
+	</div>
+	<div class="grid gap-8 lg:grid-cols-2">
 		{#each SHOWCASE as site, i (site.url)}
 			<a href={site.url} target="_blank" rel="noopener" class="group block">
 				<GlassCard class="h-full gap-5 p-4 sm:p-5">
@@ -56,7 +65,7 @@
 					/>
 					<div class="flex flex-col gap-2 px-1 pb-1">
 						<div class="flex flex-wrap items-center gap-x-3 gap-y-1">
-							<h2 class="text-xl font-semibold">{site.name}</h2>
+							<h3 class="text-xl font-semibold">{site.name}</h3>
 							<span
 								class="rounded-full bg-foreground/8 px-2.5 py-0.5 text-xs font-medium text-foreground/65"
 								>{site.kind}</span
