@@ -25,9 +25,13 @@
 	<h1 class="max-w-3xl pt-4 text-4xl font-bold tracking-tight text-balance sm:text-6xl">
 		Websites made by people, built faster with AI.
 	</h1>
-	<p class="max-w-2xl pt-6 text-lg text-balance text-foreground/65">
-		Years of enterprise software experience, multiplied by AI tooling we built ourselves. You pay
-		what your site costs us plus {MARGIN_PERCENT}%, and nothing for our time.
+	<p class="pt-6 text-2xl font-semibold tracking-tight text-primary sm:text-3xl">
+		Free if we can. Fair if we can’t.
+	</p>
+	<p class="max-w-2xl pt-4 text-lg text-balance text-foreground/65">
+		Years of enterprise software experience, multiplied by AI tooling we built ourselves. If we can
+		build your site for free, we will. If we can’t, you pay what it costs us plus {MARGIN_PERCENT}%,
+		and nothing for our time.
 	</p>
 	<div class="flex flex-wrap justify-center gap-3 pt-9">
 		<a
