@@ -95,7 +95,7 @@ export const FLOW = {
 	loop: [
 		{
 			title: 'We build',
-			body: 'Our agentic system turns the conversation into a working site, monitored and guided by your engineer.'
+			body: 'Your engineer guides the output of our agents to build exactly what you described.'
 		},
 		{
 			title: 'You see it',
