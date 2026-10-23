@@ -5,7 +5,7 @@
 		Bot,
 		Eye,
 		MessagesSquare,
-		MousePointerClick,
+		MessageCircle,
 		RefreshCw,
 		Rocket
 	} from '@lucide/svelte';
@@ -16,7 +16,7 @@
 	// drawn as a U-shaped border under its first and last nodes. The outer steps
 	// ("We talk" in, "It goes live" out) only join that row on 2xl screens, where
 	// all five fit; below that they stack above and below the loop.
-	const LOOP_ICONS = [Bot, Eye, MousePointerClick];
+	const LOOP_ICONS = [Bot, Eye, MessageCircle];
 </script>
 
 {#snippet node(Icon: typeof Bot, title: string, body: string)}
@@ -42,7 +42,7 @@
 {/snippet}
 
 <ol
-	class="flex flex-col items-center gap-3 2xl:flex-row 2xl:items-start"
+	class="flex flex-col items-center gap-3 2xl:flex-row 2xl:items-center"
 	aria-label="How a project runs"
 >
 	<li class="w-full max-w-md 2xl:w-52 2xl:shrink-0">

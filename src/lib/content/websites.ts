@@ -87,8 +87,8 @@ export const FLOW = {
 			body: 'A live preview at every step. Never a black box.'
 		},
 		{
-			title: 'You mark it up',
-			body: 'Point at the page itself with our own feedback tools. No long email threads.'
+			title: 'You tell us',
+			body: 'Just react however is easiest for you. Our own tools capture every note precisely, so nothing gets lost in long email threads.'
 		}
 	],
 	loopLabel: 'Feedback becomes changes fast. Repeat until it’s right.',
