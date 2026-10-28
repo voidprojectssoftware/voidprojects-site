@@ -3,6 +3,15 @@
 
 export const CONTACT_EMAIL = 'hello@voidprojects.ai';
 
+// "The site is for" choices on the contact form; /api/contact accepts only these.
+export const CONTACT_KINDS = [
+	'A business',
+	'A cause',
+	'Something personal',
+	'Not sure yet'
+] as const;
+export type ContactKind = (typeof CONTACT_KINDS)[number];
+
 export const MARGIN_PERCENT = 30;
 
 // Minecraft-style splash on the hero headline; one is picked at random per load.
