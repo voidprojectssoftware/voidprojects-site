@@ -1,8 +1,6 @@
 // Content for the /websites landing page, the target of the "Made by Void
 // Projects" footer link on every site we build.
 
-import { Flower2, HeartPulse, Megaphone, PawPrint, Ribbon, Users } from '@lucide/svelte';
-
 export const CONTACT_EMAIL = 'hello@voidprojects.ai';
 
 // "The site is for" choices on the contact form; /api/contact accepts only these.
@@ -158,37 +156,31 @@ export const CAUSES = {
 	kinds: [
 		{
 			title: 'Memorials',
-			icon: Flower2,
 			hook: 'Keep their story alive.',
 			body: 'A place to remember someone, share their story, and gather photos and messages from the people who loved them.'
 		},
 		{
 			title: 'Medical and cancer support',
-			icon: HeartPulse,
 			hook: 'One place for every update.',
 			body: 'Keep family and friends updated through treatment, and give them real ways to help.'
 		},
 		{
 			title: 'Fundraisers',
-			icon: Ribbon,
 			hook: 'Turn visitors into givers.',
 			body: 'Explain the need, share progress, and point every visitor to where they can give.'
 		},
 		{
 			title: 'Community groups',
-			icon: Users,
 			hook: 'A home for your people.',
 			body: 'Neighborhood efforts, clubs, and volunteer groups that need a home online.'
 		},
 		{
 			title: 'Animal rescue',
-			icon: PawPrint,
 			hook: 'Help them find a home.',
 			body: 'Show the animals who need homes and make it easy to adopt, foster, or donate.'
 		},
 		{
 			title: 'Awareness campaigns',
-			icon: Megaphone,
 			hook: 'Get the word out.',
 			body: 'Get the word out about a cause, an event, or something your community needs to know.'
 		}

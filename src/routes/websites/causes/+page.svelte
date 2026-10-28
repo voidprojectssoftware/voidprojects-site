@@ -5,6 +5,7 @@
 	import { GlassCard } from '$lib/components/voidprojects/glass-card/index.js';
 	import { BrowserFrame } from '$lib/components/browser-frame/index.js';
 	import { ContactForm } from '$lib/components/contact-form/index.js';
+	import { CAUSE_ICONS } from '$lib/content/cause-icons.js';
 	import { CAUSES, SHOWCASE } from '$lib/content/websites.js';
 
 	const rally = SHOWCASE.find((s) => s.free)!;
@@ -84,9 +85,10 @@
 	</div>
 	<div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
 		{#each CAUSES.kinds as k (k.title)}
+			{@const CauseIcon = CAUSE_ICONS[k.title]}
 			<GlassCard class="gap-3 p-6">
 				<span class="grid size-10 place-items-center rounded-xl bg-primary/15 text-primary">
-					<k.icon class="size-5" aria-hidden="true" />
+					<CauseIcon class="size-5" aria-hidden="true" />
 				</span>
 				<h3 class="pt-1 text-lg font-semibold">{k.title}</h3>
 				<p class="text-sm leading-relaxed text-foreground/65">{k.body}</p>

@@ -22,6 +22,7 @@
 		INSTEAD,
 		ENGINEER
 	} from '$lib/content/websites.js';
+	import { CAUSE_ICONS } from '$lib/content/cause-icons.js';
 
 	const HOW_ICONS = [Bot, Zap, MessagesSquare];
 </script>
@@ -169,11 +170,12 @@
 		</div>
 		<ul class="grid flex-1 grid-cols-2 gap-3 sm:grid-cols-3">
 			{#each CAUSES.kinds as k (k.title)}
+				{@const CauseIcon = CAUSE_ICONS[k.title]}
 				<li
 					class="flex flex-col gap-2 rounded-2xl bg-background/40 p-4 ring-1 ring-foreground/10 transition duration-300 group-hover:ring-primary/25 hover:-translate-y-1 hover:bg-primary/10 hover:ring-primary/50"
 				>
 					<span class="grid size-9 place-items-center rounded-xl bg-primary/15 text-primary">
-						<k.icon class="size-4.5" aria-hidden="true" />
+						<CauseIcon class="size-4.5" aria-hidden="true" />
 					</span>
 					<span class="text-sm leading-snug font-semibold">{k.title}</span>
 					<span class="text-xs leading-relaxed text-foreground/60">{k.hook}</span>
