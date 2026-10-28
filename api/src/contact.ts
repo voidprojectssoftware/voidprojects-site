@@ -1,6 +1,9 @@
 // POST /api/contact: the /websites contact form. Bundled by scripts/build-api.mjs.
 import { app } from '@azure/functions';
-import { contactResponse, logDelivery } from '$lib/contact/contact-http.js';
+import { contactResponse } from '$lib/contact/contact-http.js';
+import { contactDelivery } from './contact-email.js';
+
+const deliveryFor = contactDelivery(process.env);
 
 app.http('contact', {
 	route: 'contact',
@@ -10,7 +13,10 @@ app.http('contact', {
 		const res = await contactResponse(
 			request.headers.get('content-type'),
 			await request.text(),
-			logDelivery((line) => context.log(line))
+			deliveryFor(
+				(line) => context.log(line),
+				(line) => context.warn(line)
+			)
 		);
 		return { status: res.status, headers: res.headers, body: res.body };
 	}
