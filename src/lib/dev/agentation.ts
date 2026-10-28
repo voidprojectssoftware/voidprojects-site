@@ -11,7 +11,7 @@ import { Agentation, type AgentationProps } from 'agentation';
 
 // Must match `--port` on the MCP server in .mcp.json. Not the 4747 default, so
 // this site's notes don't land on another project's running server.
-const ENDPOINT = 'http://localhost:4748';
+const ENDPOINT = `http://${window.location.hostname}:4748`;
 
 const host = document.createElement('div');
 host.id = 'agentation-root';
