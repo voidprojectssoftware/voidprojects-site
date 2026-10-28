@@ -212,11 +212,15 @@ export const DIY = {
 	title: 'Everyone else hands you the tools.',
 	accent: 'We hand you the website.',
 	body: 'Most website companies sell you a kit and wish you luck. You end up learning their editor at midnight instead of running your business.',
+	flipHint: 'Flip it over',
+	realityLabel: 'The reality',
+	adBadge: 'Free trial!',
 	options: [
 		{
 			name: 'Drag-and-drop builders',
 			examples: 'Wix, Squarespace, GoDaddy',
 			pitch: '“Anyone can build a website!”',
+			cta: 'Start building free',
 			reality:
 				'Anyone can, if anyone has a free weekend. You pick the template, write every word, shuffle blocks until it looks right on a phone, and pay monthly for the privilege.'
 		},
@@ -224,6 +228,7 @@ export const DIY = {
 			name: 'Do-it-yourself platforms',
 			examples: 'WordPress and friends',
 			pitch: '“Endlessly customizable!”',
+			cta: 'Install it now',
 			reality:
 				'Endless is the problem. Themes, plugins, updates, and security patches become your second job, and when something breaks, you’re the one searching forums for the fix.'
 		},
@@ -231,10 +236,23 @@ export const DIY = {
 			name: 'AI site generators',
 			examples: 'One-prompt website tools',
 			pitch: '“A website in 60 seconds!”',
+			cta: 'Generate my site',
 			reality:
 				'You get a generic first draft in a minute, then spend hours fighting it into something that sounds like you. Nobody reviews it, and nobody answers when you’re stuck.'
 		}
 	],
+	plates: {
+		heading: 'Who does the work?',
+		prompt: 'Flip the switch and watch where the work goes.',
+		toggleLabel: 'Hand the work to Void Projects',
+		diyLabel: 'Build it yourself',
+		oursLabel: 'Void Projects',
+		yours: 'Your plate',
+		ours: 'Our plate',
+		empty: 'Nothing on our plate. Yet.',
+		count: (n: number) => (n === 1 ? '1 job' : `${n} jobs`),
+		yourJob: 'Run your business'
+	},
 	chores: [
 		'Pick a template',
 		'Write and arrange every page',
