@@ -104,7 +104,7 @@ export const PRICING: { figure: string; body: string }[] = [
 	},
 	{
 		figure: '$0',
-		body: 'for our time, design, and build.'
+		body: 'for our time, design, and build, and for keeping it updated and secure after launch.'
 	}
 ];
 
