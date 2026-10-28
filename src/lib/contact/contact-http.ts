@@ -108,8 +108,8 @@ export async function contactResponse(
 	return json(200, SUCCESS);
 }
 
-// Pending the owner's choice of real sender (ACS email, Resend/Postmark, a chat
-// webhook, or Jira); until then submissions are only logged.
+// Used by `vite dev`, and by the Azure Function when its ACS email settings are
+// absent (see api/src/contact-email.ts).
 export function logDelivery(log: (message: string) => void): Deliver {
 	return async (submission) => {
 		log(`[contact] ${JSON.stringify(submission)}`);
