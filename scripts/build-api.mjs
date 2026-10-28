@@ -1,5 +1,6 @@
 // Bundles the Azure Functions app in api/ into build-api/, a self-contained folder
-// the deploy hands to Static Web Apps as its managed API (`--api-location`). The
+// the deploy hands to Static Web Apps as its managed API (`--api-location`). One
+// file, index.js, registers every function (api/src/index.ts imports each). The
 // bundle carries @azure/functions and the shared $lib code, so the folder needs
 // no npm install. @azure/functions-core stays external: the Functions worker
 // provides it at runtime.
@@ -16,17 +17,17 @@ await rm(out, { recursive: true, force: true });
 await mkdir(out, { recursive: true });
 
 await build({
-	input: join(root, 'api/src/mark.ts'),
+	input: join(root, 'api/src/index.ts'),
 	platform: 'node',
 	external: ['@azure/functions-core'],
 	resolve: { alias: { $lib: join(root, 'src/lib') } },
 	transform: { define: { __BRAND_PRIMARY__: JSON.stringify(brandPrimary()) } },
-	output: { file: join(out, 'mark.js'), format: 'cjs', minify: true }
+	output: { file: join(out, 'index.js'), format: 'cjs', minify: true }
 });
 
 await writeFile(
 	join(out, 'package.json'),
-	JSON.stringify({ name: 'voidprojects-site-api', private: true, main: 'mark.js' }, null, '\t')
+	JSON.stringify({ name: 'voidprojects-site-api', private: true, main: 'index.js' }, null, '\t')
 );
 await writeFile(
 	join(out, 'host.json'),
