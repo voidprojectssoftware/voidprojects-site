@@ -26,6 +26,8 @@
 		desc?: Snippet;
 		layout?: 'horizontal' | 'vertical'; // vertical: photo on top, for side-by-side columns
 	} = $props();
+
+	let bioDialog = $state<HTMLDialogElement | null>(null);
 </script>
 
 {#snippet linkedinLink()}
@@ -73,6 +75,39 @@
 			>
 				{@render desc()}
 			</div>
+			<!-- The compact card lives in a viewport-height overlay on the homepage, so the
+			     full bio opens in a dialog rather than growing the card past the fold. -->
+			<button
+				type="button"
+				onclick={() => bioDialog?.showModal()}
+				class="self-start text-xs font-medium text-primary underline-offset-4 hover:underline lg:hidden"
+				>Read more</button
+			>
+			<dialog
+				bind:this={bioDialog}
+				onclick={(e) => e.target === bioDialog && bioDialog?.close()}
+				aria-label="About {name}"
+				class="m-auto w-[min(32rem,calc(100vw-2rem))] rounded-2xl border border-foreground/10 bg-background p-6 text-foreground shadow-2xl backdrop:bg-black/60 backdrop:backdrop-blur-sm"
+			>
+				<div class="flex flex-col gap-4">
+					<div class="flex items-center gap-3">
+						<ProfilePicture {src} {alt} class="size-12" />
+						<div class="flex flex-col">
+							<span class="text-lg font-bold">{name}</span>
+							<span class="text-sm opacity-70">{role} · {subrole}</span>
+						</div>
+					</div>
+					<div class="flex flex-col gap-3 text-sm leading-relaxed text-foreground/85">
+						{@render desc()}
+					</div>
+					<button
+						type="button"
+						onclick={() => bioDialog?.close()}
+						class="self-end rounded-full bg-primary px-5 py-2 text-sm font-semibold text-white hover:bg-primary/85"
+						>Close</button
+					>
+				</div>
+			</dialog>
 		{/if}
 	</div>
 {:else}
