@@ -1,29 +1,40 @@
 <script lang="ts">
-	import { CONTACT_EMAIL } from '$lib/content/websites.js';
-
-	// No backend yet: submitting composes an email in the visitor's mail client.
-	// Swap `submit` for a POST once a form endpoint exists.
-	const KINDS = ['A business', 'A cause', 'Something personal', 'Not sure yet'];
+	import { CONTACT_EMAIL, CONTACT_KINDS, type ContactKind } from '$lib/content/websites.js';
 
 	let {
 		class: className = '',
 		compact = false,
-		initialKind = KINDS[0]
-	}: { class?: string; compact?: boolean; initialKind?: (typeof KINDS)[number] } = $props();
+		initialKind = CONTACT_KINDS[0]
+	}: { class?: string; compact?: boolean; initialKind?: ContactKind } = $props();
 
 	let name = $state('');
 	let email = $state('');
 	// svelte-ignore state_referenced_locally
 	let kind = $state(initialKind); // seeded once; the visitor can change it
 	let message = $state('');
-	let sent = $state(false);
+	let website = $state(''); // honeypot; people never see it
+	let status = $state<'idle' | 'sending' | 'sent' | 'error'>('idle');
+	let error = $state('');
 
-	function submit(event: SubmitEvent) {
+	async function submit(event: SubmitEvent) {
 		event.preventDefault();
-		const subject = `Website request from ${name}`;
-		const body = `Name: ${name}\nEmail: ${email}\nThe site is for: ${kind}\n\n${message}`;
-		window.location.href = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-		sent = true;
+		status = 'sending';
+		try {
+			const res = await fetch('/api/contact', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ name, email, kind, message, website })
+			});
+			if (res.ok) {
+				status = 'sent';
+				return;
+			}
+			const data = await res.json().catch(() => null);
+			error = data?.error ?? 'Something went wrong sending your message.';
+		} catch {
+			error = 'Your message could not be sent. Check your connection and try again.';
+		}
+		status = 'error';
 	}
 
 	const field =
@@ -31,58 +42,79 @@
 	const label = 'text-sm font-medium text-foreground/80';
 </script>
 
-<form onsubmit={submit} class="flex flex-col gap-4 {className}">
-	<div class="grid gap-4 {compact ? '' : 'sm:grid-cols-2'}">
-		<label class="flex flex-col gap-1.5">
-			<span class={label}>Your name</span>
-			<input class={field} bind:value={name} required autocomplete="name" />
-		</label>
-		<label class="flex flex-col gap-1.5">
-			<span class={label}>Email</span>
-			<input class={field} type="email" bind:value={email} required autocomplete="email" />
-		</label>
-	</div>
-	<fieldset class="flex flex-col gap-2">
-		<legend class="{label} pb-1.5">The site is for</legend>
-		<div class="flex flex-wrap gap-2">
-			{#each KINDS as k (k)}
-				<label
-					class="cursor-pointer rounded-full border px-3.5 py-1.5 text-sm transition-colors has-checked:border-primary has-checked:bg-primary/15 has-checked:text-foreground has-focus-visible:ring-2 has-focus-visible:ring-primary {kind ===
-					k
-						? ''
-						: 'border-foreground/12 text-foreground/65 hover:border-foreground/30'}"
-				>
-					<input type="radio" class="sr-only" name="kind" value={k} bind:group={kind} />
-					{k}
-				</label>
-			{/each}
-		</div>
-	</fieldset>
-	<label class="flex flex-col gap-1.5">
-		<span class={label}>Tell us about it</span>
-		<textarea
-			class="{field} min-h-28 resize-y"
-			bind:value={message}
-			required
-			placeholder="Who it's for, what it needs to do, any site you have today."
-		></textarea>
-	</label>
-	<div class="flex flex-wrap items-center gap-x-4 gap-y-2 pt-1">
-		<button
-			type="submit"
-			class="h-11 rounded-full bg-primary px-6 text-sm font-semibold text-white transition-colors hover:bg-primary/85 focus-visible:ring-3 focus-visible:ring-primary/40 focus-visible:outline-none"
-		>
-			Start the conversation
-		</button>
-		<p class="text-sm text-foreground/50">
-			{#if sent}
-				Your mail app should open. If not, write us at
-			{:else}
-				Opens your email app, or write us at
-			{/if}
+{#if status === 'sent'}
+	<div class="flex flex-col gap-2 {className}" role="status">
+		<p class="text-lg font-semibold text-foreground">Thanks, {name}. We got your message.</p>
+		<p class="text-sm text-foreground/65">
+			We will reply to {email} soon. Anything else in the meantime, write us at
 			<a class="text-foreground/80 underline underline-offset-4" href="mailto:{CONTACT_EMAIL}"
 				>{CONTACT_EMAIL}</a
 			>.
 		</p>
 	</div>
-</form>
+{:else}
+	<form onsubmit={submit} class="flex flex-col gap-4 {className}">
+		<div class="grid gap-4 {compact ? '' : 'sm:grid-cols-2'}">
+			<label class="flex flex-col gap-1.5">
+				<span class={label}>Your name</span>
+				<input class={field} bind:value={name} required autocomplete="name" />
+			</label>
+			<label class="flex flex-col gap-1.5">
+				<span class={label}>Email</span>
+				<input class={field} type="email" bind:value={email} required autocomplete="email" />
+			</label>
+		</div>
+		<fieldset class="flex flex-col gap-2">
+			<legend class="{label} pb-1.5">The site is for</legend>
+			<div class="flex flex-wrap gap-2">
+				{#each CONTACT_KINDS as k (k)}
+					<label
+						class="cursor-pointer rounded-full border px-3.5 py-1.5 text-sm transition-colors has-checked:border-primary has-checked:bg-primary/15 has-checked:text-foreground has-focus-visible:ring-2 has-focus-visible:ring-primary {kind ===
+						k
+							? ''
+							: 'border-foreground/12 text-foreground/65 hover:border-foreground/30'}"
+					>
+						<input type="radio" class="sr-only" name="kind" value={k} bind:group={kind} />
+						{k}
+					</label>
+				{/each}
+			</div>
+		</fieldset>
+		<label class="flex flex-col gap-1.5">
+			<span class={label}>Tell us about it</span>
+			<textarea
+				class="{field} min-h-28 resize-y"
+				bind:value={message}
+				required
+				placeholder="Who it's for, what it needs to do, any site you have today."
+			></textarea>
+		</label>
+		<div class="sr-only" aria-hidden="true">
+			<label>
+				Website
+				<input name="website" tabindex="-1" autocomplete="off" bind:value={website} />
+			</label>
+		</div>
+		<div class="flex flex-wrap items-center gap-x-4 gap-y-2 pt-1">
+			<button
+				type="submit"
+				disabled={status === 'sending'}
+				class="h-11 rounded-full bg-primary px-6 text-sm font-semibold text-white transition-colors hover:bg-primary/85 focus-visible:ring-3 focus-visible:ring-primary/40 focus-visible:outline-none disabled:cursor-wait disabled:opacity-70"
+			>
+				{status === 'sending' ? 'Sending...' : 'Start the conversation'}
+			</button>
+			<p class="text-sm text-foreground/50">
+				Goes straight to us, or write us at
+				<a class="text-foreground/80 underline underline-offset-4" href="mailto:{CONTACT_EMAIL}"
+					>{CONTACT_EMAIL}</a
+				>.
+			</p>
+		</div>
+		{#if status === 'error'}
+			<p class="text-sm text-red-400" role="alert">
+				{error} You can also email us directly at
+				<a class="underline underline-offset-4" href="mailto:{CONTACT_EMAIL}">{CONTACT_EMAIL}</a>.
+			</p>
+		{/if}
+	</form>
+{/if}
