@@ -1,5 +1,13 @@
 <script lang="ts">
-	import { AFTER_LAUNCH } from '$lib/content/websites.js';
+	import { Mail, MessageSquare, Phone } from '@lucide/svelte';
+	import { AFTER_LAUNCH, ENGINEER } from '$lib/content/websites.js';
+
+	const engineer = ENGINEER.name.split(' ')[0];
+	const CHANNELS = {
+		text: { icon: MessageSquare, label: `Texted ${engineer}` },
+		email: { icon: Mail, label: `Emailed ${engineer}` },
+		call: { icon: Phone, label: `Called ${engineer}` }
+	};
 </script>
 
 <div class="grid gap-10 lg:grid-cols-2 lg:items-center lg:gap-20">
@@ -11,14 +19,21 @@
 		<p class="pb-4 text-sm font-semibold tracking-[0.14em] text-foreground/50 uppercase">
 			After launch, for example
 		</p>
-		<ol class="relative flex flex-col gap-6 border-l border-dashed border-primary/40 pl-7">
-			{#each AFTER_LAUNCH.requests as req (req)}
+		<ol class="relative flex flex-col gap-6 border-l border-dashed border-primary/40 pl-8">
+			{#each AFTER_LAUNCH.requests as req (req.text)}
+				{@const channel = CHANNELS[req.via]}
 				<li class="relative">
+					<!-- Opaque base so the dashed rail doesn't show through the tinted chip. -->
 					<span
-						class="absolute top-1.5 -left-[33px] size-3 rounded-full bg-primary ring-4 ring-background"
-					></span>
+						class="absolute top-0 -left-[45px] size-7 rounded-full bg-background ring-4 ring-background"
+					>
+						<span class="grid size-full place-items-center rounded-full bg-primary/20 text-primary">
+							<channel.icon class="size-3.5" aria-hidden="true" />
+						</span>
+					</span>
+					<p class="pb-1 text-xs font-medium tracking-wide text-foreground/50">{channel.label}</p>
 					<div class="flex flex-wrap items-center gap-x-3 gap-y-1">
-						<span class="text-lg">“{req}”</span>
+						<span class="text-lg">“{req.text}”</span>
 						<span class="rounded-full bg-primary/15 px-2.5 py-0.5 text-xs font-medium text-primary"
 							>Live same day</span
 						>

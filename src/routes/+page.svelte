@@ -35,7 +35,7 @@
 			name: 'Blake Hastings',
 			src: blakeProfilePicture,
 			subrole: 'Protostar Technical Lead',
-			skills: ['C#', 'TypeScript', 'AI/Agentic Systems', 'Refactoring', 'Modular Design'],
+			skills: ['Agentic Development', 'C#', '.NET', 'Web Dev', 'Agile', 'Enterprise Systems'],
 			email: 'blakehastings@voidprojects.ai',
 			linkedin: 'https://www.linkedin.com/in/the-blake-hastings/',
 			desc: blakeDesc
@@ -503,8 +503,8 @@
 		breaking websites. I do it all passionately!</span
 	>
 	<span
-		>You might find me traveling to new cities, hiking, camping, and playing far too many video
-		games.</span
+		>You might find me traveling to new cities, hiking, and camping, always with a computer by my
+		side.</span
 	>
 {/snippet}
 

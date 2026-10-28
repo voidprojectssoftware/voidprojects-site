@@ -1,6 +1,8 @@
 // Content for the /websites landing page, the target of the "Made by Void
 // Projects" footer link on every site we build.
 
+import { Flower2, HeartPulse, Megaphone, PawPrint, Ribbon, Users } from '@lucide/svelte';
+
 export const CONTACT_EMAIL = 'hello@voidprojects.ai';
 
 export const MARGIN_PERCENT = 30;
@@ -74,28 +76,28 @@ export const ENGINEER = {
 	name: 'Blake Hastings',
 	role: 'Co-Founder',
 	subrole: 'Protostar Technical Lead',
-	skills: ['C#', 'TypeScript', 'AI/Agentic Systems', 'Refactoring', 'Modular Design'],
+	skills: ['Agentic Development', 'C#', '.NET', 'Web Dev', 'Agile', 'Enterprise Systems'],
 	email: 'blakehastings@voidprojects.ai',
 	linkedin: 'https://www.linkedin.com/in/the-blake-hastings/',
 	bio: [
 		'I love to engage with emerging technologies, push myself with challenging projects, and continually chase the cool stuff. Experimenting with AI agents, automating my life away, breaking websites. I do it all passionately!',
-		'You might find me traveling to new cities, hiking, camping, and playing far too many video games.'
+		'You might find me traveling to new cities, hiking, and camping, always with a computer by my side.'
 	]
 };
 
 // "What it costs": a big figure with its explanation.
 export const PRICING: { figure: string; body: string }[] = [
 	{
+		figure: 'Free',
+		body: 'when we can make it so. Once a site grows complex enough, it can’t reasonably stay free, and we’ll talk that through with you.'
+	},
+	{
 		figure: `+${MARGIN_PERCENT}%`,
-		body: 'on top of what your site costs us. That’s the whole bill.'
+		body: 'on top of what it costs us. That’s the whole bill.'
 	},
 	{
 		figure: '$0',
-		body: 'for our time and work. Design, build, and every round of changes.'
-	},
-	{
-		figure: 'Free',
-		body: 'when we can make it so. Once a site grows complex enough, it can’t reasonably stay free, and we’ll talk that through with you.'
+		body: 'for our time, design, and build.'
 	}
 ];
 
@@ -131,7 +133,11 @@ export const FLOW = {
 export const AFTER_LAUNCH = {
 	title: 'Live doesn’t mean done.',
 	body: 'The same loop keeps running after launch. Tell us what you’d like changed and it’s live again the same day, often within the hour, without the back-and-forth. Your site changes whenever you want it to.',
-	requests: ['Swap the front page photo', 'Try a warmer font', 'Rework the services section']
+	requests: [
+		{ via: 'text', text: 'Swap the front page photo' },
+		{ via: 'email', text: 'Try a warmer font' },
+		{ via: 'call', text: 'Rework the services section' }
+	] as { via: 'text' | 'email' | 'call'; text: string }[]
 };
 
 // Sites for causes (memorials, medical support, fundraisers): teased on /websites,
@@ -143,26 +149,38 @@ export const CAUSES = {
 	kinds: [
 		{
 			title: 'Memorials',
+			icon: Flower2,
+			hook: 'Keep their story alive.',
 			body: 'A place to remember someone, share their story, and gather photos and messages from the people who loved them.'
 		},
 		{
 			title: 'Medical and cancer support',
+			icon: HeartPulse,
+			hook: 'One place for every update.',
 			body: 'Keep family and friends updated through treatment, and give them real ways to help.'
 		},
 		{
 			title: 'Fundraisers',
+			icon: Ribbon,
+			hook: 'Turn visitors into givers.',
 			body: 'Explain the need, share progress, and point every visitor to where they can give.'
 		},
 		{
 			title: 'Community groups',
+			icon: Users,
+			hook: 'A home for your people.',
 			body: 'Neighborhood efforts, clubs, and volunteer groups that need a home online.'
 		},
 		{
 			title: 'Animal rescue',
+			icon: PawPrint,
+			hook: 'Help them find a home.',
 			body: 'Show the animals who need homes and make it easy to adopt, foster, or donate.'
 		},
 		{
 			title: 'Awareness campaigns',
+			icon: Megaphone,
+			hook: 'Get the word out.',
 			body: 'Get the word out about a cause, an event, or something your community needs to know.'
 		}
 	],
@@ -188,3 +206,43 @@ export const HOW: Point[] = [
 		body: 'Our own feedback tools cut out the usual back-and-forth, so your vision becomes a finished site far more smoothly than was possible before.'
 	}
 ];
+
+// "Build it yourself" alternatives versus our white-glove service; shown after HOW.
+export const DIY = {
+	title: 'Everyone else hands you the tools.',
+	accent: 'We hand you the website.',
+	body: 'Most website companies sell you a kit and wish you luck. You end up learning their editor at midnight instead of running your business.',
+	options: [
+		{
+			name: 'Drag-and-drop builders',
+			examples: 'Wix, Squarespace, GoDaddy',
+			pitch: '“Anyone can build a website!”',
+			reality:
+				'Anyone can, if anyone has a free weekend. You pick the template, write every word, shuffle blocks until it looks right on a phone, and pay monthly for the privilege.'
+		},
+		{
+			name: 'Do-it-yourself platforms',
+			examples: 'WordPress and friends',
+			pitch: '“Endlessly customizable!”',
+			reality:
+				'Endless is the problem. Themes, plugins, updates, and security patches become your second job, and when something breaks, you’re the one searching forums for the fix.'
+		},
+		{
+			name: 'AI site generators',
+			examples: 'One-prompt website tools',
+			pitch: '“A website in 60 seconds!”',
+			reality:
+				'You get a generic first draft in a minute, then spend hours fighting it into something that sounds like you. Nobody reviews it, and nobody answers when you’re stuck.'
+		}
+	],
+	chores: [
+		'Pick a template',
+		'Write and arrange every page',
+		'Make it work on phones',
+		'Set up the domain and email',
+		'Keep it updated and secure',
+		'Fix it when it breaks'
+	],
+	glove:
+		'White-glove means you tell us what you want, in your own words, and we handle everything else. You keep your attention on the work only you can do.'
+};

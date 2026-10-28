@@ -10,6 +10,7 @@
 	import { Splash } from '$lib/components/splash/index.js';
 	import { AfterLaunch } from '$lib/components/after-launch/index.js';
 	import { NeverGrid } from '$lib/components/never-grid/index.js';
+	import { DiyCompare } from '$lib/components/diy-compare/index.js';
 	import { ProfileCard } from '$lib/components/profile-card/index.js';
 	import engineerPicture from '$lib/assets/IMG_2021.JPEG';
 	import {
@@ -33,7 +34,7 @@
 	/>
 </svelte:head>
 
-<SiteHeader wide />
+<SiteHeader />
 
 <!-- Order follows the visitor's questions: what is it, what's it like for me, how
      does it run, what does it cost (and is it free for causes), how is that possible, show me, let's talk. -->
@@ -166,12 +167,16 @@
 				>How we help causes <ArrowRight class="size-4 transition-all" aria-hidden="true" /></span
 			>
 		</div>
-		<ul class="flex flex-wrap gap-2 lg:flex-1 lg:justify-end">
+		<ul class="grid flex-1 grid-cols-2 gap-3 sm:grid-cols-3">
 			{#each CAUSES.kinds as k (k.title)}
 				<li
-					class="rounded-full bg-foreground/6 px-3.5 py-1.5 text-sm text-foreground/75 ring-1 ring-foreground/10"
+					class="flex flex-col gap-2 rounded-2xl bg-background/40 p-4 ring-1 ring-foreground/10 transition duration-300 group-hover:ring-primary/25 hover:-translate-y-1 hover:bg-primary/10 hover:ring-primary/50"
 				>
-					{k.title}
+					<span class="grid size-9 place-items-center rounded-xl bg-primary/15 text-primary">
+						<k.icon class="size-4.5" aria-hidden="true" />
+					</span>
+					<span class="text-sm leading-snug font-semibold">{k.title}</span>
+					<span class="text-xs leading-relaxed text-foreground/60">{k.hook}</span>
 				</li>
 			{/each}
 		</ul>
@@ -180,17 +185,13 @@
 
 <Section wide class="items-center pb-24">
 	<div class="flex max-w-3xl flex-col items-center gap-6 pb-12 text-center">
-		<h2 class="flex flex-col gap-2 font-bold tracking-tight">
-			<span class="text-2xl text-foreground/55 sm:text-3xl">Sounds too good to be true?</span>
-			<span
-				class="bg-linear-to-r from-primary via-[oklch(0.78_0.14_330)] to-primary bg-clip-text pb-1 text-5xl text-transparent sm:text-7xl"
-				>Here’s how we do it.</span
-			>
+		<h2 class="text-3xl font-bold tracking-tight sm:text-4xl">
+			This sounds too good to be true...
 		</h2>
 		<p class="text-lg leading-relaxed text-balance text-foreground/65">
-			Everyone on the Void Projects team has years of enterprise application development behind
-			them. We didn’t replace that experience with AI. We built tools that multiply it, to make
-			custom websites financially feasible again.
+			Everyone on the Void Projects Team has years of enterprise application development experience.
+			We amplify that experience with our own tools and AI to make website building financially
+			feasible again.
 		</p>
 	</div>
 	<div class="grid w-full gap-5 md:grid-cols-3">
@@ -205,6 +206,10 @@
 			</GlassCard>
 		{/each}
 	</div>
+</Section>
+
+<Section wide class="pb-24">
+	<DiyCompare />
 </Section>
 
 <Section wide class="pb-24">

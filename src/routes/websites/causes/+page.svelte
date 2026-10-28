@@ -1,15 +1,5 @@
 <script lang="ts">
-	import {
-		ArrowLeft,
-		Check,
-		Flower2,
-		HandHeart,
-		HeartPulse,
-		Megaphone,
-		PawPrint,
-		Ribbon,
-		Users
-	} from '@lucide/svelte';
+	import { Check, HandHeart } from '@lucide/svelte';
 	import { SiteHeader } from '$lib/components/site-header/index.js';
 	import { Section } from '$lib/components/voidprojects/section/index.js';
 	import { GlassCard } from '$lib/components/voidprojects/glass-card/index.js';
@@ -17,8 +7,8 @@
 	import { ContactForm } from '$lib/components/contact-form/index.js';
 	import { CAUSES, SHOWCASE } from '$lib/content/websites.js';
 
-	const KIND_ICONS = [Flower2, HeartPulse, Ribbon, Users, PawPrint, Megaphone]; // parallel to CAUSES.kinds
 	const rally = SHOWCASE.find((s) => s.free)!;
+	const link = 'font-medium text-primary underline-offset-4 hover:underline';
 </script>
 
 <svelte:head>
@@ -29,14 +19,9 @@
 	/>
 </svelte:head>
 
-<SiteHeader wide />
+<SiteHeader />
 
 <Section wide class="items-center pt-20 pb-24 text-center sm:pt-28">
-	<a
-		href="/websites"
-		class="inline-flex items-center gap-1.5 pb-8 text-sm text-foreground/55 hover:text-foreground"
-		><ArrowLeft class="size-4" aria-hidden="true" />Websites by Void Projects</a
-	>
 	<span class="grid size-14 place-items-center rounded-2xl bg-primary/20 text-primary">
 		<HandHeart class="size-7" aria-hidden="true" />
 	</span>
@@ -45,7 +30,7 @@
 	</h1>
 	<p class="max-w-2xl pt-6 text-lg leading-relaxed text-balance text-foreground/70 sm:text-xl">
 		If your site exists to help people, remember someone, or rally a community, we’ll do our best to
-		build it for you at no cost.
+		<a href="/websites" class={link}>build it for you</a> at no cost.
 	</p>
 	<a
 		href="#contact"
@@ -62,8 +47,10 @@
 			</p>
 			<h2 class="text-3xl font-bold tracking-tight sm:text-4xl">{rally.name}</h2>
 			<p class="text-lg leading-relaxed text-foreground/70">
-				Hallie is the mother of one of our own. We built her a site so family and friends could
-				follow her journey through breast cancer, never miss an update, and help fund her care.
+				Hallie is the mother of one of our own. We <a href="/websites" class={link}
+					>built her a site</a
+				> so family and friends could follow her journey through breast cancer, never miss an update,
+				and help fund her care.
 			</p>
 			<p class="leading-relaxed text-foreground/65">
 				We built it free, and we want to do the same for others.
@@ -75,6 +62,7 @@
 				class="pt-1 text-sm font-medium text-foreground/80 hover:text-primary"
 				>Visit {rally.host} ↗</a
 			>
+			<a href="/websites" class="text-sm {link}">Website by Void Projects</a>
 		</div>
 		<a href={rally.url} target="_blank" rel="noopener" class="block">
 			<BrowserFrame
@@ -95,11 +83,10 @@
 		</p>
 	</div>
 	<div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-		{#each CAUSES.kinds as k, i (k.title)}
-			{@const Icon = KIND_ICONS[i]}
+		{#each CAUSES.kinds as k (k.title)}
 			<GlassCard class="gap-3 p-6">
 				<span class="grid size-10 place-items-center rounded-xl bg-primary/15 text-primary">
-					<Icon class="size-5" aria-hidden="true" />
+					<k.icon class="size-5" aria-hidden="true" />
 				</span>
 				<h3 class="pt-1 text-lg font-semibold">{k.title}</h3>
 				<p class="text-sm leading-relaxed text-foreground/65">{k.body}</p>
@@ -136,5 +123,8 @@
 			</div>
 			<ContactForm initialKind="A cause" />
 		</GlassCard>
+		<p class="pt-6 text-center text-sm">
+			<a href="/websites" class={link}>Website by Void Projects</a>
+		</p>
 	</div>
 </Section>
