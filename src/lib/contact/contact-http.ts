@@ -21,7 +21,7 @@ export type Deliver = (submission: ContactSubmission) => Promise<void>;
 
 export const MAX_BODY_BYTES = 16 * 1024;
 
-const LIMITS = { name: 200, email: 320, message: 5000 };
+export const LIMITS = { name: 200, email: 320, message: 5000 };
 const EMAIL_SHAPE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const SUCCESS = { ok: true };

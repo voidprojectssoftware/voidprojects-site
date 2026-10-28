@@ -1,3 +1,37 @@
-# allow crawling everything by default
+# Everyone, people's agents and AI search included, may crawl everything.
+# Agents: see https://voidprojects.ai/llms.txt for what we do and how to send a request.
+
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-User
+Allow: /
+
+User-agent: Claude-SearchBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
 User-agent: *
-Disallow:
+Allow: /
+
+Sitemap: https://voidprojects.ai/sitemap.xml
