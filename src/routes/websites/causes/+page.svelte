@@ -7,17 +7,17 @@
 	import { ContactForm } from '$lib/components/contact-form/index.js';
 	import { CAUSE_ICONS } from '$lib/content/cause-icons.js';
 	import { CAUSES, SHOWCASE } from '$lib/content/websites.js';
+	import { JsonLd } from '$lib/components/json-ld/index.js';
+	import { PageMeta } from '$lib/components/page-meta/index.js';
+	import { causesJsonLd, PAGES } from '$lib/seo/site.js';
 
 	const rally = SHOWCASE.find((s) => s.free)!;
 	const link = 'font-medium text-primary underline-offset-4 hover:underline';
 </script>
 
 <svelte:head>
-	<title>Websites for causes | Void Projects</title>
-	<meta
-		name="description"
-		content="Memorials, cancer support, fundraisers, community groups. If your site exists to help people, Void Projects will do our best to build it for free."
-	/>
+	<PageMeta meta={PAGES.causes} />
+	<JsonLd data={causesJsonLd()} />
 </svelte:head>
 
 <SiteHeader />

@@ -23,16 +23,16 @@
 		ENGINEER
 	} from '$lib/content/websites.js';
 	import { CAUSE_ICONS } from '$lib/content/cause-icons.js';
+	import { JsonLd } from '$lib/components/json-ld/index.js';
+	import { PageMeta } from '$lib/components/page-meta/index.js';
+	import { PAGES, websitesJsonLd } from '$lib/seo/site.js';
 
 	const HOW_ICONS = [Bot, Zap, MessagesSquare];
 </script>
 
 <svelte:head>
-	<title>Websites by Void Projects</title>
-	<meta
-		name="description"
-		content="Custom websites from engineers with years of enterprise experience, sped up by our own AI tooling. You talk to a person, never touch the technical side, and pay our costs plus 30%."
-	/>
+	<PageMeta meta={PAGES.websites} />
+	<JsonLd data={websitesJsonLd()} />
 </svelte:head>
 
 <SiteHeader />

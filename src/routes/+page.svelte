@@ -20,6 +20,9 @@
 	import larryProfilePicture from '$lib/assets/larryProfilePicture2024.jpg';
 	import blakeProfilePicture from '$lib/assets/IMG_2021.JPEG';
 	import jacksonProfilePicture from '$lib/assets/100_2013.JPEG';
+	import { JsonLd } from '$lib/components/json-ld/index.js';
+	import { PageMeta } from '$lib/components/page-meta/index.js';
+	import { PAGES, organizationJsonLd } from '$lib/seo/site.js';
 
 	const team = [
 		{
@@ -471,6 +474,11 @@
 		};
 	});
 </script>
+
+<svelte:head>
+	<PageMeta meta={PAGES.home} />
+	<JsonLd data={organizationJsonLd()} />
+</svelte:head>
 
 {#snippet larryDesc()}
 	<span
