@@ -19,6 +19,7 @@ await mkdir(out, { recursive: true });
 await build({
 	input: join(root, 'api/src/index.ts'),
 	platform: 'node',
+	tsconfig: join(root, 'tsconfig.json'), // pinned: api/ is outside its include, so discovery walks up past the repo (#35)
 	external: ['@azure/functions-core'],
 	resolve: { alias: { $lib: join(root, 'src/lib') } },
 	transform: { define: { __BRAND_PRIMARY__: JSON.stringify(brandPrimary()) } },
