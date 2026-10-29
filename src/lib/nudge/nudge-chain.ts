@@ -28,27 +28,32 @@ type ChainNode = {
 	oy: number;
 	vx: number;
 	vy: number;
+	home: number; // this item's home stiffness; a hanging item uses a weaker one so it follows its parent
 	present: boolean; // false while display:none (a closed branch); skipped by forces and links
-	held: number; // hover/focus count; a held item freezes so it never slides out from under the pointer
-	hovered: boolean;
+	hovered: boolean; // a hovered or focused item freezes so it never slides out from under the pointer
 	focused: boolean;
 	phase: [number, number, number, number]; // per-item wander phases/rates so items drift independently
 };
 
-type ChainLine = {
-	el: HTMLElement;
+type ChainString = {
+	path: SVGPathElement;
 	a: string;
 	b: string;
-	mode: 'along' | 'across'; // along: hairline runs from a down to b; across: divider sitting between a and b
-	length: number; // natural hairline length (px)
+	from: [number, number]; // where the string meets `a`, in the path's own (untransformed) SVG units
+	to: [number, number]; // where it meets `b`
+	staticD: string; // the at-rest drawing, restored on disable and used without JS
+	bow: number; // smoothed sideways bow (px) so the swing eases rather than flickers
 };
+
+const STRING_SLACK = 1.08; // string length as a multiple of the at-rest gap
 
 type ChainLink = { a: string; b: string; stiffness: number };
 
 /**
  * A handful of DOM items on springs, linked to each other: each drifts a few px around its
- * home, the cursor shoves it a little, and links make one tug its neighbours. Hairline
- * elements registered with {@link line} are bent to follow the items they connect.
+ * home, the cursor shoves it a little, and links make one tug its neighbours. A string
+ * registered with {@link string} is drawn between two items: slack, it sags; pulled, it
+ * straightens; moved, it swings.
  *
  * Same fixed-timestep spring/damper as {@link NudgeField}, plus idle wander and links. It is
  * its own instance with its own loop, so it never touches the homepage hero's world.
@@ -57,7 +62,7 @@ export class NudgeChain {
 	private readonly cfg: ChainConfig;
 	private readonly nodes = new Map<string, ChainNode>();
 	private readonly links: ChainLink[] = [];
-	private readonly lines: ChainLine[] = [];
+	private readonly strings: ChainString[] = [];
 	private readonly reduceMotion: boolean;
 	private readonly frame: (now: number) => void;
 	private observer: ResizeObserver | null = null;
@@ -79,7 +84,7 @@ export class NudgeChain {
 	}
 
 	/** Tag an item under `key`. Returns a cleanup function (suitable as a Svelte action `destroy`). */
-	node(el: HTMLElement, key: string): () => void {
+	node(el: HTMLElement, key: string, home = this.cfg.homeStiffness): () => void {
 		const r = () => Math.random() * Math.PI * 2;
 		const n: ChainNode = {
 			el,
@@ -89,8 +94,8 @@ export class NudgeChain {
 			oy: 0,
 			vx: 0,
 			vy: 0,
+			home,
 			present: false,
-			held: 0,
 			hovered: false,
 			focused: false,
 			phase: [r(), r(), 0.7 + Math.random() * 0.6, 0.7 + Math.random() * 0.6]
@@ -127,14 +132,25 @@ export class NudgeChain {
 		this.links.push({ a, b, stiffness });
 	}
 
-	/** Bend a vertical hairline to follow items `a` and `b`. Returns a cleanup function. */
-	line(el: HTMLElement, a: string, b: string, mode: ChainLine['mode']): () => void {
-		const l: ChainLine = { el, a, b, mode, length: el.offsetHeight || 1 };
-		this.lines.push(l);
+	/** Draw `path` as a string from item `a` to item `b`. Returns a cleanup function. */
+	string(path: SVGPathElement, a: string, b: string): () => void {
+		const staticD = path.getAttribute('d') ?? '';
+		const nums = staticD.match(/-?[\d.]+/g)?.map(Number) ?? [];
+		if (nums.length < 4) return () => {};
+		const st: ChainString = {
+			path,
+			a,
+			b,
+			from: [nums[0], nums[1]],
+			to: [nums[nums.length - 2], nums[nums.length - 1]],
+			staticD,
+			bow: 0
+		};
+		this.strings.push(st);
 		return () => {
-			const i = this.lines.indexOf(l);
-			if (i >= 0) this.lines.splice(i, 1);
-			el.style.transform = '';
+			const i = this.strings.indexOf(st);
+			if (i >= 0) this.strings.splice(i, 1);
+			path.setAttribute('d', staticD);
 		};
 	}
 
@@ -154,7 +170,7 @@ export class NudgeChain {
 		this.ensureLoop();
 	}
 
-	/** Stop and put every item and hairline back at rest. */
+	/** Stop and put every item and string back at rest. */
 	disable() {
 		if (!this.enabled) return;
 		this.enabled = false;
@@ -170,27 +186,18 @@ export class NudgeChain {
 			n.ox = n.oy = n.vx = n.vy = 0;
 			n.el.style.transform = '';
 		}
-		for (const l of this.lines) l.el.style.transform = '';
+		for (const st of this.strings) st.path.setAttribute('d', st.staticD);
 	}
 
 	destroy() {
 		this.disable();
 		this.nodes.clear();
 		this.links.length = 0;
-		this.lines.length = 0;
-	}
-
-	/** Read-only snapshot of every item's offset, for verification. */
-	snapshot() {
-		const out: Record<string, { x: number; y: number; present: boolean; held: boolean }> = {};
-		for (const [k, n] of this.nodes)
-			out[k] = { x: n.ox, y: n.oy, present: n.present, held: n.hovered || n.focused };
-		return out;
+		this.strings.length = 0;
 	}
 
 	private readonly measureAll = () => {
 		for (const n of this.nodes.values()) this.measure(n);
-		for (const l of this.lines) l.length = l.el.offsetHeight || l.length;
 	};
 
 	private measure(n: ChainNode) {
@@ -257,7 +264,7 @@ export class NudgeChain {
 	}
 
 	private integrate() {
-		const { homeStiffness, damping, wander, radius, push, maxOffset } = this.cfg;
+		const { damping, wander, radius, push, maxOffset } = this.cfg;
 		this.t += NUDGE_STEP / 1000;
 		const t = this.t;
 
@@ -269,8 +276,8 @@ export class NudgeChain {
 			const [px, py, rx, ry] = n.phase;
 			const wx = wander * Math.sin(t * 0.55 * rx + px) * Math.cos(t * 0.21 * ry + py);
 			const wy = wander * 0.6 * Math.sin(t * 0.43 * ry + py + 1.3 * Math.sin(t * 0.17 * rx));
-			let x = homeStiffness * (wx - n.ox);
-			let y = homeStiffness * (wy - n.oy);
+			let x = n.home * (wx - n.ox);
+			let y = n.home * (wy - n.oy);
 			if (this.pointer.active) {
 				const dx = n.hx + n.ox - this.pointer.x;
 				const dy = n.hy + n.oy - this.pointer.y;
@@ -318,26 +325,34 @@ export class NudgeChain {
 		for (const n of this.nodes.values()) {
 			if (n.present) n.el.style.transform = `translate3d(${n.ox}px, ${n.oy}px, 0)`;
 		}
-		for (const l of this.lines) {
-			const a = this.nodes.get(l.a);
-			const b = this.nodes.get(l.b);
-			if (!a?.present || !b?.present) continue;
-			const dx = b.ox - a.ox;
-			const dy = b.oy - a.oy;
-			if (l.mode === 'along') {
-				// Top end rides on a, bottom end on b: the hairline swings and stretches between them.
-				const len = Math.hypot(dx, l.length + dy);
-				const angle = -Math.atan2(dx, l.length + dy);
-				l.el.style.transformOrigin = '50% 0';
-				l.el.style.transform = `translate3d(${a.ox}px, ${a.oy}px, 0) rotate(${angle}rad) scaleY(${len / l.length})`;
-			} else {
-				// Sits midway, tilts with the pair, and stretches as they pull apart.
-				const gap = Math.max(1, b.hx - a.hx);
-				const angle = Math.atan2(dy, gap + dx);
-				const stretch = Math.min(1.35, Math.max(0.8, 1 + dx * 0.05));
-				l.el.style.transform = `translate3d(${(a.ox + b.ox) / 2}px, ${(a.oy + b.oy) / 2}px, 0) rotate(${angle}rad) scaleY(${stretch})`;
-			}
-		}
+		for (const st of this.strings) this.drawString(st);
+	}
+
+	private drawString(st: ChainString) {
+		const a = this.nodes.get(st.a);
+		const b = this.nodes.get(st.b);
+		if (!a?.present || !b?.present) return;
+		const x0 = st.from[0] + a.ox;
+		const y0 = st.from[1] + a.oy;
+		const x1 = st.to[0] + b.ox;
+		const y1 = st.to[1] + b.oy;
+		const rest = Math.hypot(st.to[0] - st.from[0], st.to[1] - st.from[1]);
+		const d = Math.hypot(x1 - x0, y1 - y0) || 1;
+		// A string a touch longer than the gap: slack sags it, stretching past that pulls it taut.
+		const length = rest * STRING_SLACK;
+		const sag = Math.sqrt(Math.max(0, length - d) * d * 0.375);
+		// Perpendicular to the string; the far end lagging sideways bows the middle the other way.
+		const nx = -(y1 - y0) / d;
+		const ny = (x1 - x0) / d;
+		const swing = -((b.vx - a.vx) * nx + (b.vy - a.vy) * ny) * 9;
+		const target = Math.max(-sag * 1.6, Math.min(sag * 1.6, sag * 0.7 + swing));
+		st.bow += (target - st.bow) * 0.2;
+		const cx = (x0 + x1) / 2 + nx * st.bow * 2; // a quadratic's apex sits halfway to its control point
+		const cy = (y0 + y1) / 2 + ny * st.bow * 2;
+		st.path.setAttribute(
+			'd',
+			`M${x0.toFixed(2)} ${y0.toFixed(2)} Q${cx.toFixed(2)} ${cy.toFixed(2)} ${x1.toFixed(2)} ${y1.toFixed(2)}`
+		);
 	}
 
 	private readonly onPointerMove = (e: PointerEvent) => {

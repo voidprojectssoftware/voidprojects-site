@@ -2,6 +2,7 @@
 	import { page } from '$app/state';
 	import OrbitMark from '$lib/brand/OrbitMark.svelte';
 	import { NudgeChain } from '$lib/nudge/index.js';
+	import { brandViolet } from '$lib/physics/colors.js';
 
 	type NavLink = { href: string; label: string; children?: NavLink[] };
 
@@ -23,17 +24,18 @@
 	let path = $derived(page.url.pathname.replace(/\/$/, '') || '/');
 	let branchOpen = $state(false); // touch screens have no hover, so the chevron toggles the branch
 
-	// Items float a few px and tug each other; the hairlines between them are the links.
+	// Items float a few px and tug each other; a sub-page hangs off its parent on a string.
 	const HOME = '/';
 	const chain = new NudgeChain();
-	chain.link(HOME, LINKS[0].href, 0.004); // invisible and loose: the wordmark only feels the nav faintly
+	chain.link(HOME, LINKS[0].href, 0.004); // the wordmark only feels the nav faintly
 	LINKS.forEach((link, i) => {
 		if (i > 0) chain.link(LINKS[i - 1].href, link.href);
-		for (const child of link.children ?? []) chain.link(link.href, child.href);
+		for (const child of link.children ?? []) chain.link(link.href, child.href, 0.03);
 	});
 	const float = (el: HTMLElement, key: string) => ({ destroy: chain.node(el, key) });
-	const tether = (el: HTMLElement, [a, b, mode]: [string, string, 'along' | 'across']) => ({
-		destroy: chain.line(el, a, b, mode)
+	const hang = (el: HTMLElement, key: string) => ({ destroy: chain.node(el, key, 0.006) }); // loose home: it follows its parent
+	const string = (el: SVGPathElement, [a, b]: [string, string]) => ({
+		destroy: chain.string(el, a, b)
 	});
 
 	// Not while the homepage hides the nav (and never under reduced motion; the chain no-ops).
@@ -71,18 +73,8 @@
 				>Void Projects</a
 			>
 		</div>
-		<!-- Hairline dividers echo the homepage scroll rail (ScrollTimeline). -->
-		<nav
-			class="flex items-center rounded-full border border-foreground/10 bg-background/40 p-1 text-sm shadow-lg shadow-black/30 backdrop-blur-md"
-		>
-			{#each LINKS as link, i (link.href)}
-				{#if i > 0}
-					<span
-						class="h-4 w-px bg-foreground/15"
-						aria-hidden="true"
-						use:tether={[LINKS[i - 1].href, link.href, 'across']}
-					></span>
-				{/if}
+		<nav class="flex items-center gap-1 text-sm sm:gap-3">
+			{#each LINKS as link (link.href)}
 				{#if link.children}
 					<div
 						class="group relative flex items-center"
@@ -117,32 +109,37 @@
 								>
 							</button>
 						</span>
-						<!-- The branch: a hairline drops from the parent to its child pages. -->
+						<!-- Sub-pages hang below on a string. Shown on demand: always-on would sit over page titles just under the header. -->
 						<div
-							class="absolute top-full left-5 pt-1 group-focus-within:flex group-hover:flex {branchOpen
+							class="absolute top-full left-0 flex-col pt-5 group-focus-within:flex group-hover:flex {branchOpen
 								? 'flex'
 								: 'hidden'}"
 						>
-							<span
-								class="mt-0 h-6 w-px bg-foreground/20"
+							<svg
+								class="pointer-events-none absolute top-0 left-0 overflow-visible"
+								width="1"
+								height="1"
 								aria-hidden="true"
-								use:tether={[link.href, link.children[0].href, 'along']}
-							></span>
-							<div class="flex flex-col pt-3">
-								{#each link.children as child (child.href)}
-									<div class="flex items-center" use:float={child.href}>
-										<span class="h-px w-3 bg-foreground/20" aria-hidden="true"></span>
-										<a
-											href={child.href}
-											aria-current={isCurrent(child.href) ? 'page' : undefined}
-											class="{linkClass(
-												isCurrent(child.href)
-											)} border border-foreground/10 bg-background/60 shadow-lg shadow-black/30 backdrop-blur-md"
-											>{child.label}</a
-										>
-									</div>
-								{/each}
-							</div>
+							>
+								<path
+									d="M38 -6 Q35 9 38 24"
+									fill="none"
+									stroke={brandViolet(0.85)}
+									stroke-width="1.5"
+									stroke-linecap="round"
+									use:string={[link.href, link.children[0].href]}
+								/>
+							</svg>
+							{#each link.children as child (child.href)}
+								<a
+									href={child.href}
+									aria-current={isCurrent(child.href) ? 'page' : undefined}
+									class="{linkClass(
+										isCurrent(child.href)
+									)} [text-shadow:0_0_2px_rgb(8_10_20/0.85),0_0_8px_rgb(8_10_20/0.85)]"
+									use:hang={child.href}>{child.label}</a
+								>
+							{/each}
 						</div>
 					</div>
 				{:else}
