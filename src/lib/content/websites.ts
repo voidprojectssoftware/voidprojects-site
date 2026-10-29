@@ -189,7 +189,7 @@ export const CAUSES = {
 	promise: [
 		'We’ll do our best to build it for free: design, build, and every round of changes.',
 		'You get the same engineers and the same process as every other site we build.',
-		'If your site needs something that genuinely costs money, we’ll tell you up front and talk it through. Never a surprise.'
+		'If your site needs something that goes above what we can cover in cost, we will tell you up front and talk it through. Never a surprise.'
 	]
 };
 
