@@ -23,6 +23,14 @@
 
 	let path = $derived(page.url.pathname.replace(/\/$/, '') || '/');
 	let branchOpen = $state(false); // touch screens have no hover, so the chevron toggles the branch
+	let keyboardOpen = $state(false); // keyboard focus inside opens it; a tapped or clicked chevron keeping focus must not
+	let branchEl: HTMLElement | undefined = $state();
+	// A tap or focus landing outside the branch closes it; leaving with a mouse closes it too.
+	const closeIfOutside = (target: EventTarget | null) => {
+		if (target instanceof Node && branchEl?.contains(target)) return;
+		branchOpen = false;
+		keyboardOpen = false;
+	};
 
 	// Items float a few px and tug each other; a sub-page hangs off its parent on a string.
 	const HOME = '/';
@@ -54,6 +62,8 @@
 		}`;
 </script>
 
+<svelte:window onpointerdown={(e) => closeIfOutside(e.target)} />
+
 <header
 	class="sticky top-0 z-2 h-16 {transparent
 		? 'bg-transparent'
@@ -79,7 +89,14 @@
 					<div
 						class="group relative flex items-center"
 						role="presentation"
-						onmouseleave={() => (branchOpen = false)}
+						bind:this={branchEl}
+						onpointerleave={(e) => {
+							if (e.pointerType === 'mouse') branchOpen = false;
+						}}
+						onfocusin={(e) => {
+							if ((e.target as HTMLElement).matches(':focus-visible')) keyboardOpen = true;
+						}}
+						onfocusout={(e) => closeIfOutside(e.relatedTarget)}
 					>
 						<span class="flex items-center" use:float={link.href}>
 							<a
@@ -111,7 +128,8 @@
 						</span>
 						<!-- Sub-pages hang below on a string. Shown on demand: always-on would sit over page titles just under the header. -->
 						<div
-							class="absolute top-full left-0 flex-col pt-5 group-focus-within:flex group-hover:flex {branchOpen
+							class="absolute top-full left-0 flex-col pt-5 group-hover:flex {branchOpen ||
+							keyboardOpen
 								? 'flex'
 								: 'hidden'}"
 						>
