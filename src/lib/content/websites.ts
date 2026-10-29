@@ -91,21 +91,38 @@ export const ENGINEER = {
 };
 
 // "What it costs": a big figure with its explanation.
-export const PRICING: { figure: string; body: string; link?: { href: string; label: string } }[] = [
+export const PRICING: {
+	figure: string;
+	spoken?: string; // the figure as prose, for PRICING_SUMMARY, when the display form is shorthand
+	body: string;
+	link?: { href: string; label: string };
+}[] = [
 	{
 		figure: 'Free',
 		body: 'for causes, whenever we can manage it.',
 		link: { href: '/websites/causes', label: 'Building for a cause?' }
 	},
 	{
-		figure: '$25',
-		body: 'a month for a static site: business or personal pages that don’t change, with your domain at cost. If you could build it on Squarespace Basic or Wix Light, we’ll build and host it for their price. Already paying for a site? We’ll match what you pay now and take over hosting and upkeep.'
+		figure: '$25/m',
+		spoken: '$25 a month',
+		body: 'for a static site: business or personal pages that don’t change, with your domain at cost. If you could build it on Squarespace Basic or Wix Light, we’ll build and host it for their price. Already paying for a site? We’ll match what you pay now and take over hosting and upkeep.'
 	},
 	{
 		figure: 'Quote',
-		body: 'for anything dynamic, like live data, accounts, or bookings, or anything that needs higher reliability or extra care. We price it from what hosting and maintaining it costs us.'
+		body: 'for anything dynamic, like live data, accounts, or bookings, or anything that needs higher reliability or extra care. We price it from what hosting and maintaining it costs us.',
+		link: { href: '/websites?preset=quote#contact', label: 'Ask for a quote' }
 	}
 ];
+
+// Contact form starters, picked by a link's ?preset= key so the URL stays short and
+// shareable. The form only fills an empty message, and the visitor can edit or clear it.
+export const CONTACT_PRESETS: Record<string, { kind: ContactKind; message: string }> = {
+	quote: {
+		kind: 'A business',
+		message:
+			'I’d like a quote for a site that needs (live data, accounts, bookings, higher reliability, something else): \n\nAbout my business: '
+	}
+};
 
 // The "How we work" flow: one conversation in, a build/review/feedback loop that
 // repeats until the client is happy, then launch.
