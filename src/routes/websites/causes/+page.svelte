@@ -13,6 +13,8 @@
 
 	const rally = SHOWCASE.find((s) => s.free)!;
 	const link = 'font-medium text-primary underline-offset-4 hover:underline';
+
+	let contactSent = $state(false);
 </script>
 
 <svelte:head>
@@ -117,13 +119,15 @@
 <Section wide class="items-center pb-28">
 	<div id="contact" class="w-full max-w-2xl scroll-mt-24">
 		<GlassCard class="gap-6 p-6 sm:p-10">
-			<div class="flex flex-col gap-2">
-				<h2 class="text-3xl font-bold tracking-tight">Tell us about your cause</h2>
-				<p class="text-foreground/65">
-					Who it’s for and what it needs to do. A person reads every message and writes back.
-				</p>
-			</div>
-			<ContactForm initialKind="A cause" />
+			{#if !contactSent}
+				<div class="flex flex-col gap-2">
+					<h2 class="text-3xl font-bold tracking-tight">Tell us about your cause</h2>
+					<p class="text-foreground/65">
+						Who it’s for and what it needs to do. A person reads every message and writes back.
+					</p>
+				</div>
+			{/if}
+			<ContactForm bind:sent={contactSent} initialKind="A cause" />
 		</GlassCard>
 		<p class="pt-6 text-center text-sm">
 			<a href="/websites" class={link}>Website by Void Projects</a>

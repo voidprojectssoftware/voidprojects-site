@@ -27,6 +27,8 @@
 	import { PAGES, websitesJsonLd } from '$lib/seo/site.js';
 
 	const HOW_ICONS = [Bot, Zap, MessagesSquare];
+
+	let contactSent = $state(false);
 </script>
 
 <svelte:head>
@@ -266,13 +268,15 @@
 <Section wide class="items-center pb-28">
 	<div id="contact" class="w-full max-w-2xl scroll-mt-24">
 		<GlassCard class="gap-6 p-6 sm:p-10">
-			<div class="flex flex-col gap-2">
-				<h2 class="text-3xl font-bold tracking-tight">Let’s build yours</h2>
-				<p class="text-foreground/65">
-					Tell us what you need. A person reads every message and writes back.
-				</p>
-			</div>
-			<ContactForm />
+			{#if !contactSent}
+				<div class="flex flex-col gap-2">
+					<h2 class="text-3xl font-bold tracking-tight">Let’s build yours</h2>
+					<p class="text-foreground/65">
+						Tell us what you need. A person reads every message and writes back.
+					</p>
+				</div>
+			{/if}
+			<ContactForm bind:sent={contactSent} />
 		</GlassCard>
 	</div>
 </Section>

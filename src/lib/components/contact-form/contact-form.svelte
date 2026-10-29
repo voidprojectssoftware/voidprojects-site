@@ -4,8 +4,10 @@
 	let {
 		class: className = '',
 		compact = false,
-		initialKind = CONTACT_KINDS[0]
-	}: { class?: string; compact?: boolean; initialKind?: ContactKind } = $props();
+		initialKind = CONTACT_KINDS[0],
+		// eslint-disable-next-line no-useless-assignment -- read by the parent through bind:sent
+		sent = $bindable(false) // true while the thank-you shows, so the surrounding card can drop its heading
+	}: { class?: string; compact?: boolean; initialKind?: ContactKind; sent?: boolean } = $props();
 
 	let name = $state('');
 	let email = $state('');
@@ -13,28 +15,29 @@
 	let kind = $state(initialKind); // seeded once; the visitor can change it
 	let message = $state('');
 	let website = $state(''); // honeypot; people never see it
-	let status = $state<'idle' | 'sending' | 'sent' | 'error'>('idle');
+	let status = $state<'idle' | 'sent' | 'error'>('idle');
 	let error = $state('');
 
+	// The browser has already enforced the required fields, so the thank-you shows at once
+	// while delivery finishes; a failure brings the form back with its values intact.
 	async function submit(event: SubmitEvent) {
 		event.preventDefault();
-		status = 'sending';
+		status = 'sent';
+		sent = true;
 		try {
 			const res = await fetch('/api/contact', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ name, email, kind, message, website })
 			});
-			if (res.ok) {
-				status = 'sent';
-				return;
-			}
+			if (res.ok) return;
 			const data = await res.json().catch(() => null);
 			error = data?.error ?? 'Something went wrong sending your message.';
 		} catch {
 			error = 'Your message could not be sent. Check your connection and try again.';
 		}
 		status = 'error';
+		sent = false;
 	}
 
 	const field =
@@ -43,9 +46,30 @@
 </script>
 
 {#if status === 'sent'}
-	<div class="flex flex-col gap-2 {className}" role="status">
-		<p class="text-lg font-semibold text-foreground">Thanks, {name}. We got your message.</p>
-		<p class="text-sm text-foreground/65">
+	<div class="flex flex-col items-center gap-3 py-6 text-center {className}" role="status">
+		<svg viewBox="0 0 52 52" class="check size-16 text-primary" aria-hidden="true">
+			<circle
+				class="ring"
+				cx="26"
+				cy="26"
+				r="24"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="2.5"
+			/>
+			<path
+				class="tick"
+				d="M15 27l7 7 15-16"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="3.5"
+				stroke-linecap="round"
+				stroke-linejoin="round"
+			/>
+		</svg>
+		<p class="pt-1 text-2xl font-bold tracking-tight text-foreground">Message sent</p>
+		<p class="text-lg text-foreground/80">Thanks, {name}. We got your message.</p>
+		<p class="max-w-md text-sm text-foreground/65">
 			We will reply to {email} soon. Anything else in the meantime, write us at
 			<a class="text-foreground/80 underline underline-offset-4" href="mailto:{CONTACT_EMAIL}"
 				>{CONTACT_EMAIL}</a
@@ -98,10 +122,9 @@
 		<div class="flex flex-wrap items-center gap-x-4 gap-y-2 pt-1">
 			<button
 				type="submit"
-				disabled={status === 'sending'}
-				class="h-11 rounded-full bg-primary px-6 text-sm font-semibold text-white transition-colors hover:bg-primary/85 focus-visible:ring-3 focus-visible:ring-primary/40 focus-visible:outline-none disabled:cursor-wait disabled:opacity-70"
+				class="h-11 rounded-full bg-primary px-6 text-sm font-semibold text-white transition-colors hover:bg-primary/85 focus-visible:ring-3 focus-visible:ring-primary/40 focus-visible:outline-none"
 			>
-				{status === 'sending' ? 'Sending...' : 'Start the conversation'}
+				Start the conversation
 			</button>
 			<p class="text-sm text-foreground/50">
 				Goes straight to us, or write us at
@@ -118,3 +141,38 @@
 		{/if}
 	</form>
 {/if}
+
+<style>
+	/* Ring draws, then the tick; both start fully drawn under reduced motion. */
+	.check .ring {
+		stroke-dasharray: 151;
+		stroke-dashoffset: 151;
+		animation: draw 0.5s ease-out forwards;
+	}
+	.check .tick {
+		stroke-dasharray: 36;
+		stroke-dashoffset: 36;
+		animation: draw 0.35s 0.4s ease-out forwards;
+	}
+	.check {
+		animation: pop 0.4s 0.7s ease-out;
+	}
+	@keyframes draw {
+		to {
+			stroke-dashoffset: 0;
+		}
+	}
+	@keyframes pop {
+		50% {
+			scale: 1.12;
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.check,
+		.check .ring,
+		.check .tick {
+			animation: none;
+			stroke-dashoffset: 0;
+		}
+	}
+</style>
