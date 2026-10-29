@@ -22,6 +22,8 @@
 		$props();
 
 	let path = $derived(page.url.pathname.replace(/\/$/, '') || '/');
+	let scrollY = $state(0);
+	let frosted = $derived(transparent && scrolled && scrollY > 8); // frost only once content can slide under it
 	let branchOpen = $state(false); // touch screens have no hover, so the chevron toggles the branch
 	let keyboardOpen = $state(false); // keyboard focus inside opens it; a tapped or clicked chevron keeping focus must not
 	let branchEl: HTMLElement | undefined = $state();
@@ -62,12 +64,14 @@
 		}`;
 </script>
 
-<svelte:window onpointerdown={(e) => closeIfOutside(e.target)} />
+<svelte:window bind:scrollY onpointerdown={(e) => closeIfOutside(e.target)} />
 
 <header
-	class="sticky top-0 z-2 h-16 {transparent
-		? 'bg-transparent'
-		: 'bg-background'} px-6 pt-4 sm:px-8 lg:px-10"
+	class="sticky top-0 z-2 h-16 border-b transition-[background-color,border-color,backdrop-filter] duration-300 {!transparent
+		? 'border-transparent bg-background'
+		: frosted
+			? 'border-foreground/8 bg-background/70 backdrop-blur-md'
+			: 'border-transparent bg-transparent'} px-6 pt-4 sm:px-8 lg:px-10"
 >
 	<div
 		class="flex flex-row items-center gap-3 transition-opacity duration-300 sm:gap-5"
