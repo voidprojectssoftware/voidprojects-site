@@ -41,9 +41,9 @@ type Nudgee = {
 
 const SETTLE_EPS = 0.05; // below this displacement+velocity (and no pointer) we park the loop
 /** Fixed integration step (ms) so the spring feels identical at any display refresh rate. */
-const NUDGE_STEP = 1000 / 60;
+export const NUDGE_STEP = 1000 / 60;
 /** Cap on integration steps per frame, so a stall can't queue an unbounded catch-up. */
-const MAX_NUDGE_SUBSTEPS = 5;
+export const MAX_NUDGE_SUBSTEPS = 5;
 
 /**
  * Makes registered elements react subtly to the cursor: as the pointer passes

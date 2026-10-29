@@ -16,14 +16,46 @@
 	import { ScrollTimeline } from '$lib/components/scroll-timeline/index.js';
 	import { SiteHeader } from '$lib/components/site-header/index.js';
 	import { ProfileCard } from '$lib/components/profile-card/index.js';
+	import { GlassCard } from '$lib/components/voidprojects/glass-card/index.js';
 	import larryProfilePicture from '$lib/assets/larryProfilePicture2024.jpg';
 	import blakeProfilePicture from '$lib/assets/IMG_2021.JPEG';
 	import jacksonProfilePicture from '$lib/assets/100_2013.JPEG';
+	import { JsonLd } from '$lib/components/json-ld/index.js';
+	import { PageMeta } from '$lib/components/page-meta/index.js';
+	import { PAGES, organizationJsonLd } from '$lib/seo/site.js';
+
+	const team = [
+		{
+			name: 'Larry Jones',
+			src: larryProfilePicture,
+			subrole: 'Constellation Technical Lead',
+			skills: ['C#', 'SQL', 'Data Engineering', 'Graph Databases'],
+			email: 'larryjones@voidprojects.ai',
+			linkedin: 'https://www.linkedin.com/in/lrryjns/',
+			desc: larryDesc
+		},
+		{
+			name: 'Blake Hastings',
+			src: blakeProfilePicture,
+			subrole: 'Protostar Technical Lead',
+			skills: ['Agentic Development', 'C#', '.NET', 'Web Dev', 'Agile', 'Enterprise Systems'],
+			email: 'blakehastings@voidprojects.ai',
+			linkedin: 'https://www.linkedin.com/in/the-blake-hastings/',
+			desc: blakeDesc
+		},
+		{
+			name: 'Jackson Torregrossa',
+			src: jacksonProfilePicture,
+			subrole: 'Full Stack Developer',
+			skills: ['C#', 'TypeScript', 'React', 'Svelte', 'Tailwind', 'Front End Design'],
+			email: 'jacksontorregrossa@voidprojects.ai',
+			linkedin: 'https://www.linkedin.com/in/jackson-torregrossa/',
+			desc: jacksonDesc
+		}
+	];
 
 	let heroRef = $state<HTMLElement | null>(null);
 	let githubRef = $state<HTMLElement | null>(null);
-	let carouselRef = $state<HTMLElement | null>(null);
-	let activeTeamIndex = $state(0);
 
 	let scrolled = $state(false);
 	// Total page-scroll progress (0-1), mirrored into state so the timeline rail can
@@ -340,11 +372,6 @@
 		});
 	}
 
-	function onCarouselScroll(e: Event) {
-		const el = e.currentTarget as HTMLElement;
-		activeTeamIndex = Math.round(el.scrollLeft / el.offsetWidth);
-	}
-
 	// Jump the page to a timeline point's scroll position (a project's arrival).
 	function seekTo(threshold: number) {
 		const scrollable = document.documentElement.scrollHeight - window.innerHeight;
@@ -448,6 +475,11 @@
 	});
 </script>
 
+<svelte:head>
+	<PageMeta meta={PAGES.home} />
+	<JsonLd data={organizationJsonLd()} />
+</svelte:head>
+
 {#snippet larryDesc()}
 	<span
 		>I'm a seasoned, multi-disciplinary engineer with a broad depth of expertise and experience.
@@ -479,8 +511,8 @@
 		breaking websites. I do it all passionately!</span
 	>
 	<span
-		>You might find me traveling to new cities, hiking, camping, and playing far too many video
-		games.</span
+		>You might find me traveling to new cities, hiking, and camping, always with a computer by my
+		side.</span
 	>
 {/snippet}
 
@@ -572,68 +604,27 @@
 			class:pointer-events-none={!sectionVisible}
 			aria-hidden={!sectionVisible}
 		>
-			<div class="contents">
-				<div
-					bind:this={carouselRef}
-					onscroll={onCarouselScroll}
-					class="flex w-full snap-x snap-mandatory [scrollbar-width:none] overflow-x-auto [&::-webkit-scrollbar]:hidden"
-				>
-					<div class="flex w-full shrink-0 snap-center items-center justify-center px-8 py-6">
-						<ProfileCard
-							src={larryProfilePicture}
-							alt="Larry Jones"
-							name="Larry Jones"
-							role="Co-Founder"
-							subrole="Constellation Technical Lead"
-							skills={['C#', 'SQL', 'Data Engineering', 'Graph Databases']}
-							email="larryjones@voidprojects.ai"
-							linkedin="https://www.linkedin.com/in/lrryjns/"
-							desc={larryDesc}
-						/>
+			<div
+				class="grid w-full max-w-6xl grid-cols-1 items-start gap-3 px-4 lg:grid-cols-3 lg:gap-6 lg:px-8"
+			>
+				{#each team as member, i (member.name)}
+					<div class="team-float" style:animation-delay="{i * -1.7}s">
+						<GlassCard class="gap-0 bg-background/55 p-4 backdrop-blur-sm lg:p-6">
+							<ProfileCard
+								layout="vertical"
+								src={member.src}
+								alt={member.name}
+								name={member.name}
+								role="Co-Founder"
+								subrole={member.subrole}
+								skills={member.skills}
+								email={member.email}
+								linkedin={member.linkedin}
+								desc={member.desc}
+							/>
+						</GlassCard>
 					</div>
-					<div class="flex w-full shrink-0 snap-center items-center justify-center px-8 py-6">
-						<ProfileCard
-							src={blakeProfilePicture}
-							alt="Blake Hastings"
-							name="Blake Hastings"
-							role="Co-Founder"
-							subrole="Protostar Technical Lead"
-							skills={['C#', 'TypeScript', 'AI/Agentic Systems', 'Refactoring', 'Modular Design']}
-							email="blakehastings@voidprojects.ai"
-							linkedin="https://www.linkedin.com/in/the-blake-hastings/"
-							desc={blakeDesc}
-						/>
-					</div>
-					<div class="flex w-full shrink-0 snap-center items-center justify-center px-8 py-6">
-						<ProfileCard
-							src={jacksonProfilePicture}
-							alt="Jackson Torregrossa"
-							name="Jackson Torregrossa"
-							role="Co-Founder"
-							subrole="Full Stack Developer"
-							skills={['C#', 'TypeScript', 'React', 'Svelte', 'Tailwind', 'Front End Design']}
-							email="jacksontorregrossa@voidprojects.ai"
-							linkedin="https://www.linkedin.com/in/jackson-torregrossa/"
-							desc={jacksonDesc}
-						/>
-					</div>
-				</div>
-				<div class="flex gap-2" aria-hidden="true">
-					{#each [0, 1, 2] as i}
-						<button
-							type="button"
-							aria-label="View profile {i + 1}"
-							onclick={() =>
-								carouselRef?.scrollTo({
-									left: i * (carouselRef?.offsetWidth ?? 0),
-									behavior: 'smooth'
-								})}
-							class="size-2 rounded-full transition-all duration-300 {i === activeTeamIndex
-								? 'scale-125 bg-primary'
-								: 'bg-foreground/30'}"
-						></button>
-					{/each}
-				</div>
+				{/each}
 			</div>
 		</div>
 	</Section>
@@ -648,3 +639,23 @@
 />
 
 <ReducedMotionNotice />
+
+<style>
+	/* Same idle bob as the never-grid scenes; each card runs on its own phase. */
+	.team-float {
+		animation: team-float 5.2s ease-in-out infinite alternate;
+	}
+	@keyframes team-float {
+		from {
+			translate: 0 0;
+		}
+		to {
+			translate: 0 -8px;
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.team-float {
+			animation: none;
+		}
+	}
+</style>

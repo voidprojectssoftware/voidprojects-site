@@ -75,8 +75,15 @@
 		{ id: 'logo', label: 'Logo' },
 		{ id: 'colors', label: 'Colors' },
 		{ id: 'type', label: 'Typography' },
+		{ id: 'footer-badge', label: 'Footer badge' },
 		{ id: 'assets', label: 'Assets' }
 	];
+	// Pasted into the footer of every client site we build; keep in step with
+	// docs/websites/how-to/add-the-footer-badge.md.
+	const FOOTER_BADGE = `<a href="https://voidprojects.ai/websites" style="display:inline-flex;align-items:center;gap:6px">
+	<img src="https://voidprojects.ai/api/mark.svg" width="20" height="20" alt="" />
+	<span>Made by <strong>Void Projects</strong></span>
+</a>`;
 	const socials = [
 		{ label: 'GitHub', value: BRAND.github },
 		{ label: 'YouTube', value: BRAND.youtube },
@@ -288,6 +295,45 @@
 						</div>
 						<div class="text-sm text-foreground/55">Small / captions and metadata.</div>
 					</div>
+				</div>
+			</div>
+		</section>
+
+		<!-- Footer badge ------------------------------------------------------------>
+		<section id="footer-badge" class="mb-14 scroll-mt-6">
+			<h2 class="mb-1 text-xl font-semibold">Footer badge</h2>
+			<p class="mb-5 max-w-3xl text-sm text-foreground/50">
+				Goes in the footer of every client site we build and links to
+				<a href="/websites" class="text-primary hover:underline">voidprojects.ai/websites</a>. The
+				mark comes from <code class="text-primary">/api/mark.svg</code>, a fresh one on every visit;
+				the text inherits the client site's font and colors.
+			</p>
+			<div class="grid gap-6 lg:grid-cols-2">
+				<div class="grid overflow-hidden rounded-2xl ring-1 ring-white/10 sm:grid-cols-2">
+					<div class="grid place-items-center p-10 text-[#1a1a1a]" style="background:#ffffff">
+						{@html FOOTER_BADGE}
+					</div>
+					<div class="grid place-items-center p-10 text-white/80" style="background:#0e0e17">
+						{@html FOOTER_BADGE}
+					</div>
+				</div>
+				<div class="flex flex-col gap-3 rounded-2xl bg-white/[0.02] p-6 ring-1 ring-white/10">
+					<div class="flex items-center justify-between gap-4">
+						<span class="text-xs tracking-wide text-foreground/45 uppercase">HTML</span>
+						<button
+							type="button"
+							onclick={() => copy(FOOTER_BADGE)}
+							class="cursor-pointer rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary ring-1 ring-primary/30 hover:bg-primary/20"
+						>
+							{copied === FOOTER_BADGE ? 'Copied' : 'Copy'}
+						</button>
+					</div>
+					<pre
+						class="overflow-x-auto font-mono text-xs leading-relaxed text-foreground/75">{FOOTER_BADGE}</pre>
+					<p class="text-xs text-foreground/40">
+						Add <code>?seed=&lt;number&gt;</code> to the image URL to pin one mark instead of a new one
+						per visit.
+					</p>
 				</div>
 			</div>
 		</section>
