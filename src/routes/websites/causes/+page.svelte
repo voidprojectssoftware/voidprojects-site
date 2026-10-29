@@ -78,7 +78,7 @@
 
 <Section wide class="pb-24">
 	<div class="mx-auto flex max-w-2xl flex-col items-center gap-3 pb-10 text-center">
-		<h2 class="text-3xl font-bold tracking-tight">Sites we’d love to build</h2>
+		<h2 class="text-3xl font-bold tracking-tight">Causes we’d love to help</h2>
 		<p class="text-lg leading-relaxed text-balance text-foreground/65">
 			A few of the kinds of causes we have in mind. If yours isn’t here, ask anyway.
 		</p>
