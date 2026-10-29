@@ -145,7 +145,16 @@
 					class="flex flex-col gap-1 py-5 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:gap-6"
 				>
 					<dt class="w-28 shrink-0 text-4xl font-bold tracking-tight text-primary">{row.figure}</dt>
-					<dd class="leading-relaxed text-foreground/70">{row.body}</dd>
+					<dd class="leading-relaxed text-foreground/70">
+						{row.body}
+						{#if row.link}
+							<a
+								href={row.link.href}
+								class="font-medium text-primary underline-offset-4 hover:underline"
+								>{row.link.label}</a
+							>
+						{/if}
+					</dd>
 				</div>
 			{/each}
 		</dl>

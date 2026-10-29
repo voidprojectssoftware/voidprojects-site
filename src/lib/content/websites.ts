@@ -93,10 +93,11 @@ export const ENGINEER = {
 };
 
 // "What it costs": a big figure with its explanation.
-export const PRICING: { figure: string; body: string }[] = [
+export const PRICING: { figure: string; body: string; link?: { href: string; label: string } }[] = [
 	{
 		figure: 'Free',
-		body: 'when we can make it so. If a site grows complex enough, or its traffic and usage start costing us real money, it can’t reasonably stay free, and we’ll talk that through with you first.'
+		body: 'Some simple sites only cost our agents time on maintenance and implementation. We will build and host these for free for you. If a site grows complex enough, or its traffic and usage start costing us real money, it can’t reasonably stay free, and we’ll talk that through with you first.',
+		link: { href: '/websites/causes', label: 'Building for a cause?' }
 	},
 	{
 		figure: `+${MARGIN_PERCENT}%`,
