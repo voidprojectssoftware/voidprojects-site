@@ -94,28 +94,16 @@ export const ENGINEER = {
 export const PRICING: { figure: string; body: string; link?: { href: string; label: string } }[] = [
 	{
 		figure: 'Free',
-		body: 'for causes, whenever we can manage it. If a cause site grows to cost us real money, we’ll talk it through with you first.',
+		body: 'for causes, whenever we can manage it.',
 		link: { href: '/websites/causes', label: 'Building for a cause?' }
 	},
 	{
 		figure: '$25',
-		body: 'a month for static sites: business or personal pages that don’t change and have no live data. That covers hosting, upkeep, security updates, and our time to design and build it.'
-	},
-	{
-		figure: 'Match',
-		body: 'a site builder’s price. Our promise: if you could build it yourself on Squarespace Basic or Wix Light, we’ll build and host it for you at their monthly price.'
-	},
-	{
-		figure: '$25+',
-		body: 'for dynamic sites with live data, accounts, or bookings, priced from what hosting and maintaining them actually costs us.'
+		body: 'a month for a static site: business or personal pages that don’t change, with your domain at cost. If you could build it on Squarespace Basic or Wix Light, we’ll build and host it for their price. Already paying for a site? We’ll match what you pay now and take over hosting and upkeep.'
 	},
 	{
 		figure: 'Quote',
-		body: 'for sites that need higher reliability or extra care. Tell us what you need and we’ll give you a price.'
-	},
-	{
-		figure: '+$0',
-		body: 'on your domain. You pay exactly what it costs us to register it, or to transfer the one you already have.'
+		body: 'for anything dynamic, like live data, accounts, or bookings, or anything that needs higher reliability or extra care. We price it from what hosting and maintaining it costs us.'
 	}
 ];
 

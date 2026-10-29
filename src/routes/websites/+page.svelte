@@ -133,11 +133,10 @@
 		<div class="flex flex-col gap-4">
 			<h2 class="text-3xl font-bold tracking-tight">What it costs</h2>
 			<p class="text-2xl font-semibold tracking-tight text-primary">
-				Free if we can. Fair if we can’t.
+				Site-builder prices. We do the building.
 			</p>
 			<p class="leading-relaxed text-foreground/65">
-				Causes are free when we can manage it. Static sites are $25 a month, and if you could build
-				it yourself on a site builder, we match their price and build it for you.
+				Most sites fit one of these three, and we’ll help you work out which.
 			</p>
 		</div>
 		<dl class="flex flex-col divide-y divide-foreground/10">

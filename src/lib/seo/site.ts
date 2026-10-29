@@ -28,7 +28,7 @@ export const PAGES = {
 		path: '/websites',
 		title: 'Websites by Void Projects',
 		description:
-			'Custom websites from engineers with years of enterprise experience, sped up by our own AI tooling. You talk to a person and never touch the technical side. Static sites are $25 a month, and if you could build it yourself on Squarespace or Wix, we build and host it for you at their price.'
+			'Custom websites from engineers with years of enterprise experience, sped up by our own AI tooling. You talk to a person and never touch the technical side. Static sites are $25 a month. If you could build it yourself on Squarespace or Wix, we build and host it for their price, and if you already pay for a site, we match it and take over hosting and upkeep.'
 	},
 	causes: {
 		path: CAUSES.href,
