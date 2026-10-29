@@ -17,7 +17,8 @@ const BASE = 'https://ssd.jpl.nasa.gov/api/horizons.api';
 
 // The four that left the solar system are the default set; the rest are extra
 // toggles with their own distinctive inner-system swirls. `color` drives the
-// spectral palette in the renderer.
+// spectral palette in the renderer. Kept one craft per row, so prettier skips it.
+// prettier-ignore
 const CRAFT = [
 	{ id: 'pioneer10', name: 'Pioneer 10', command: '-23', start: '1972-03-04', stop: '2000-01-01', color: '#e8c58a' },
 	{ id: 'pioneer11', name: 'Pioneer 11', command: '-24', start: '1973-04-07', stop: '1995-09-01', color: '#e79a72' },
@@ -96,7 +97,10 @@ async function fetchCraft(c) {
 	const points = [];
 	const years = [];
 	let lastYear = null;
-	for (const line of text.slice(soe + 5, eoe).trim().split('\n')) {
+	for (const line of text
+		.slice(soe + 5, eoe)
+		.trim()
+		.split('\n')) {
 		const cols = line.split(',').map((s) => s.trim());
 		const x = Number(cols[2]);
 		const y = Number(cols[3]);
@@ -110,7 +114,9 @@ async function fetchCraft(c) {
 		}
 	}
 	const [fx, fy] = points[points.length - 1];
-	console.log(`  ${c.name.padEnd(20)} ${String(points.length).padStart(4)} pts, final r = ${Math.hypot(fx, fy).toFixed(1)} AU`);
+	console.log(
+		`  ${c.name.padEnd(20)} ${String(points.length).padStart(4)} pts, final r = ${Math.hypot(fx, fy).toFixed(1)} AU`
+	);
 	return { id: c.id, name: c.name, color: c.color, launch: c.start, points, years };
 }
 

@@ -85,12 +85,16 @@ function splitCsv(/** @type {string} */ line) {
 		const c = line[i];
 		if (quoted) {
 			if (c === '"') {
-				if (line[i + 1] === '"') ((cur += '"'), i++);
-				else quoted = false;
+				if (line[i + 1] === '"') {
+					cur += '"';
+					i++;
+				} else quoted = false;
 			} else cur += c;
 		} else if (c === '"') quoted = true;
-		else if (c === ',') (out.push(cur), (cur = ''));
-		else cur += c;
+		else if (c === ',') {
+			out.push(cur);
+			cur = '';
+		} else cur += c;
 	}
 	out.push(cur);
 	return out;

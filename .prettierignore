@@ -7,3 +7,11 @@ bun.lockb
 
 # Miscellaneous
 /static/
+
+# Blog posts and blog docs: prose formatting is left to their authors (#28)
+/docs/blog/
+/src/lib/content/blog/
+
+# Generated data: rewritten by npm run gen:stars / gen:trajectories
+/src/lib/sky/star-catalog.json
+/src/lib/trajectory/trajectories.json
