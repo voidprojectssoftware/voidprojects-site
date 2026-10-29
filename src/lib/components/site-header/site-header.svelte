@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import OrbitMark from '$lib/brand/OrbitMark.svelte';
+	import { NudgeChain } from '$lib/nudge/index.js';
 
 	type NavLink = { href: string; label: string; children?: NavLink[] };
 
@@ -21,8 +22,26 @@
 
 	let path = $derived(page.url.pathname.replace(/\/$/, '') || '/');
 	let branchOpen = $state(false); // touch screens have no hover, so the chevron toggles the branch
-	let scrollY = $state(0);
-	let frosted = $derived(transparent && scrolled && scrollY > 8); // frost only once content can slide under it
+
+	// Items float a few px and tug each other; the hairlines between them are the links.
+	const HOME = '/';
+	const chain = new NudgeChain();
+	chain.link(HOME, LINKS[0].href, 0.004); // invisible and loose: the wordmark only feels the nav faintly
+	LINKS.forEach((link, i) => {
+		if (i > 0) chain.link(LINKS[i - 1].href, link.href);
+		for (const child of link.children ?? []) chain.link(link.href, child.href);
+	});
+	const float = (el: HTMLElement, key: string) => ({ destroy: chain.node(el, key) });
+	const tether = (el: HTMLElement, [a, b, mode]: [string, string, 'along' | 'across']) => ({
+		destroy: chain.line(el, a, b, mode)
+	});
+
+	// Not while the homepage hides the nav (and never under reduced motion; the chain no-ops).
+	$effect(() => {
+		if (scrolled) chain.enable();
+		else chain.disable();
+	});
+	$effect(() => () => chain.destroy());
 
 	const isCurrent = (href: string) => path === href;
 	const inSection = (link: NavLink) =>
@@ -33,14 +52,10 @@
 		}`;
 </script>
 
-<svelte:window bind:scrollY />
-
 <header
-	class="sticky top-0 z-2 h-16 border-b transition-[background-color,border-color,backdrop-filter] duration-300 {!transparent
-		? 'border-transparent bg-background'
-		: frosted
-			? 'border-foreground/8 bg-background/70 backdrop-blur-md'
-			: 'border-transparent bg-transparent'} px-6 pt-4 sm:px-8 lg:px-10"
+	class="sticky top-0 z-2 h-16 {transparent
+		? 'bg-transparent'
+		: 'bg-background'} px-6 pt-4 sm:px-8 lg:px-10"
 >
 	<div
 		class="flex flex-row items-center gap-3 transition-opacity duration-300 sm:gap-5"
@@ -48,7 +63,7 @@
 		class:pointer-events-none={!scrolled}
 		aria-hidden={!scrolled}
 	>
-		<div class="flex items-center gap-2">
+		<div class="flex items-center gap-2" use:float={HOME}>
 			<OrbitMark class="size-7 sm:size-8" />
 			<a
 				href="/"
@@ -62,7 +77,11 @@
 		>
 			{#each LINKS as link, i (link.href)}
 				{#if i > 0}
-					<span class="h-4 w-px bg-foreground/15" aria-hidden="true"></span>
+					<span
+						class="h-4 w-px bg-foreground/15"
+						aria-hidden="true"
+						use:tether={[LINKS[i - 1].href, link.href, 'across']}
+					></span>
 				{/if}
 				{#if link.children}
 					<div
@@ -70,42 +89,48 @@
 						role="presentation"
 						onmouseleave={() => (branchOpen = false)}
 					>
-						<a
-							href={link.href}
-							aria-current={isCurrent(link.href) ? 'page' : undefined}
-							class="{linkClass(inSection(link))} pr-1">{link.label}</a
-						>
-						<button
-							type="button"
-							aria-label="Show pages under {link.label}"
-							aria-expanded={branchOpen}
-							onclick={() => (branchOpen = !branchOpen)}
-							class="mr-1 grid size-5 place-items-center rounded-full text-foreground/50 hover:text-foreground"
-						>
-							<svg
-								viewBox="0 0 10 10"
-								class="size-2.5 transition-transform group-hover:rotate-180 {branchOpen
-									? 'rotate-180'
-									: ''}"
-								aria-hidden="true"
-								><path
-									d="M2 3.5 5 6.5 8 3.5"
-									fill="none"
-									stroke="currentColor"
-									stroke-width="1.4"
-								/></svg
+						<span class="flex items-center" use:float={link.href}>
+							<a
+								href={link.href}
+								aria-current={isCurrent(link.href) ? 'page' : undefined}
+								class="{linkClass(inSection(link))} pr-1">{link.label}</a
 							>
-						</button>
+							<button
+								type="button"
+								aria-label="Show pages under {link.label}"
+								aria-expanded={branchOpen}
+								onclick={() => (branchOpen = !branchOpen)}
+								class="mr-1 grid size-5 place-items-center rounded-full text-foreground/50 hover:text-foreground"
+							>
+								<svg
+									viewBox="0 0 10 10"
+									class="size-2.5 transition-transform group-hover:rotate-180 {branchOpen
+										? 'rotate-180'
+										: ''}"
+									aria-hidden="true"
+									><path
+										d="M2 3.5 5 6.5 8 3.5"
+										fill="none"
+										stroke="currentColor"
+										stroke-width="1.4"
+									/></svg
+								>
+							</button>
+						</span>
 						<!-- The branch: a hairline drops from the parent to its child pages. -->
 						<div
 							class="absolute top-full left-5 pt-1 group-focus-within:flex group-hover:flex {branchOpen
 								? 'flex'
 								: 'hidden'}"
 						>
-							<span class="mt-0 h-6 w-px bg-foreground/20" aria-hidden="true"></span>
+							<span
+								class="mt-0 h-6 w-px bg-foreground/20"
+								aria-hidden="true"
+								use:tether={[link.href, link.children[0].href, 'along']}
+							></span>
 							<div class="flex flex-col pt-3">
 								{#each link.children as child (child.href)}
-									<div class="flex items-center">
+									<div class="flex items-center" use:float={child.href}>
 										<span class="h-px w-3 bg-foreground/20" aria-hidden="true"></span>
 										<a
 											href={child.href}
@@ -124,7 +149,8 @@
 					<a
 						href={link.href}
 						aria-current={isCurrent(link.href) ? 'page' : undefined}
-						class={linkClass(isCurrent(link.href))}>{link.label}</a
+						class={linkClass(isCurrent(link.href))}
+						use:float={link.href}>{link.label}</a
 					>
 				{/if}
 			{/each}
