@@ -5,7 +5,6 @@ import {
 	CAUSES,
 	CONTACT_EMAIL,
 	CONTACT_KINDS,
-	DIY,
 	FLOW,
 	INSTEAD,
 	NEVER,
@@ -31,7 +30,7 @@ function llmsTxt(): string {
 
 > ${PAGES.websites.description}
 
-${SITE_NAME}: ${PAGES.home.description} We build custom websites for people who want one without doing the technical work themselves. ${INSTEAD} ${DIY.glove}
+${SITE_NAME}: ${PAGES.home.description} We build custom websites for people who want one without doing the technical work themselves. ${INSTEAD}
 
 ## What we build
 

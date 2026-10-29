@@ -10,7 +10,6 @@
 	import { Splash } from '$lib/components/splash/index.js';
 	import { AfterLaunch } from '$lib/components/after-launch/index.js';
 	import { NeverGrid } from '$lib/components/never-grid/index.js';
-	import { DiyCompare } from '$lib/components/diy-compare/index.js';
 	import { ProfileCard } from '$lib/components/profile-card/index.js';
 	import engineerPicture from '$lib/assets/IMG_2021.JPEG';
 	import {
@@ -217,10 +216,6 @@
 			</GlassCard>
 		{/each}
 	</div>
-</Section>
-
-<Section wide class="pb-24">
-	<DiyCompare />
 </Section>
 
 <Section wide class="pb-24">
