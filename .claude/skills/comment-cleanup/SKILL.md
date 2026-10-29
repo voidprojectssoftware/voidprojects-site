@@ -19,11 +19,14 @@ Sweep the file given as the command argument and apply the comment standards fro
 Any `/** text */` block directly above a property in a type, interface, or object literal becomes an inline `//` comment to the right of that property.
 
 Before:
+
 ```ts
 /** Cursor influence radius (px). Glyphs farther than this feel nothing. */
 radius: number;
 ```
+
 After:
+
 ```ts
 radius: number; // cursor influence radius (px); glyphs farther than this feel nothing
 ```
@@ -35,6 +38,7 @@ radius: number; // cursor influence radius (px); glyphs farther than this feel n
 ### 2. Interface / class method comments: remove when redundant
 
 Remove the comment when the method name, parameter types, and return type already say it all. Keep a comment only when it adds:
+
 - An ordering constraint (e.g., "must not call Engine.update here")
 - A non-obvious side-effect (e.g., "stores the stage reference; call before step/sync")
 - A failure mode
