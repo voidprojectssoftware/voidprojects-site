@@ -28,7 +28,7 @@ export const PAGES = {
 		path: '/websites',
 		title: 'Websites by Void Projects',
 		description:
-			'Custom websites from engineers with years of enterprise experience, sped up by our own AI tooling. You talk to a person, never touch the technical side, and pay our costs plus 30%.'
+			'Custom websites from engineers with years of enterprise experience, sped up by our own AI tooling. You talk to a person and never touch the technical side. Free for causes and simple personal sites; otherwise $10 a month plus your domain at cost.'
 	},
 	causes: {
 		path: CAUSES.href,
@@ -43,7 +43,7 @@ export const PAGES = {
 	}
 } satisfies Record<string, PageMeta>;
 
-// "Free when we can make it so. ..." : the pricing section read as sentences.
+// "Free for causes, ... $10 a month ..." : the pricing section read as sentences.
 export const PRICING_SUMMARY = PRICING.map(
 	(p) => `${p.figure.charAt(0).toUpperCase()}${p.figure.slice(1)} ${p.body}`
 ).join(' ');

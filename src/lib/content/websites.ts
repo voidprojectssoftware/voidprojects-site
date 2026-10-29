@@ -96,16 +96,20 @@ export const ENGINEER = {
 export const PRICING: { figure: string; body: string; link?: { href: string; label: string } }[] = [
 	{
 		figure: 'Free',
-		body: 'Some simple sites only cost our agents time on maintenance and implementation. We will build and host these for free for you. If a site grows complex enough, or its traffic and usage start costing us real money, it can’t reasonably stay free, and we’ll talk that through with you first.',
+		body: 'for causes, and for simple personal sites like a resume or portfolio: low traffic, no dynamic content, and rarely changing. These cost us little more than our agents’ time, so we build and host them for free. If a site grows past that, or its traffic starts costing us real money, we’ll talk it through with you first.',
 		link: { href: '/websites/causes', label: 'Building for a cause?' }
 	},
 	{
-		figure: `+${MARGIN_PERCENT}%`,
-		body: 'on top of what it costs us. That’s the whole bill.'
+		figure: '$10',
+		body: 'a month for every other site. That covers hosting, upkeep, and security updates, plus our time: design, build, and keeping it current after launch.'
 	},
 	{
-		figure: '$0',
-		body: 'for our time, design, and build, and for keeping it updated and secure after launch.'
+		figure: '+0%',
+		body: 'on your domain. You pay exactly what it costs us to register it, or to transfer the one you already have.'
+	},
+	{
+		figure: `+${MARGIN_PERCENT}%`,
+		body: 'on any other costs beyond that, like heavy traffic or paid services. That’s the whole bill.'
 	}
 ];
 

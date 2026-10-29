@@ -136,8 +136,8 @@
 				Free if we can. Fair if we can’t.
 			</p>
 			<p class="leading-relaxed text-foreground/65">
-				If we can build your site for free, we will. If we can’t, you pay what it costs us, plus a
-				flat margin, and nothing for our time.
+				If we can build your site for free, we will. If we can’t, it’s a flat $10 a month, your
+				domain at cost, and anything beyond that at cost plus a flat margin.
 			</p>
 		</div>
 		<dl class="flex flex-col divide-y divide-foreground/10">
