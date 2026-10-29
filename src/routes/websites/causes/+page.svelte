@@ -79,9 +79,6 @@
 <Section wide class="pb-24">
 	<div class="mx-auto flex max-w-2xl flex-col items-center gap-3 pb-10 text-center">
 		<h2 class="text-3xl font-bold tracking-tight">Causes we’d love to help</h2>
-		<p class="text-lg leading-relaxed text-balance text-foreground/65">
-			A few of the kinds of causes we have in mind. If yours isn’t here, ask anyway.
-		</p>
 	</div>
 	<div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
 		{#each CAUSES.kinds as k (k.title)}
@@ -95,6 +92,9 @@
 			</GlassCard>
 		{/each}
 	</div>
+	<p class="pt-8 text-center text-lg text-foreground/70">
+		If yours isn’t here, <a href="#contact" class={link}>ask anyway</a>.
+	</p>
 </Section>
 
 <Section wide class="items-center pb-24">
