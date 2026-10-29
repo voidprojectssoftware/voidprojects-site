@@ -136,8 +136,8 @@
 				Free if we can. Fair if we can’t.
 			</p>
 			<p class="leading-relaxed text-foreground/65">
-				If we can build your site for free, we will. If we can’t, it’s a flat $10 a month, your
-				domain at cost, and anything beyond that at cost plus a flat margin.
+				Causes are free when we can manage it. Static sites are $25 a month, and if you could build
+				it yourself on a site builder, we match their price and build it for you.
 			</p>
 		</div>
 		<dl class="flex flex-col divide-y divide-foreground/10">

@@ -12,8 +12,6 @@ export const CONTACT_KINDS = [
 ] as const;
 export type ContactKind = (typeof CONTACT_KINDS)[number];
 
-export const MARGIN_PERCENT = 30;
-
 // Minecraft-style splash on the hero headline; one is picked at random per load.
 export const SPLASHES = [
 	'We hate Wix too!',
@@ -96,20 +94,28 @@ export const ENGINEER = {
 export const PRICING: { figure: string; body: string; link?: { href: string; label: string } }[] = [
 	{
 		figure: 'Free',
-		body: 'for causes, and for simple personal sites like a resume or portfolio: low traffic, no dynamic content, and rarely changing. These cost us little more than our agents’ time, so we build and host them for free. If a site grows past that, or its traffic starts costing us real money, we’ll talk it through with you first.',
+		body: 'for causes, whenever we can manage it. If a cause site grows to cost us real money, we’ll talk it through with you first.',
 		link: { href: '/websites/causes', label: 'Building for a cause?' }
 	},
 	{
-		figure: '$10',
-		body: 'a month for every other site. That covers hosting, upkeep, and security updates, plus our time: design, build, and keeping it current after launch.'
+		figure: '$25',
+		body: 'a month for static sites: business or personal pages that don’t change and have no live data. That covers hosting, upkeep, security updates, and our time to design and build it.'
 	},
 	{
-		figure: '+0%',
+		figure: 'Match',
+		body: 'a site builder’s price. Our promise: if you could build it yourself on Squarespace Basic or Wix Light, we’ll build and host it for you at their monthly price.'
+	},
+	{
+		figure: '$25+',
+		body: 'for dynamic sites with live data, accounts, or bookings, priced from what hosting and maintaining them actually costs us.'
+	},
+	{
+		figure: 'Quote',
+		body: 'for sites that need higher reliability or extra care. Tell us what you need and we’ll give you a price.'
+	},
+	{
+		figure: '+$0',
 		body: 'on your domain. You pay exactly what it costs us to register it, or to transfer the one you already have.'
-	},
-	{
-		figure: `+${MARGIN_PERCENT}%`,
-		body: 'on any other costs beyond that, like heavy traffic or paid services. That’s the whole bill.'
 	}
 ];
 
