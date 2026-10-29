@@ -96,7 +96,7 @@ export const ENGINEER = {
 export const PRICING: { figure: string; body: string }[] = [
 	{
 		figure: 'Free',
-		body: 'when we can make it so. Once a site grows complex enough, it can’t reasonably stay free, and we’ll talk that through with you.'
+		body: 'when we can make it so. If a site grows complex enough, or its traffic and usage start costing us real money, it can’t reasonably stay free, and we’ll talk that through with you first.'
 	},
 	{
 		figure: `+${MARGIN_PERCENT}%`,
