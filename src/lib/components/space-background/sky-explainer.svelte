@@ -82,7 +82,9 @@
 	>
 		?
 	</Dialog.Trigger>
+	<!-- No backdrop blur: over the animated sky canvas it forces a full-viewport re-blur every frame. -->
 	<Dialog.Content
+		overlayClass="bg-black/50 supports-backdrop-filter:backdrop-blur-none"
 		class="max-h-[calc(100dvh-2rem)] [scrollbar-width:none] overflow-y-auto sm:max-w-lg [&::-webkit-scrollbar]:hidden"
 	>
 		<Dialog.Header class="pr-8">
