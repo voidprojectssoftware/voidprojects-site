@@ -220,6 +220,6 @@ export const HOW: Point[] = [
 	},
 	{
 		title: 'Feedback without the overhead',
-		body: 'Our own feedback tools cut out the usual back-and-forth, so your vision becomes a finished site far more smoothly than was possible before.'
+		body: 'Our own feedback tools cut out the usual back-and-forth, so your idea turns into a finished site faster, with far less fuss.'
 	}
 ];
