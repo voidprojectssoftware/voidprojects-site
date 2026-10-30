@@ -279,4 +279,10 @@
 			<ContactForm bind:sent={contactSent} />
 		</GlassCard>
 	</div>
+	<p class="pt-16 text-sm text-foreground/45">
+		Why does everything here float? <a
+			href="/about/brand"
+			class="underline underline-offset-4 hover:text-primary">About our brand</a
+		>
+	</p>
 </Section>
