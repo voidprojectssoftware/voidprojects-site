@@ -135,9 +135,7 @@
 			<p class="text-2xl font-semibold tracking-tight text-primary">
 				Site-builder prices. We do the building.
 			</p>
-			<p class="leading-relaxed text-foreground/65">
-				Most sites fit one of these three, and we’ll help you work out which.
-			</p>
+			<p class="leading-relaxed text-foreground/65">Most sites fit one of these three.</p>
 		</div>
 		<dl class="flex flex-col divide-y divide-foreground/10">
 			{#each PRICING as row (row.figure)}
