@@ -34,6 +34,7 @@ export interface ShowcaseSite {
 	kind: string; // short label, e.g. "Cause" or "Small business"
 	blurb: string;
 	free: boolean; // built at no charge (cause work)
+	price?: string; // what the client pays, shown on the card, e.g. "$50/m"
 	screenshot: string; // desktop capture under static/
 }
 
@@ -46,6 +47,7 @@ export const SHOWCASE: ShowcaseSite[] = [
 		blurb:
 			'Connects family and friends to Hallie’s journey overcoming breast cancer: her own updates, an email list so nobody misses one, and a shirt store that funds her care. Hallie is the mother of one of our own, and the site was built free.',
 		free: true,
+		price: '$0/m',
 		screenshot: '/websites/rally4hallie-desktop.jpg'
 	},
 	{
@@ -56,6 +58,7 @@ export const SHOWCASE: ShowcaseSite[] = [
 		blurb:
 			'A booking-first home for Angela Di Donna’s hair, skin, brow, and lash studio in Hernando, Mississippi: every service and price in one place, her story, and the way to book.',
 		free: false,
+		price: '$50/m',
 		screenshot: '/websites/didonnastudio-desktop.jpg'
 	}
 ];

@@ -252,9 +252,23 @@
 							{/if}
 						</div>
 						<p class="text-sm leading-relaxed text-foreground/65">{site.blurb}</p>
-						<span class="pt-1 text-sm font-medium text-foreground/80 group-hover:text-primary"
-							>Visit {site.host} ↗</span
-						>
+						<div class="flex min-h-9 items-center justify-between gap-4 pt-1">
+							<span class="text-sm font-medium text-foreground/80 group-hover:text-primary"
+								>Visit {site.host} ↗</span
+							>
+							{#if site.price}
+								<span class="flex items-center gap-3">
+									{#if site.free}
+										<span
+											class="grid size-8 place-items-center rounded-xl bg-primary/20 text-primary"
+										>
+											<HandHeart class="size-5" aria-hidden="true" />
+										</span>
+									{/if}
+									<span class="text-2xl font-bold tracking-tight text-primary">{site.price}</span>
+								</span>
+							{/if}
+						</div>
 					</div>
 				</GlassCard>
 			</a>
