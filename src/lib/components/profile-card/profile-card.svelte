@@ -37,7 +37,7 @@
 			target="_blank"
 			rel="noopener noreferrer"
 			aria-label="{name} on LinkedIn"
-			class="text-foreground/50 transition-colors hover:text-[#0A66C2]"
+			class="-m-0.5 p-0.5 text-foreground/50 transition-colors hover:text-[#0A66C2]"
 		>
 			<svg role="img" viewBox="0 0 24 24" fill="currentColor" class="size-5" aria-hidden="true">
 				<path
@@ -103,7 +103,7 @@
 					<button
 						type="button"
 						onclick={() => bioDialog?.close()}
-						class="self-end rounded-full bg-primary px-5 py-2 text-sm font-semibold text-white hover:bg-primary/85"
+						class="self-end rounded-full bg-primary-strong px-5 py-2 text-sm font-semibold text-white hover:bg-primary-strong/85"
 						>Close</button
 					>
 				</div>

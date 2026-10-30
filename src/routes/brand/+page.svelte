@@ -117,7 +117,7 @@
 {:else if isRaw}
 	<p class="p-8 text-red-400">Unknown asset id: {rawId}</p>
 {:else}
-	<main class="relative mx-auto max-w-[1500px] px-6 py-14">
+	<main id="main-content" class="relative mx-auto max-w-[1500px] px-6 py-14">
 		<a
 			href="/brand/trajectory-logo-lab"
 			class="absolute top-6 right-6 z-10 inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary ring-1 ring-primary/30 hover:bg-primary/20"

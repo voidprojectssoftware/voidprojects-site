@@ -56,9 +56,9 @@
 <span class="text-red-400">npm ERR! code ERESOLVE</span></pre>
 					{:else}
 						<div class="grid grid-cols-[auto_auto_1fr] gap-x-3 gap-y-1 font-mono text-[10px]">
-							<span class="text-foreground/40">Type</span><span class="text-foreground/40"
+							<span class="text-foreground/50">Type</span><span class="text-foreground/50"
 								>Name</span
-							><span class="text-foreground/40">Value</span>
+							><span class="text-foreground/50">Value</span>
 							<span>CNAME</span><span>www</span><span class="truncate">???.azurestaticapps…</span>
 							<span>A</span><span>@</span><span>???</span>
 							<span>TXT</span><span>_dnsauth</span><span class="truncate">k8f2-x91q…</span>

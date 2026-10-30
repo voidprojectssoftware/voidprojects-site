@@ -14,6 +14,9 @@
 </svelte:head>
 
 <SiteHeader transparent={false} />
-<Section class="min-h-[calc(100dvh-4rem)] bg-transparent">
-	<Content />
-</Section>
+
+<main id="main-content" class="flex flex-col">
+	<Section class="min-h-[calc(100dvh-4rem)] bg-transparent">
+		<Content />
+	</Section>
+</main>

@@ -106,14 +106,14 @@
 							<a
 								href={link.href}
 								aria-current={isCurrent(link.href) ? 'page' : undefined}
-								class="{linkClass(inSection(link))} pr-1">{link.label}</a
+								class="{linkClass(inSection(link))} pr-0.5">{link.label}</a
 							>
 							<button
 								type="button"
 								aria-label="Show pages under {link.label}"
 								aria-expanded={branchOpen}
 								onclick={() => (branchOpen = !branchOpen)}
-								class="mr-1 grid size-5 place-items-center rounded-full text-foreground/50 hover:text-foreground"
+								class="-my-0.5 mr-0.5 grid size-6 place-items-center rounded-full text-foreground/50 hover:text-foreground"
 							>
 								<svg
 									viewBox="0 0 10 10"
