@@ -3,9 +3,6 @@
 	import { Section } from '$lib/components/voidprojects/section/index.js';
 
 	let { data } = $props();
-
-	// The rendered post component (already wrapped in post-layout.svelte by mdsvex).
-	const Content = $derived(data.content);
 </script>
 
 <svelte:head>
@@ -15,5 +12,7 @@
 
 <SiteHeader transparent={false} />
 <Section class="min-h-[calc(100dvh-4rem)] bg-transparent">
-	<Content />
+	<!-- Post markup rendered server-side from our own .md files by +page.server.ts. -->
+	<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+	{@html data.html}
 </Section>

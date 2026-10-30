@@ -1,5 +1,5 @@
 import { LIMITS, MAX_BODY_BYTES } from '$lib/contact/contact-http.js';
-import { publishedPosts } from '$lib/content/posts';
+import { publishedPosts } from '$lib/server/posts';
 import {
 	AFTER_LAUNCH,
 	CAUSES,
