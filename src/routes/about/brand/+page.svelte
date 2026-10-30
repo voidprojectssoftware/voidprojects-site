@@ -6,15 +6,12 @@
 	import { GlassCard } from '$lib/components/voidprojects/glass-card/index.js';
 	import { PageMeta } from '$lib/components/page-meta/index.js';
 	import { PAGES } from '$lib/seo/site.js';
-	import { publishedPosts } from '$lib/content/posts';
 	import { DATA, buildTrajectory } from '$lib/trajectory';
 	import { renderSpec } from '$lib/brand/labs/trajectory-logo.js';
 	import { pickMarkSpec, randomSeed } from '$lib/brand/mark.js';
 	import { brandColor } from '$lib/brand/colors.js';
 
 	const REPO = 'https://github.com/voidprojectssoftware/voidprojects-site';
-	// The physics write-up is linked only once a post with this slug is published.
-	const FLOAT_POST = publishedPosts().find((p) => p.slug === 'how-we-made-the-site-float');
 
 	const launchYear = (iso: string) => iso.slice(0, 4);
 
@@ -215,19 +212,11 @@
 		<div class="grid gap-5 sm:grid-cols-2">
 			<GlassCard class="gap-2 p-6">
 				<h3 class="text-lg font-semibold">How we made the site float</h3>
-				{#if FLOAT_POST}
-					<p class="text-sm leading-relaxed text-foreground/65">{FLOAT_POST.meta.description}</p>
-					<a
-						href="/blog/{FLOAT_POST.slug}"
-						class="inline-flex items-center gap-1 pt-1 text-sm font-semibold text-primary hover:underline"
-						>Read the write-up <ArrowUpRight class="size-4" aria-hidden="true" /></a
-					>
-				{:else}
-					<p class="text-sm leading-relaxed text-foreground/65">
-						The full story of the physics engine, on our blog.
-					</p>
-					<p class="pt-1 text-sm font-semibold text-foreground/50">Write-up coming soon</p>
-				{/if}
+				<!-- Link the blog post here once "How we made the site float" is published. -->
+				<p class="text-sm leading-relaxed text-foreground/65">
+					The full story of the physics engine, on our blog.
+				</p>
+				<p class="pt-1 text-sm font-semibold text-foreground/50">Write-up coming soon</p>
 			</GlassCard>
 			<GlassCard class="gap-2 p-6">
 				<h3 class="text-lg font-semibold">The code</h3>
