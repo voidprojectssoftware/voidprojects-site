@@ -122,7 +122,7 @@
 		<div class="flex flex-wrap items-center gap-x-4 gap-y-2 pt-1">
 			<button
 				type="submit"
-				class="h-11 rounded-full bg-primary px-6 text-sm font-semibold text-white transition-colors hover:bg-primary/85 focus-visible:ring-3 focus-visible:ring-primary/40 focus-visible:outline-none"
+				class="h-11 rounded-full bg-primary-strong px-6 text-sm font-semibold text-white transition-colors hover:bg-primary-strong/85 focus-visible:ring-3 focus-visible:ring-primary/40 focus-visible:outline-none"
 			>
 				Start the conversation
 			</button>
