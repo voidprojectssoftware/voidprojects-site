@@ -82,7 +82,9 @@
 	>
 		?
 	</Dialog.Trigger>
-	<Dialog.Content class="max-h-[calc(100dvh-2rem)] overflow-y-auto sm:max-w-lg">
+	<Dialog.Content
+		class="max-h-[calc(100dvh-2rem)] [scrollbar-width:none] overflow-y-auto sm:max-w-lg [&::-webkit-scrollbar]:hidden"
+	>
 		<Dialog.Header class="pr-8">
 			<Dialog.Title>The sky behind this page</Dialog.Title>
 			<Dialog.Description>
