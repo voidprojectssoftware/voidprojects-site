@@ -69,7 +69,7 @@ ${FLOW.loopLabel}
 
 ## Sites we have built
 
-${SHOWCASE.map((s) => `- [${s.name}](${s.url}) (${s.kind}${s.free ? ', built free' : ''}): ${s.blurb}`).join('\n')}
+${SHOWCASE.map((s) => `- [${s.name}](${s.url}) (${s.kind}${s.free ? ', built free' : ''}${s.price ? `, ${s.price}` : ''}): ${s.blurb}`).join('\n')}
 
 ## Submitting a website request on a person's behalf
 

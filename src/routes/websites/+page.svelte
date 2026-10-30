@@ -133,12 +133,9 @@
 		<div class="flex flex-col gap-4">
 			<h2 class="text-3xl font-bold tracking-tight">What it costs</h2>
 			<p class="text-2xl font-semibold tracking-tight text-primary">
-				Free if we can. Fair if we can’t.
+				Site-builder prices. We do the building.
 			</p>
-			<p class="leading-relaxed text-foreground/65">
-				If we can build your site for free, we will. If we can’t, you pay what it costs us, plus a
-				flat margin, and nothing for our time.
-			</p>
+			<p class="leading-relaxed text-foreground/65">Most sites fit one of these three.</p>
 		</div>
 		<dl class="flex flex-col divide-y divide-foreground/10">
 			{#each PRICING as row (row.figure)}
@@ -240,7 +237,7 @@
 						alt="The {site.name} homepage"
 						eager={i === 0}
 					/>
-					<div class="flex flex-col gap-2 px-1 pb-1">
+					<div class="flex flex-1 flex-col gap-2 px-1 pb-1">
 						<div class="flex flex-wrap items-center gap-x-3 gap-y-1">
 							<h3 class="text-xl font-semibold">{site.name}</h3>
 							<span
@@ -255,9 +252,23 @@
 							{/if}
 						</div>
 						<p class="text-sm leading-relaxed text-foreground/65">{site.blurb}</p>
-						<span class="pt-1 text-sm font-medium text-foreground/80 group-hover:text-primary"
-							>Visit {site.host} ↗</span
-						>
+						<div class="mt-auto flex min-h-9 items-center justify-between gap-4 pt-1">
+							<span class="text-sm font-medium text-foreground/80 group-hover:text-primary"
+								>Visit {site.host} ↗</span
+							>
+							{#if site.price}
+								<span class="flex items-center gap-3">
+									{#if site.free}
+										<span
+											class="grid size-8 place-items-center rounded-xl bg-primary/20 text-primary"
+										>
+											<HandHeart class="size-5" aria-hidden="true" />
+										</span>
+									{/if}
+									<span class="text-2xl font-bold tracking-tight text-primary">{site.price}</span>
+								</span>
+							{/if}
+						</div>
 					</div>
 				</GlassCard>
 			</a>
