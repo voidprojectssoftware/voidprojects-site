@@ -12,7 +12,6 @@
 
 <SiteHeader transparent={false} />
 <Section class="min-h-[calc(100dvh-4rem)] bg-transparent">
-	<!-- Post markup rendered server-side from our own .md files by +page.server.ts. -->
-	<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+	<!-- eslint-disable-next-line svelte/no-at-html-tags -- post HTML is rendered at build time from our own markdown in src/lib/content/blog, never user input -->
 	{@html data.html}
 </Section>
