@@ -105,7 +105,7 @@ export const PRICING: {
 	{
 		figure: '$25/m',
 		spoken: '$25 a month',
-		body: 'for a static site: business or personal pages that don’t change, with your domain at cost. If you could build it on Squarespace Basic or Wix Light, we’ll build and host it for their price. Already paying for a site? We’ll match what you pay now and take over hosting and upkeep.'
+		body: 'for a static site: business or personal pages that don’t change, with your domain at cost. Already paying for a site? We’ll match what you pay now and take over hosting and upkeep.'
 	},
 	{
 		figure: 'Quote',
