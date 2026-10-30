@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import type { Picture } from '@sveltejs/enhanced-img';
 	import { ProfilePicture } from '$lib/components/profile-picture/index.js';
 	import { Badge } from '$lib/components/shadcn/ui/badge/index.js';
 
@@ -15,7 +16,7 @@
 		desc,
 		layout = 'horizontal'
 	}: {
-		src: string;
+		src: Picture;
 		alt: string;
 		name: string;
 		role: string;
@@ -53,7 +54,12 @@
 	     and the bio clamped, keeping all three inside one viewport. -->
 	<div class="flex flex-col gap-2 text-left lg:items-center lg:gap-3 lg:text-center">
 		<div class="flex flex-row items-center gap-3 lg:flex-col lg:gap-3">
-			<ProfilePicture {src} {alt} class="size-14 lg:size-24 xl:size-28" />
+			<ProfilePicture
+				{src}
+				{alt}
+				sizes="(min-width: 1280px) 112px, (min-width: 1024px) 96px, 56px"
+				class="size-14 lg:size-24 xl:size-28"
+			/>
 			<div class="flex flex-col gap-0 lg:items-center">
 				<div class="flex flex-row items-center gap-2">
 					<span class="text-lg font-bold lg:text-xl">{name}</span>
@@ -91,7 +97,7 @@
 			>
 				<div class="flex flex-col gap-4">
 					<div class="flex items-center gap-3">
-						<ProfilePicture {src} {alt} class="size-12" />
+						<ProfilePicture {src} {alt} sizes="48px" class="size-12" />
 						<div class="flex flex-col">
 							<span class="text-lg font-bold">{name}</span>
 							<span class="text-sm opacity-70">{role} · {subrole}</span>
@@ -114,7 +120,7 @@
 	<div
 		class="flex flex-row items-center gap-6 max-[600px]:flex-col md:max-w-2xl lg:max-w-3xl xl:max-w-4xl"
 	>
-		<ProfilePicture {src} {alt} class="size-48" />
+		<ProfilePicture {src} {alt} sizes="192px" class="size-48" />
 		<div class="flex flex-col items-start gap-3 text-left text-sm sm:text-base">
 			<div class="flex flex-col items-start gap-0 max-[600px]:items-center">
 				<div class="flex flex-row items-center gap-3">
