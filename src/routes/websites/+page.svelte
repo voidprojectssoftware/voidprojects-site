@@ -237,7 +237,7 @@
 						alt="The {site.name} homepage"
 						eager={i === 0}
 					/>
-					<div class="flex flex-col gap-2 px-1 pb-1">
+					<div class="flex flex-1 flex-col gap-2 px-1 pb-1">
 						<div class="flex flex-wrap items-center gap-x-3 gap-y-1">
 							<h3 class="text-xl font-semibold">{site.name}</h3>
 							<span
@@ -252,7 +252,7 @@
 							{/if}
 						</div>
 						<p class="text-sm leading-relaxed text-foreground/65">{site.blurb}</p>
-						<div class="flex min-h-9 items-center justify-between gap-4 pt-1">
+						<div class="mt-auto flex min-h-9 items-center justify-between gap-4 pt-1">
 							<span class="text-sm font-medium text-foreground/80 group-hover:text-primary"
 								>Visit {site.host} ↗</span
 							>
