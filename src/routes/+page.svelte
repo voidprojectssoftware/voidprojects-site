@@ -17,9 +17,7 @@
 	import { SiteHeader } from '$lib/components/site-header/index.js';
 	import { ProfileCard } from '$lib/components/profile-card/index.js';
 	import { GlassCard } from '$lib/components/voidprojects/glass-card/index.js';
-	import larryProfilePicture from '$lib/assets/larryProfilePicture2024.jpg';
-	import blakeProfilePicture from '$lib/assets/IMG_2021.JPEG';
-	import jacksonProfilePicture from '$lib/assets/100_2013.JPEG';
+	import { headshots } from '$lib/assets/headshots.js';
 	import { JsonLd } from '$lib/components/json-ld/index.js';
 	import { PageMeta } from '$lib/components/page-meta/index.js';
 	import { PAGES, organizationJsonLd } from '$lib/seo/site.js';
@@ -27,7 +25,7 @@
 	const team = [
 		{
 			name: 'Larry Jones',
-			src: larryProfilePicture,
+			src: headshots.larry,
 			subrole: 'Constellation Technical Lead',
 			skills: ['C#', 'SQL', 'Data Engineering', 'Graph Databases'],
 			email: 'larryjones@voidprojects.ai',
@@ -36,7 +34,7 @@
 		},
 		{
 			name: 'Blake Hastings',
-			src: blakeProfilePicture,
+			src: headshots.blake,
 			subrole: 'Protostar Technical Lead',
 			skills: ['Agentic Development', 'C#', '.NET', 'Web Dev', 'Agile', 'Enterprise Systems'],
 			email: 'blakehastings@voidprojects.ai',
@@ -45,7 +43,7 @@
 		},
 		{
 			name: 'Jackson Torregrossa',
-			src: jacksonProfilePicture,
+			src: headshots.jackson,
 			subrole: 'Full Stack Developer',
 			skills: ['C#', 'TypeScript', 'React', 'Svelte', 'Tailwind', 'Front End Design'],
 			email: 'jacksontorregrossa@voidprojects.ai',

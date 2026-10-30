@@ -2,13 +2,23 @@
 	// A screenshot dressed in minimal browser chrome, so a showcase reads as a live
 	// site rather than a flat image. Width comes from the consumer via `class`;
 	// the image keeps the 16:10 desktop capture ratio.
+	import { showcasePicture } from '$lib/content/showcase-images.js';
+
 	let {
 		src,
 		host,
 		alt,
 		eager = false,
+		sizes = '(min-width: 1024px) 600px, calc(100vw - 5rem)',
 		class: className = ''
-	}: { src: string; host: string; alt: string; eager?: boolean; class?: string } = $props();
+	}: {
+		src: string;
+		host: string;
+		alt: string;
+		eager?: boolean;
+		sizes?: string; // rendered image width; the default fits the two-column /websites showcase
+		class?: string;
+	} = $props();
 </script>
 
 <div
@@ -25,9 +35,10 @@
 		>
 		<span class="w-[2.625rem]" aria-hidden="true"></span>
 	</div>
-	<img
-		{src}
+	<enhanced:img
+		src={showcasePicture(src) ?? src}
 		{alt}
+		{sizes}
 		width="1280"
 		height="800"
 		loading={eager ? 'eager' : 'lazy'}

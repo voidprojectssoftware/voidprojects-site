@@ -11,7 +11,7 @@
 	import { AfterLaunch } from '$lib/components/after-launch/index.js';
 	import { NeverGrid } from '$lib/components/never-grid/index.js';
 	import { ProfileCard } from '$lib/components/profile-card/index.js';
-	import engineerPicture from '$lib/assets/IMG_2021.JPEG';
+	import { headshots } from '$lib/assets/headshots.js';
 	import {
 		SHOWCASE,
 		PRICING,
@@ -98,7 +98,7 @@
 		<h3 class="text-3xl font-bold tracking-tight text-balance sm:text-4xl">{INSTEAD}</h3>
 		<GlassCard class="mt-8 items-center p-6 sm:p-10">
 			<ProfileCard
-				src={engineerPicture}
+				src={headshots.blake}
 				alt={ENGINEER.name}
 				name={ENGINEER.name}
 				role={ENGINEER.role}
