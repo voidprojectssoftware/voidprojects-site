@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { ArrowUpRight, Clock, Link2, MousePointer2, Orbit, RefreshCw } from '@lucide/svelte';
+	import { ArrowUpRight, RefreshCw } from '@lucide/svelte';
 	import { SiteHeader } from '$lib/components/site-header/index.js';
 	import { Section } from '$lib/components/voidprojects/section/index.js';
 	import { GlassCard } from '$lib/components/voidprojects/glass-card/index.js';
@@ -47,28 +47,71 @@
 			: ''
 	);
 
-	const FLOAT_PARTS = [
-		{
-			icon: Clock,
-			title: 'One world, one clock',
-			body: 'Everything that can collide lives in one shared world, and only that world moves time forward: sixty fixed steps a second, so the motion runs at the same speed on any screen. When nothing is moving, it stops and costs nothing.'
-		},
-		{
-			icon: Orbit,
-			title: 'Actors',
-			body: 'Each kind of thing (the title letters, a project card) is an actor that pushes its own bodies around. The world doesn’t know what a letter or a card is. It just runs them.'
-		},
-		{
-			icon: Link2,
-			title: 'Effects',
-			body: 'Some moments span several actors. When the Constellation card arrives, springs link it to the letters and pull them into formation around it, then let go when it leaves.'
-		},
-		{
-			icon: MousePointer2,
-			title: 'Your cursor',
-			body: 'Pass your mouse near the resting letters and they shy away, then spring home. While they drift they lean toward your cursor, and on a phone your finger plows through them as you scroll.'
-		}
-	];
+	// The homepage's physics, confined to one panel: the same stage and glyph actor,
+	// with some air friction so a throw settles and the loop parks when nothing moves.
+	// Loaded after mount so Matter.js stays out of this page's initial bundle.
+	const DEMO_WORD = 'Void Projects';
+	const letterEls: HTMLElement[] = [];
+	let demoBounds = $state<HTMLElement>();
+	let demoStill = $state(false); // prefers-reduced-motion: letters stay at rest
+	let resetDemo = $state<(() => void) | null>(null);
+	onMount(() => {
+		let disposed = false;
+		let teardown: (() => void) | undefined;
+		import('$lib/physics/index.js').then(({ PhysicsStage, GlyphField }) => {
+			if (disposed || !demoBounds) return;
+			const stage = new PhysicsStage({ bounds: demoBounds });
+			const glyphs = new GlyphField({
+				frictionAir: 0.012,
+				baseSpeed: 0.9,
+				speedJitter: 0.4,
+				spinRate: 0.01,
+				mousePull: 0.02,
+				mousePullRadius: 160,
+				restSpeed: 0.03
+			});
+			stage.add(glyphs);
+			for (const el of letterEls) if (el) glyphs.register(el);
+			demoStill = stage.reduceMotion;
+
+			// Reset eases the letters home; once they land, set them floating again.
+			let replay = false;
+			glyphs.onActiveChange = (active) => {
+				if (!active && replay) {
+					replay = false;
+					glyphs.start();
+				}
+			};
+			resetDemo = () => {
+				replay = true;
+				glyphs.return_();
+			};
+
+			// Run only while the panel is on screen and the tab is visible.
+			let onScreen = false;
+			let started = false;
+			const syncPaused = () => stage.setPaused(!onScreen || document.hidden);
+			const io = new IntersectionObserver(([entry]) => {
+				onScreen = entry.isIntersecting;
+				if (onScreen && !started) {
+					started = true;
+					glyphs.start();
+				}
+				syncPaused();
+			});
+			io.observe(demoBounds);
+			document.addEventListener('visibilitychange', syncPaused);
+			teardown = () => {
+				io.disconnect();
+				document.removeEventListener('visibilitychange', syncPaused);
+				stage.destroy();
+			};
+		});
+		return () => {
+			disposed = true;
+			teardown?.();
+		};
+	});
 </script>
 
 <svelte:head>
@@ -186,18 +229,36 @@
 			can throw it.
 		</p>
 	</div>
-	<div class="grid w-full gap-5 md:grid-cols-2 xl:grid-cols-4">
-		{#each FLOAT_PARTS as part (part.title)}
-			{@const Icon = part.icon}
-			<GlassCard class="gap-3 p-6">
-				<span class="grid size-10 place-items-center rounded-xl bg-primary/15 text-primary">
-					<Icon class="size-5" aria-hidden="true" />
-				</span>
-				<h3 class="pt-1 text-lg font-semibold">{part.title}</h3>
-				<p class="text-sm leading-relaxed text-foreground/65">{part.body}</p>
-			</GlassCard>
-		{/each}
-	</div>
+	<GlassCard class="mx-auto w-full max-w-3xl gap-4 p-6 sm:p-8">
+		<div
+			bind:this={demoBounds}
+			class="relative grid h-64 place-items-center overflow-hidden rounded-2xl bg-background/40 ring-1 ring-foreground/10 sm:h-72"
+		>
+			<p class="text-3xl font-bold tracking-tight sm:text-6xl" aria-label={DEMO_WORD}>
+				{#each DEMO_WORD as ch, i (i)}{#if ch === ' '}<span aria-hidden="true">&nbsp;</span
+						>{:else}<span
+							bind:this={letterEls[i]}
+							aria-hidden="true"
+							class="inline-block cursor-grab leading-none select-none">{ch}</span
+						>{/if}{/each}
+			</p>
+		</div>
+		<div class="flex flex-wrap items-center justify-between gap-3">
+			<p class="text-sm text-foreground/70">
+				{demoStill
+					? 'Your device asks for reduced motion, so these letters stay put.'
+					: 'Grab a letter and throw it.'}
+			</p>
+			<button
+				type="button"
+				onclick={() => resetDemo?.()}
+				disabled={!resetDemo || demoStill}
+				class="inline-flex h-9 cursor-pointer items-center gap-2 rounded-full border border-foreground/15 px-4 text-sm font-semibold hover:bg-foreground/5 disabled:opacity-50"
+			>
+				<RefreshCw class="size-4" aria-hidden="true" /> Reset
+			</button>
+		</div>
+	</GlassCard>
 	<div class="mx-auto flex max-w-3xl flex-col gap-3 pt-12 text-center">
 		<p class="leading-relaxed text-foreground/70">
 			It isn’t only the homepage. The menu at the top of this page floats too: each link drifts a
