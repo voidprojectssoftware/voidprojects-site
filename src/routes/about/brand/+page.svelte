@@ -175,10 +175,15 @@
 	<div class="mx-auto flex max-w-3xl flex-col items-center gap-4 pb-12 text-center">
 		<h2 class="text-3xl font-bold tracking-tight sm:text-4xl">Why things float</h2>
 		<p class="text-lg leading-relaxed text-balance text-foreground/70">
-			Void Projects is named for the void, so the site behaves like it. On the homepage the letters
-			of the title and the project cards are real physical bodies, simulated with the open-source
-			Matter.js engine, with gravity switched off. Scroll and the letters break apart and drift; the
-			cards are tossed in from below and bump them aside. Grab a letter and you can throw it.
+			Honestly, because we think it is cool. Yes, it hurts our SEO, and yes, it doesn't load well on
+			older devices, but one of our devs got really interested in physics sims and here we are.
+			Another project :)
+		</p>
+		<p class="text-lg leading-relaxed text-balance text-foreground/70">
+			On the homepage the title letters and the project cards are real physical bodies, simulated
+			with the open-source Matter.js engine with gravity switched off. Scroll and the letters break
+			apart and drift; the cards are tossed in from below and bump them aside. Grab a letter and you
+			can throw it.
 		</p>
 	</div>
 	<div class="grid w-full gap-5 md:grid-cols-2 xl:grid-cols-4">
