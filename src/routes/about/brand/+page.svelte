@@ -93,9 +93,8 @@
 		<div class="flex flex-col gap-4">
 			<h2 class="text-3xl font-bold tracking-tight">The logo that never sits still</h2>
 			<p class="text-lg leading-relaxed text-foreground/70">
-				Our logo is not a fixed drawing. Every page load rolls a new one: the mark in the header and
-				the icon in your browser tab are the same freshly drawn mark, and the badge on the sites we
-				build fetches a new one on every visit.
+				Like our projects and technical pursuits, our logo is ever-changing. Each time you visit,
+				our logo will be different, and hopefully our projects will stay constantly evolving.
 			</p>
 			<p class="leading-relaxed text-foreground/65">
 				Each mark starts from a real spacecraft. We took the paths of {DATA.craft.length} probes from
