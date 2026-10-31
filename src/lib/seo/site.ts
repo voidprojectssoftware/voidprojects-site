@@ -36,6 +36,12 @@ export const PAGES = {
 		description:
 			'Memorials, cancer support, fundraisers, community groups. If your site exists to help people, Void Projects will do our best to build it for free.'
 	},
+	brand: {
+		path: '/about/brand',
+		title: 'Our brand | Void Projects',
+		description:
+			'Why the Void Projects logo is drawn fresh on every visit from real NASA/JPL spacecraft trajectories, and why everything on the site floats.'
+	},
 	blog: {
 		path: '/blog',
 		title: 'From The Void',

@@ -73,6 +73,13 @@ export type GlyphConfig = {
 	uprightSettleFriction: number;
 	/** Spin speed (rad/step) the friction blends across, from {@link uprightSpinFriction} down to {@link uprightSettleFriction}. */
 	uprightSettleSpeed: number;
+	/**
+	 * Speed (px/step) under which a drifting glyph counts as still. Once every glyph is
+	 * below it and none is held, the field reports idle so the stage parks the loop.
+	 * Only useful with some {@link frictionAir}; 0 keeps the field busy for as long as
+	 * it drifts, as on the homepage where the glyphs float forever.
+	 */
+	restSpeed: number;
 };
 
 export const GLYPH_DEFAULTS: GlyphConfig = {
@@ -95,7 +102,8 @@ export const GLYPH_DEFAULTS: GlyphConfig = {
 	uprightStiffness: 0.0022, // slight pull toward the nearest upright, too weak to fight a real spin
 	uprightSpinFriction: 0.99, // light while spinning fast: a hard flick loops several times
 	uprightSettleFriction: 0.86, // firmer once slowed, so it eases to a clean stop without oscillating
-	uprightSettleSpeed: 0.087 // ≈5°/step; above this the spin coasts, below it the friction firms up
+	uprightSettleSpeed: 0.087, // ≈5°/step; above this the spin coasts, below it the friction firms up
+	restSpeed: 0 // never idle while drifting
 };
 
 /** Max random wobble (deg) added to each glyph's outward drift direction. */
@@ -104,7 +112,7 @@ const SPREAD_JITTER_DEG = 40;
 type Drifter = {
 	el: HTMLElement;
 	body: Matter.Body | null;
-	/** Home center in viewport coords, captured when the bodies are built. */
+	/** Home center in world coords (see {@link PhysicsStage.origin}), captured when the bodies are built. */
 	hx: number;
 	hy: number;
 	/** Body size. */
@@ -374,8 +382,9 @@ export class GlyphField implements Actor {
 			target.body.isSensor = true;
 		} else {
 			const r = targetEl.getBoundingClientRect();
-			this.warpCenter.x = r.left + r.width / 2;
-			this.warpCenter.y = r.top;
+			const o = this.stage?.origin() ?? { x: 0, y: 0 };
+			this.warpCenter.x = r.left - o.x + r.width / 2;
+			this.warpCenter.y = r.top - o.y;
 		}
 
 		// Kick every other glyph sideways (same rotational sense) so the central pull
@@ -402,6 +411,12 @@ export class GlyphField implements Actor {
 	}
 
 	isBusy(): boolean {
+		if (this.mode === 'drifting' && this.cfg.restSpeed > 0 && !this.stage?.holding) {
+			const rest = this.cfg.restSpeed;
+			return this.drifters.some(
+				(d) => d.body && (d.body.speed > rest || Math.abs(d.body.angularVelocity) > rest * 0.01)
+			);
+		}
 		return this.mode !== 'idle';
 	}
 
@@ -540,10 +555,11 @@ export class GlyphField implements Actor {
 
 	private buildBodies() {
 		if (!this.stage) return;
+		const o = this.stage.origin();
 		for (const d of this.drifters) {
 			const rect = d.el.getBoundingClientRect(); // read once, at home (no active transform)
-			d.hx = rect.left + rect.width / 2;
-			d.hy = rect.top + rect.height / 2;
+			d.hx = rect.left - o.x + rect.width / 2;
+			d.hy = rect.top - o.y + rect.height / 2;
 			d.w = Math.max(2, rect.width - 1); // tiny shrink avoids spawn overlap jitter
 			d.h = Math.max(2, rect.height - 1);
 			const body = Bodies.rectangle(d.hx, d.hy, d.w, d.h, {

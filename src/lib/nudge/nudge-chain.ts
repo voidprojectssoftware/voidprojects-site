@@ -47,6 +47,11 @@ type ChainString = {
 
 const STRING_SLACK = 1.08; // string length as a multiple of the at-rest gap
 
+// Idle drift is slow enough to show at about 30 Hz, and every render restyles the whole
+// nav. The physics still steps at 60 Hz; only the DOM writes are spaced out.
+const IDLE_RENDER_MS = 31; // just under 2 frames at 60 Hz, 4 at 120 Hz
+const INTERACT_SETTLE_S = 1.5; // full rate for this long after the cursor last pushed or held an item
+
 type ChainLink = { a: string; b: string; stiffness: number };
 
 /**
@@ -72,6 +77,9 @@ export class NudgeChain {
 	private lastTime = 0;
 	private accumulator = 0;
 	private t = 0; // simulated seconds; drives wander and stops with the loop
+	private lastInteractT = -Infinity; // simulated time the cursor last pushed or held an item
+	private lastRenderAt = 0;
+	private pendingSteps = 0; // integration steps not yet rendered
 
 	private readonly pointer = { x: 0, y: 0, active: false };
 
@@ -243,6 +251,7 @@ export class NudgeChain {
 		this.rafId = 0;
 		this.lastTime = 0; // so the next wake does not bank the idle gap as elapsed time
 		this.accumulator = 0;
+		this.lastRenderAt = 0;
 	}
 
 	private step(now: number) {
@@ -258,8 +267,17 @@ export class NudgeChain {
 			this.accumulator -= NUDGE_STEP;
 			steps++;
 		}
+		this.pendingSteps += steps;
 
-		this.render();
+		const interacting = this.t - this.lastInteractT < INTERACT_SETTLE_S;
+		if (
+			this.pendingSteps > 0 &&
+			(interacting || !this.lastRenderAt || now - this.lastRenderAt >= IDLE_RENDER_MS)
+		) {
+			this.render(this.pendingSteps);
+			this.pendingSteps = 0;
+			this.lastRenderAt = now;
+		}
 		this.rafId = requestAnimationFrame(this.frame);
 	}
 
@@ -278,10 +296,12 @@ export class NudgeChain {
 			const wy = wander * 0.6 * Math.sin(t * 0.43 * ry + py + 1.3 * Math.sin(t * 0.17 * rx));
 			let x = n.home * (wx - n.ox);
 			let y = n.home * (wy - n.oy);
+			if (n.hovered || n.focused) this.lastInteractT = t;
 			if (this.pointer.active) {
 				const dx = n.hx + n.ox - this.pointer.x;
 				const dy = n.hy + n.oy - this.pointer.y;
 				const dist = Math.hypot(dx, dy);
+				if (dist < radius * 1.5) this.lastInteractT = t; // slightly wider than the push, so full rate is already on when it starts
 				if (dist > 0 && dist < radius) {
 					const f = push * (1 - dist / radius);
 					x += (dx / dist) * f;
@@ -321,14 +341,16 @@ export class NudgeChain {
 		}
 	}
 
-	private render() {
+	private render(steps: number) {
 		for (const n of this.nodes.values()) {
 			if (n.present) n.el.style.transform = `translate3d(${n.ox}px, ${n.oy}px, 0)`;
 		}
-		for (const st of this.strings) this.drawString(st);
+		// The bow eases 20% of the way per 60 Hz step, however many steps this render covers.
+		const bowEase = 1 - Math.pow(0.8, steps);
+		for (const st of this.strings) this.drawString(st, bowEase);
 	}
 
-	private drawString(st: ChainString) {
+	private drawString(st: ChainString, bowEase: number) {
 		const a = this.nodes.get(st.a);
 		const b = this.nodes.get(st.b);
 		if (!a?.present || !b?.present) return;
@@ -346,7 +368,7 @@ export class NudgeChain {
 		const ny = (x1 - x0) / d;
 		const swing = -((b.vx - a.vx) * nx + (b.vy - a.vy) * ny) * 9;
 		const target = Math.max(-sag * 1.6, Math.min(sag * 1.6, sag * 0.7 + swing));
-		st.bow += (target - st.bow) * 0.2;
+		st.bow += (target - st.bow) * bowEase;
 		const cx = (x0 + x1) / 2 + nx * st.bow * 2; // a quadratic's apex sits halfway to its control point
 		const cy = (y0 + y1) / 2 + ny * st.bow * 2;
 		st.path.setAttribute(

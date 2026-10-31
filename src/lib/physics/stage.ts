@@ -17,11 +17,28 @@ const FIXED_DT = 1000 / 60;
  * "spiral of death" where each frame runs more steps, takes longer, and needs more still.
  */
 const MAX_SUBSTEPS = 5;
+/** Penetration (px) past a bounded scene's edge that {@link PhysicsStage} lets the solver settle on its own. */
+const CONTAIN_SLOP = 1;
+/**
+ * How long (ms) after its last move the cursor still pulls in a bounded scene. A cursor
+ * resting over the scene would otherwise keep bodies circling it and the loop never parks.
+ */
+const POINTER_LINGER_MS = 600;
+
+export type StageOptions = {
+	/**
+	 * Confine the world to this element instead of the viewport. Walls sit on its edges,
+	 * and every position the stage hands out (bodies, pointer, touch, {@link StepCtx}
+	 * size) is relative to its top-left corner, so the scene keeps working as the page
+	 * scrolls it around. The cursor only counts as present while it is over the element.
+	 */
+	bounds?: HTMLElement;
+};
 
 /**
  * The shared physics world every collidable actor lives on. It owns the single
  * Matter engine (so glyphs and cards can actually bump each other), the four
- * viewport walls, the one RAF loop, the one solver step per frame, the pointer
+ * walls (the viewport's, or a {@link StageOptions.bounds} element's), the one RAF loop, the one solver step per frame, the pointer
  * grab-and-throw, and the optional debug overlay. It knows nothing about glyphs
  * or cards — they are {@link Actor}s it drives.
  *
@@ -43,6 +60,9 @@ export class PhysicsStage {
 
 	readonly reduceMotion: boolean;
 	private readonly frame: (now: number) => void;
+	private readonly bounds: HTMLElement | null;
+	private boundsObserver: ResizeObserver | null = null;
+	private paused = false;
 
 	/** Every body added by an actor, with whether the cursor may grab it. */
 	private readonly grabbable = new Set<Matter.Body>();
@@ -57,6 +77,8 @@ export class PhysicsStage {
 	// Pointer interaction (cursor position + grab-to-throw), all in viewport coords.
 	private readonly pointer = { x: 0, y: 0, active: false };
 	private readonly pointerVel = { x: 0, y: 0 };
+	private pointerInside = false;
+	private lastPointerMove = 0;
 
 	// Finger drag during a touch scroll, in viewport coords. Tracked from touch
 	// events because the pointer is cancelled the instant a touch turns into a
@@ -74,7 +96,8 @@ export class PhysicsStage {
 	private render: Matter.Render | null = null;
 	private debugCanvas: HTMLCanvasElement | null = null;
 
-	constructor() {
+	constructor(opts: StageOptions = {}) {
+		this.bounds = opts.bounds ?? null;
 		this.reduceMotion =
 			typeof window !== 'undefined' &&
 			window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -94,6 +117,41 @@ export class PhysicsStage {
 			window.addEventListener('touchcancel', this.onTouchEnd, { passive: true });
 			window.addEventListener('resize', this.onResize);
 			document.addEventListener('mouseleave', this.onPointerLeave, { passive: true });
+			if (this.bounds) {
+				this.boundsObserver = new ResizeObserver(this.onResize);
+				this.boundsObserver.observe(this.bounds);
+			}
+		}
+	}
+
+	/** Viewport position of the world's (0, 0): the bounds element's corner, or the viewport's. */
+	origin(): { x: number; y: number } {
+		if (!this.bounds) return { x: 0, y: 0 };
+		const r = this.bounds.getBoundingClientRect();
+		return { x: r.left, y: r.top };
+	}
+
+	/** True while the cursor is holding a body. */
+	get holding(): boolean {
+		return this.dragBody !== null;
+	}
+
+	/**
+	 * Stop the loop (and refuse to {@link wake}) while paused, e.g. when the scene is
+	 * scrolled offscreen or the tab is hidden. Resuming wakes it; actors that are idle
+	 * park it again on the next frame.
+	 */
+	setPaused(paused: boolean) {
+		if (paused === this.paused) return;
+		this.paused = paused;
+		if (paused) {
+			if (this.rafId) cancelAnimationFrame(this.rafId);
+			this.rafId = 0;
+			this.lastTime = 0;
+			this.accumulator = 0;
+			this.clearGrab();
+		} else {
+			this.wake();
 		}
 	}
 
@@ -146,7 +204,7 @@ export class PhysicsStage {
 
 	/** Start (or keep) the RAF loop. Cheap to call repeatedly. */
 	wake() {
-		if (this.rafId || this.reduceMotion || !this.engine) return;
+		if (this.rafId || this.paused || this.reduceMotion || !this.engine) return;
 		this.rafId = requestAnimationFrame(this.frame);
 	}
 
@@ -202,6 +260,8 @@ export class PhysicsStage {
 			window.removeEventListener('resize', this.onResize);
 			document.removeEventListener('mouseleave', this.onPointerLeave);
 		}
+		this.boundsObserver?.disconnect();
+		this.boundsObserver = null;
 	}
 
 	/**
@@ -232,8 +292,7 @@ export class PhysicsStage {
 	private buildWalls() {
 		if (!this.engine) return;
 		if (this.walls.length) Composite.remove(this.engine.world, this.walls);
-		const W = window.innerWidth;
-		const H = window.innerHeight;
+		const { width: W, height: H } = this.size();
 		const t = WALL_THICKNESS;
 		// Top/left/right are solid to everyone. The floor uses its own collision
 		// category so cards can pass through it while glyphs stay penned in.
@@ -249,16 +308,37 @@ export class PhysicsStage {
 		Composite.add(this.engine.world, this.walls);
 	}
 
+	private size(): { width: number; height: number } {
+		if (!this.bounds) return { width: window.innerWidth, height: window.innerHeight };
+		const r = this.bounds.getBoundingClientRect();
+		return { width: r.width, height: r.height };
+	}
+
+	/** A viewport point in world coordinates, and whether it lies inside the world. */
+	private toWorld(clientX: number, clientY: number) {
+		if (!this.bounds) return { x: clientX, y: clientY, inside: true };
+		const r = this.bounds.getBoundingClientRect();
+		const x = clientX - r.left;
+		const y = clientY - r.top;
+		return { x, y, inside: x >= 0 && y >= 0 && x <= r.width && y <= r.height };
+	}
+
 	private step(now: number) {
 		// Fire any scheduled cues whose time has come, on this same frame clock, before
 		// the solver runs so a cue that adds bodies/constraints takes effect this frame.
 		this.fireCues(now);
 
+		const { width, height } = this.size();
+		if (this.bounds) {
+			this.pointer.active =
+				this.pointerInside &&
+				(this.dragBody !== null || now - this.lastPointerMove < POINTER_LINGER_MS);
+		}
 		const ctx: StepCtx = {
 			now,
 			dtMs: FIXED_DT,
-			width: window.innerWidth,
-			height: window.innerHeight,
+			width,
+			height,
 			pointer: this.pointer,
 			touch: this.touch,
 			draggedBody: this.dragBody
@@ -279,6 +359,7 @@ export class PhysicsStage {
 			for (const a of this.actors) a.step(ctx); // forces only
 			this.applyDrag(); // held body chases the cursor, shoving its neighbours
 			if (this.engine) Engine.update(this.engine, FIXED_DT); // one fixed solver step
+			if (this.bounds) this.contain(width, height);
 			this.accumulator -= FIXED_DT;
 			steps++;
 		}
@@ -298,7 +379,8 @@ export class PhysicsStage {
 
 		// Keep the loop alive while any actor is busy or a cue is still pending, so the
 		// frame clock that times the cues keeps advancing until they all fire.
-		let busy = this.cues.length > 0;
+		// A bounded scene also stays up while the cursor is live over it, so its pull acts.
+		let busy = this.cues.length > 0 || (this.bounds !== null && this.pointer.active);
 		for (const a of this.actors) if (a.isBusy()) busy = true;
 		if (!busy) {
 			this.rafId = 0; // park until something wakes us
@@ -307,6 +389,27 @@ export class PhysicsStage {
 			return;
 		}
 		this.rafId = requestAnimationFrame(this.frame);
+	}
+
+	/**
+	 * Push any grabbable body that sank into a wall back inside the bounds and turn it
+	 * around. Matter resolves a fast hit over several steps, so a hard throw would
+	 * otherwise poke past the edge of a bounded scene for a frame or two.
+	 */
+	private contain(width: number, height: number) {
+		for (const body of this.grabbable) {
+			const { min, max } = body.bounds;
+			const s = CONTAIN_SLOP; // leave Matter's own resting contact alone
+			const dx = min.x < -s ? -min.x : max.x > width + s ? width - max.x : 0;
+			const dy = min.y < -s ? -min.y : max.y > height + s ? height - max.y : 0;
+			if (dx === 0 && dy === 0) continue;
+			Body.translate(body, { x: dx, y: dy });
+			const v = body.velocity;
+			Body.setVelocity(body, {
+				x: dx !== 0 && Math.sign(v.x) !== Math.sign(dx) ? -v.x * body.restitution : v.x,
+				y: dy !== 0 && Math.sign(v.y) !== Math.sign(dy) ? -v.y * body.restitution : v.y
+			});
+		}
 	}
 
 	/**
@@ -369,20 +472,25 @@ export class PhysicsStage {
 	}
 
 	private readonly onPointerMove = (e: PointerEvent) => {
-		this.pointerVel.x = e.clientX - this.pointer.x;
-		this.pointerVel.y = e.clientY - this.pointer.y;
-		this.pointer.x = e.clientX;
-		this.pointer.y = e.clientY;
-		this.pointer.active = true;
+		const p = this.toWorld(e.clientX, e.clientY);
+		this.pointerVel.x = p.x - this.pointer.x;
+		this.pointerVel.y = p.y - this.pointer.y;
+		this.pointer.x = p.x;
+		this.pointer.y = p.y;
+		this.pointer.active = p.inside;
+		this.pointerInside = p.inside;
+		this.lastPointerMove = e.timeStamp;
+		// A bounded scene parks when still, so the cursor has to wake it to be felt.
+		if (this.bounds && (p.inside || this.dragBody)) this.wake();
 
 		// Promote a press into a drag once it travels past the click threshold.
 		if (this.pendingGrab && !this.dragBody) {
-			const moved = Math.hypot(e.clientX - this.grabStart.x, e.clientY - this.grabStart.y);
+			const moved = Math.hypot(p.x - this.grabStart.x, p.y - this.grabStart.y);
 			if (moved > DRAG_THRESHOLD) {
 				this.dragBody = this.pendingGrab;
 				this.pendingGrab = null;
-				this.dragOffset.x = this.dragBody.position.x - e.clientX;
-				this.dragOffset.y = this.dragBody.position.y - e.clientY;
+				this.dragOffset.x = this.dragBody.position.x - p.x;
+				this.dragOffset.y = this.dragBody.position.y - p.y;
 				document.body.style.userSelect = 'none';
 				this.wake();
 			}
@@ -391,10 +499,13 @@ export class PhysicsStage {
 
 	private readonly onPointerDown = (e: PointerEvent) => {
 		if (!this.engine || this.grabbable.size === 0) return;
-		const point = { x: e.clientX, y: e.clientY };
+		const p = this.toWorld(e.clientX, e.clientY);
+		const point = { x: p.x, y: p.y };
 		this.pointer.x = point.x;
 		this.pointer.y = point.y;
-		this.pointer.active = true;
+		this.pointer.active = p.inside;
+		this.pointerInside = p.inside;
+		this.lastPointerMove = e.timeStamp;
 		const hit = Query.point([...this.grabbable], point)[0];
 		if (!hit) return;
 		// Defer the real grab until the pointer moves, so a plain click still reaches
@@ -419,6 +530,7 @@ export class PhysicsStage {
 
 	private readonly onPointerLeave = () => {
 		this.pointer.active = false;
+		this.pointerInside = false;
 	};
 
 	// --- Touch tracking for the glyph "plow" -------------------------------------
@@ -428,8 +540,9 @@ export class PhysicsStage {
 	private readonly onTouchStart = (e: TouchEvent) => {
 		const t = e.touches[0];
 		if (!t) return;
-		this.touch.x = t.clientX;
-		this.touch.y = t.clientY;
+		const p = this.toWorld(t.clientX, t.clientY);
+		this.touch.x = p.x;
+		this.touch.y = p.y;
 		this.touch.vx = 0;
 		this.touch.vy = 0;
 		this.touch.active = true;
@@ -439,10 +552,11 @@ export class PhysicsStage {
 		const t = e.touches[0];
 		if (!t) return;
 		// Accumulate travel since the last position; the frame zeroes it once used.
-		this.touch.vx += t.clientX - this.touch.x;
-		this.touch.vy += t.clientY - this.touch.y;
-		this.touch.x = t.clientX;
-		this.touch.y = t.clientY;
+		const p = this.toWorld(t.clientX, t.clientY);
+		this.touch.vx += p.x - this.touch.x;
+		this.touch.vy += p.y - this.touch.y;
+		this.touch.x = p.x;
+		this.touch.y = p.y;
 		this.touch.active = true;
 		this.wake();
 	};
