@@ -1,4 +1,4 @@
-import { publishedPosts } from '$lib/content/posts';
+import { publishedPosts } from '$lib/server/posts';
 import { PAGES, absoluteUrl } from '$lib/seo/site.js';
 
 // /brand and its labs are internal tools and stay out.
