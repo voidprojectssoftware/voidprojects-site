@@ -16,6 +16,7 @@
 	import { base } from '$app/paths';
 	import { lstHours, ciToRgb, type GeoLocation } from '$lib/sky/astro.js';
 	import { decode as decodeCatalog } from '$lib/sky/catalog-format.js';
+	import SkyExplainer from './sky-explainer.svelte';
 
 	let canvas: HTMLCanvasElement;
 
@@ -24,6 +25,7 @@
 	let locating = $state(false);
 	// assigned in onMount once the sky's setLocation is available
 	let requestLocation = $state<() => void>(() => {});
+	let catalogStats = $state({ stars: 0, bytes: 0 }); // what actually loaded, shown in the explainer
 
 	// Reverse-geocode coords to a "City, REGION" string via BigDataCloud's free,
 	// keyless client endpoint. Sends the coordinates to bigdatacloud.net.
@@ -78,6 +80,7 @@
 	};
 
 	const DEG = Math.PI / 180;
+	const PROJECT_MS = 100; // reproject the (slowly drifting) sky at most this often
 
 	onMount(() => {
 		const ctx = canvas.getContext('2d');
@@ -133,7 +136,6 @@
 		const CORE_K = 2.5; // core sprite draw diameter = star size × this
 		const HALO_K = 4.8; // halo (bloom) sprite draw diameter = star size × this
 		const BLOOM_MIN = 1.7; // star size above which the halo pass runs (matches the old cutoff)
-		const PROJECT_MS = 100; // reproject the (slowly drifting) sky at most this often
 
 		const makeSprite = (rgb: string, halo: boolean): HTMLCanvasElement => {
 			const c = document.createElement('canvas');
@@ -210,6 +212,7 @@
 				});
 			}
 			stars = next;
+			catalogStats = { stars: next.length, bytes: buffer.byteLength };
 			projectDirty = true; // new star set — project it before the next draw
 			sync();
 		};
@@ -426,15 +429,27 @@
 	<div class="grain absolute inset-0"></div>
 </div>
 
-<button
-	type="button"
-	onclick={() => requestLocation()}
-	disabled={locating}
-	title="Use my location"
-	class="fixed bottom-4 left-4 z-10 hidden cursor-pointer text-xs tracking-wide text-foreground/25 transition-opacity hover:text-foreground/60 disabled:cursor-progress dark:sm:block"
->
-	{locating ? 'Locating…' : skyLabel}
-</button>
+<div class="fixed bottom-4 left-4 z-10 hidden items-center gap-1.5 dark:sm:flex">
+	<button
+		type="button"
+		onclick={() => requestLocation()}
+		disabled={locating}
+		title="Use my location"
+		class="cursor-pointer text-xs tracking-wide text-foreground/25 transition-opacity hover:text-foreground/60 disabled:cursor-progress"
+	>
+		{locating ? 'Locating…' : skyLabel}
+	</button>
+	<SkyExplainer
+		starCount={catalogStats.stars}
+		catalogBytes={catalogStats.bytes}
+		magLimit={CONFIG.magLimit}
+		defaultPlace={CONFIG.vantages[CONFIG.defaultVantage].name}
+		lookAzimuth={CONFIG.lookAzimuth}
+		lookAltitude={CONFIG.lookAltitude}
+		fov={CONFIG.fov}
+		reprojectMs={PROJECT_MS}
+	/>
+</div>
 
 <style>
 	/* flat deep-space backdrop */
