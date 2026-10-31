@@ -5,6 +5,7 @@
 	import { Section } from '$lib/components/voidprojects/section/index.js';
 	import { GlassCard } from '$lib/components/voidprojects/glass-card/index.js';
 	import { PageMeta } from '$lib/components/page-meta/index.js';
+	import { SkyExplainerBody, skyFacts } from '$lib/components/space-background/index.js';
 	import { PAGES } from '$lib/seo/site.js';
 	import { DATA, buildTrajectory } from '$lib/trajectory';
 	import { renderSpec } from '$lib/brand/labs/trajectory-logo.js';
@@ -269,6 +270,19 @@
 			If your device asks for reduced motion, all of it stays still.
 		</p>
 	</div>
+</Section>
+
+<Section wide class="pb-24">
+	<div class="mx-auto flex max-w-3xl flex-col items-center gap-4 pb-12 text-center">
+		<h2 class="text-3xl font-bold tracking-tight sm:text-4xl">The sky behind every page</h2>
+		<p class="text-lg leading-relaxed text-balance text-foreground/70">
+			The stars behind this page are the real night sky, as it looks right now. Here is how they get
+			there.
+		</p>
+	</div>
+	<GlassCard class="gap-12 p-6 text-sm sm:p-10 sm:text-base">
+		<SkyExplainerBody {...skyFacts()} layout="page" />
+	</GlassCard>
 </Section>
 
 <Section wide class="items-center pb-28">
