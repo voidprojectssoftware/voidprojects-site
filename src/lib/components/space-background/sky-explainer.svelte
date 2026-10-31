@@ -28,6 +28,10 @@
 		reprojectMs
 	}: Props = $props();
 
+	// Inline prose links, matching the routes' link style plus a visible focus ring.
+	const link =
+		'rounded-sm font-medium text-primary underline-offset-4 hover:underline focus-visible:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary';
+
 	const fmt = (n: number) => n.toLocaleString('en-US');
 	const compass = $derived(
 		['north', 'east', 'south', 'west'][Math.round((((lookAzimuth % 360) + 360) % 360) / 90) % 4]
@@ -88,7 +92,7 @@
 		class="max-h-[calc(100dvh-2rem)] [scrollbar-width:none] overflow-y-auto sm:max-w-lg [&::-webkit-scrollbar]:hidden"
 	>
 		<Dialog.Header class="pr-8">
-			<Dialog.Title>The sky behind this page</Dialog.Title>
+			<Dialog.Title>The stars behind this page</Dialog.Title>
 			<Dialog.Description>
 				It is the real night sky, right now, as seen from {defaultPlace}, or from where you are if
 				you share your location. It turns slowly with the Earth.
@@ -98,10 +102,42 @@
 		<section class="grid gap-2">
 			<h3 class="font-medium">1. The stars</h3>
 			<p class="text-muted-foreground">
-				They come from the HYG database (v41), which combines the Hipparcos, Yale Bright Star and
-				Gliese catalogues. We keep {starsText} brighter than magnitude {magLimit}, roughly what the
-				naked eye can see on a dark night. Each star keeps its position, brightness and colour,
-				packed into a tiny file{kb ? ` (${kb})` : ''} your browser downloads after the page loads.
+				They come from the <a
+					href="https://www.astronexus.com/projects/hyg"
+					target="_blank"
+					rel="noopener noreferrer"
+					class={link}>HYG database</a
+				>
+				(v41), which combines the
+				<a
+					href="https://www.cosmos.esa.int/web/hipparcos"
+					target="_blank"
+					rel="noopener noreferrer"
+					class={link}>Hipparcos</a
+				>,
+				<a
+					href="https://heasarc.gsfc.nasa.gov/W3Browse/star-catalog/bsc5p.html"
+					target="_blank"
+					rel="noopener noreferrer"
+					class={link}>Yale Bright Star</a
+				>
+				and
+				<a
+					href="https://heasarc.gsfc.nasa.gov/W3Browse/star-catalog/cns3.html"
+					target="_blank"
+					rel="noopener noreferrer"
+					class={link}>Gliese</a
+				>
+				catalogues. We keep {starsText} brighter than
+				<a
+					href="https://en.wikipedia.org/wiki/Apparent_magnitude"
+					target="_blank"
+					rel="noopener noreferrer"
+					class={link}>magnitude</a
+				>
+				{magLimit}, roughly what the naked eye can see on a dark night. Each star keeps its
+				position, brightness and colour, packed into a tiny file{kb ? ` (${kb})` : ''} your browser downloads
+				after the page loads.
 			</p>
 			<svg
 				viewBox="0 0 320 96"
@@ -150,11 +186,16 @@
 		<section class="grid gap-2">
 			<h3 class="font-medium">2. From your place and time</h3>
 			<p class="text-muted-foreground">
-				Your device's clock and your longitude give the local sidereal time, which says which part
-				of the sky is overhead. Your latitude then turns each star's catalogue position into a
-				height and compass direction above your horizon. Stars below the horizon are left out. While
-				the page is visible the sky is recomputed up to {Math.round(1000 / reprojectMs)} times a second,
-				so it drifts in real time (or holds still if your system asks for reduced motion).
+				Your device's clock and your longitude give the <a
+					href="https://en.wikipedia.org/wiki/Sidereal_time"
+					target="_blank"
+					rel="noopener noreferrer"
+					class={link}>local sidereal time</a
+				>, which says which part of the sky is overhead. Your latitude then turns each star's
+				catalogue position into a height and compass direction above your horizon. Stars below the
+				horizon are left out. While the page is visible the sky is recomputed up to {Math.round(
+					1000 / reprojectMs
+				)} times a second, so it drifts in real time (or holds still if your system asks for reduced motion).
 			</p>
 			<svg
 				viewBox="0 0 320 112"
@@ -288,7 +329,12 @@
 			<p class="text-muted-foreground">
 				Nothing happens until you click the sky label. Your browser then asks for permission. If you
 				say yes, it gives the page a low-accuracy position, which is used right here in your browser
-				to redraw the sky. The coordinates are also sent to BigDataCloud's reverse-geocoding service
+				to redraw the sky. The coordinates are also sent to <a
+					href="https://www.bigdatacloud.com/docs/free-api/free-reverse-geocode-to-city-api"
+					target="_blank"
+					rel="noopener noreferrer"
+					class={link}>BigDataCloud's reverse-geocoding service</a
+				>
 				(api.bigdatacloud.net) to get the city name for the label.
 			</p>
 			<p class="text-muted-foreground">
