@@ -12,7 +12,8 @@
 			label: 'Websites',
 			children: [{ href: '/websites/causes', label: 'Causes' }]
 		},
-		{ href: '/blog', label: 'Blog' }
+		{ href: '/blog', label: 'Blog' },
+		{ href: '/about/brand', label: 'Our Brand' }
 	];
 
 	// The compact nav that fades in once the hero has scrolled past, showing the
@@ -59,7 +60,7 @@
 	const inSection = (link: NavLink) =>
 		isCurrent(link.href) || (link.children ?? []).some((c) => isCurrent(c.href));
 	const linkClass = (active: boolean) =>
-		`rounded-full px-3 py-1.5 leading-none whitespace-nowrap transition-colors ${
+		`rounded-full px-2 py-1.5 leading-none max-[379px]:px-1 sm:px-3 whitespace-nowrap transition-colors ${
 			active ? 'text-primary' : 'text-foreground/75 hover:text-foreground'
 		}`;
 </script>
@@ -71,23 +72,23 @@
 		? 'border-transparent bg-background'
 		: frosted
 			? 'border-foreground/8 bg-background/70 backdrop-blur-md'
-			: 'border-transparent bg-transparent'} px-6 pt-4 sm:px-8 lg:px-10"
+			: 'border-transparent bg-transparent'} px-4 pt-4 max-[379px]:px-3 sm:px-8 lg:px-10"
 >
 	<div
-		class="flex flex-row items-center gap-3 transition-opacity duration-300 sm:gap-5"
+		class="flex flex-row items-center gap-2 transition-opacity duration-300 sm:gap-5"
 		class:opacity-0={!scrolled}
 		class:pointer-events-none={!scrolled}
 		aria-hidden={!scrolled}
 	>
 		<div class="flex items-center gap-2" use:float={HOME}>
-			<OrbitMark class="size-7 sm:size-8" />
+			<OrbitMark class="size-6 sm:size-8" />
 			<a
 				href="/"
-				class="text-lg leading-none font-bold whitespace-nowrap hover:opacity-60 sm:text-2xl"
+				class="text-base leading-none font-bold whitespace-nowrap hover:opacity-60 sm:text-2xl"
 				>Void Projects</a
 			>
 		</div>
-		<nav class="flex items-center gap-1 text-sm sm:gap-3">
+		<nav class="flex items-center gap-0 text-xs sm:gap-3 sm:text-sm">
 			{#each LINKS as link (link.href)}
 				{#if link.children}
 					<div
@@ -106,14 +107,14 @@
 							<a
 								href={link.href}
 								aria-current={isCurrent(link.href) ? 'page' : undefined}
-								class="{linkClass(inSection(link))} pr-1">{link.label}</a
+								class="{linkClass(inSection(link))} pr-1 sm:pr-1">{link.label}</a
 							>
 							<button
 								type="button"
 								aria-label="Show pages under {link.label}"
 								aria-expanded={branchOpen}
 								onclick={() => (branchOpen = !branchOpen)}
-								class="mr-1 grid size-5 place-items-center rounded-full text-foreground/50 hover:text-foreground"
+								class="mr-1 grid size-6 place-items-center rounded-full text-foreground/50 hover:text-foreground"
 							>
 								<svg
 									viewBox="0 0 10 10"

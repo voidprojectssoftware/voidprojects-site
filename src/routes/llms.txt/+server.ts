@@ -66,6 +66,7 @@ ${FLOW.loopLabel}
 - [Websites for causes](${absoluteUrl(PAGES.causes.path)}): ${PAGES.causes.description}
 - [Home](${absoluteUrl(PAGES.home.path)}): ${PAGES.home.description}
 - [Blog](${absoluteUrl(PAGES.blog.path)}): ${PAGES.blog.description}
+- [Our brand](${absoluteUrl(PAGES.brand.path)}): ${PAGES.brand.description}
 
 ## Sites we have built
 

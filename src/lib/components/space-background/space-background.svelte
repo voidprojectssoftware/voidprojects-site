@@ -16,6 +16,8 @@
 	import { base } from '$app/paths';
 	import { lstHours, ciToRgb, type GeoLocation } from '$lib/sky/astro.js';
 	import { decode as decodeCatalog } from '$lib/sky/catalog-format.js';
+	import SkyExplainer from './sky-explainer.svelte';
+	import { SKY_CONFIG as CONFIG, PROJECT_MS, catalogStats, skyFacts } from './sky-facts.svelte.js';
 
 	let canvas: HTMLCanvasElement;
 
@@ -36,31 +38,6 @@
 		const region = (d.principalSubdivisionCode || '').split('-')[1] || d.countryCode || '';
 		return region ? `${city}, ${region}` : city;
 	}
-
-	// All the knobs in one place.
-	const CONFIG = {
-		// A couple of fixed vantage points (great dark-sky sites). Geolocation can
-		// override these at runtime, see `useGeolocation` / the skyView console API.
-		vantages: [
-			{ name: 'Memphis, TN', lat: 35.1495, lon: -90.049 },
-			{ name: 'Mauna Kea, Hawaii', lat: 19.8207, lon: -155.4681 },
-			{ name: 'Atacama, Chile', lat: -24.6272, lon: -70.4039 }
-		] as GeoLocation[],
-		defaultVantage: 0,
-		useGeolocation: false, // flip on (or call skyView.useMyLocation()) to prompt
-
-		lookAzimuth: 180, // compass direction the camera faces (deg; 180 = due south)
-		lookAltitude: 52, // how high it looks (deg above horizon)
-		fov: 96, // field of view (deg)
-
-		magLimit: 6.5, // hide stars fainter than this (data goes to 6.5)
-		sizeBase: 0.35, // radius of the faintest stars (px)
-		sizePerMag: 0.27, // extra radius per magnitude brighter
-		alphaFloor: 0.16, // dimmest stars
-		twinkle: 0.28, // 0 = none .. 1 = full blink
-		parallax: 4, // max px the field shifts with the pointer
-		timeScale: 1 // 1 = real time; raise to speed up the sky's rotation
-	};
 
 	type Star = {
 		ra: number; // hours
@@ -133,7 +110,6 @@
 		const CORE_K = 2.5; // core sprite draw diameter = star size × this
 		const HALO_K = 4.8; // halo (bloom) sprite draw diameter = star size × this
 		const BLOOM_MIN = 1.7; // star size above which the halo pass runs (matches the old cutoff)
-		const PROJECT_MS = 100; // reproject the (slowly drifting) sky at most this often
 
 		const makeSprite = (rgb: string, halo: boolean): HTMLCanvasElement => {
 			const c = document.createElement('canvas');
@@ -210,6 +186,8 @@
 				});
 			}
 			stars = next;
+			catalogStats.stars = next.length;
+			catalogStats.bytes = buffer.byteLength;
 			projectDirty = true; // new star set — project it before the next draw
 			sync();
 		};
@@ -426,15 +404,18 @@
 	<div class="grain absolute inset-0"></div>
 </div>
 
-<button
-	type="button"
-	onclick={() => requestLocation()}
-	disabled={locating}
-	title="Use my location"
-	class="fixed bottom-4 left-4 z-10 hidden cursor-pointer text-xs tracking-wide text-foreground/25 transition-opacity hover:text-foreground/60 disabled:cursor-progress dark:sm:block"
->
-	{locating ? 'Locating…' : skyLabel}
-</button>
+<div class="fixed bottom-4 left-4 z-10 hidden items-center gap-1.5 dark:sm:flex">
+	<button
+		type="button"
+		onclick={() => requestLocation()}
+		disabled={locating}
+		title="Use my location"
+		class="cursor-pointer text-xs tracking-wide text-foreground/25 transition-opacity hover:text-foreground/60 disabled:cursor-progress"
+	>
+		{locating ? 'Locating…' : skyLabel}
+	</button>
+	<SkyExplainer {...skyFacts()} />
+</div>
 
 <style>
 	/* flat deep-space backdrop */
