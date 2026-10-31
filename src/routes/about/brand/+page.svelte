@@ -83,8 +83,8 @@
 		Nothing here sits still.
 	</h1>
 	<p class="max-w-2xl pt-6 text-lg leading-relaxed text-balance text-foreground/70">
-		Two things make Void Projects look like Void Projects: a logo that is drawn fresh for every
-		visit, and a site where things drift as if there were no gravity. Here is where both come from.
+		Two things make Void Projects: the inspiration that drives our projects, and our ever-changing
+		approach to all things tech.
 	</p>
 </Section>
 
