@@ -276,8 +276,7 @@
 	<div class="mx-auto flex max-w-3xl flex-col items-center gap-4 pb-12 text-center">
 		<h2 class="text-3xl font-bold tracking-tight sm:text-4xl">The sky behind every page</h2>
 		<p class="text-lg leading-relaxed text-balance text-foreground/70">
-			The stars behind this page are the real night sky, as it looks right now. Here is how they get
-			there.
+			The stars behind this page are the real night sky, as it looks right now. Because why not?
 		</p>
 	</div>
 	<GlassCard class="gap-12 p-6 text-sm sm:p-10 sm:text-base">
