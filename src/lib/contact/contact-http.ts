@@ -1,12 +1,21 @@
 // The /api/contact contract, shared by the Azure Function (api/) and the Vite dev
 // middleware so local dev validates and answers exactly as production does.
 import { CONTACT_KINDS, type ContactKind } from '$lib/content/websites.js';
+import { RateLimiter, rateKeyForIp, type RateRule } from './rate-limit.js';
+import { MAX_TOKEN_LENGTH, type VerifyTurnstile } from './turnstile.js';
 
 export interface ContactSubmission {
 	name: string;
 	email: string;
 	kind: ContactKind;
 	message: string;
+	agent?: { name?: string }; // set on the agent path; name is self-reported and unverified, absent when unnamed
+}
+
+export interface ContactRequest {
+	contentType: string | null;
+	body: string;
+	clientIp: string; // best effort and spoofable; see CONTACT_RATE_LIMITS
 }
 
 export interface ContactResponse {
@@ -21,21 +30,61 @@ export type Deliver = (submission: ContactSubmission) => Promise<void>;
 
 export const MAX_BODY_BYTES = 16 * 1024;
 
-export const LIMITS = { name: 200, email: 320, message: 5000 };
+export const LIMITS = { name: 200, email: 320, message: 5000, agent: 100 };
+
+// The browser form proves a person with Turnstile; the agent path (documented in
+// /llms.txt) skips it, so anyone can claim to be an agent. Its limits
+// are what make that claim worthless to a spammer: a per-IP cap, and a global cap that
+// holds however many IPs a flood rotates through. Exhausting the global cap only
+// closes the agent path for the hour; the form and email keep working. Agent mail is
+// also tagged in the subject so it can be filtered.
+export const CONTACT_RATE_LIMITS = {
+	formPerIp: { limit: 10, windowMs: 60 * 60_000 },
+	agentPerIp: { limit: 3, windowMs: 60 * 60_000 },
+	agentGlobal: { limit: 20, windowMs: 60 * 60_000 }
+} satisfies Record<string, RateRule>;
+
+export type ContactLimiters = Record<keyof typeof CONTACT_RATE_LIMITS, RateLimiter>;
+
+export function contactLimiters(
+	rules: Record<keyof typeof CONTACT_RATE_LIMITS, RateRule> = CONTACT_RATE_LIMITS
+): ContactLimiters {
+	return {
+		formPerIp: new RateLimiter(rules.formPerIp),
+		agentPerIp: new RateLimiter(rules.agentPerIp),
+		agentGlobal: new RateLimiter(rules.agentGlobal)
+	};
+}
+
+export interface ContactDeps {
+	deliver: Deliver;
+	verify: VerifyTurnstile;
+	limiters: ContactLimiters;
+	now?: () => number;
+}
 const EMAIL_SHAPE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const SUCCESS = { ok: true };
 
-function json(status: number, payload: unknown): ContactResponse {
+function json(
+	status: number,
+	payload: unknown,
+	extraHeaders: Record<string, string> = {}
+): ContactResponse {
 	return {
 		status,
 		headers: {
 			'Content-Type': 'application/json; charset=utf-8',
 			'Cache-Control': 'no-store',
-			'X-Content-Type-Options': 'nosniff'
+			'X-Content-Type-Options': 'nosniff',
+			...extraHeaders
 		},
 		body: JSON.stringify(payload)
 	};
+}
+
+function tooMany(retryAfter: number, error: string): ContactResponse {
+	return json(429, { error }, { 'Retry-After': String(retryAfter) });
 }
 
 function text(value: unknown): string {
@@ -72,12 +121,15 @@ export function validateContact(
 }
 
 // `website` is a honeypot hidden from people; a bot that fills it gets the same
-// success body and nothing is delivered.
+// success body and nothing is delivered. A `turnstileToken` (only the browser form
+// has one) selects the form path; every other request, named by an `agent` field or
+// not, takes the agent path (no Turnstile, stricter limits), so agents following an
+// older /llms.txt without `agent` keep working.
 export async function contactResponse(
-	contentType: string | null,
-	body: string,
-	deliver: Deliver
+	request: ContactRequest,
+	deps: ContactDeps
 ): Promise<ContactResponse> {
+	const { contentType, body } = request;
 	if (!contentType?.toLowerCase().startsWith('application/json')) {
 		return json(415, { error: 'Content-Type must be application/json.' });
 	}
@@ -99,9 +151,47 @@ export async function contactResponse(
 
 	const result = validateContact(input);
 	if ('error' in result) return json(400, { error: result.error });
+	const raw = input as Record<string, unknown>;
+	const agent = text(raw.agent);
+	const token = typeof raw.turnstileToken === 'string' ? raw.turnstileToken.trim() : '';
+	const now = deps.now?.() ?? Date.now();
+	const ipKey = rateKeyForIp(request.clientIp);
+	const { limiters } = deps;
 
+	if (agent || !token) {
+		if (agent.length > LIMITS.agent) {
+			return json(400, { error: `Agent must be at most ${LIMITS.agent} characters.` });
+		}
+		const wait = limiters.agentPerIp.take(ipKey, now);
+		if (wait) return tooMany(wait, 'Too many agent requests from this address. Try later.');
+		const globalWait = limiters.agentGlobal.take('all', now);
+		if (globalWait) {
+			return tooMany(
+				globalWait,
+				'The agent endpoint is busy. Try later, or have the person use the contact form.'
+			);
+		}
+		return send({ ...result.submission, agent: agent ? { name: agent } : {} }, deps.deliver);
+	}
+
+	if (token.length > MAX_TOKEN_LENGTH) {
+		return json(400, { error: 'The spam check token is too long. Reload the page and try again.' });
+	}
+	const verdict = await deps.verify(token);
+	if (verdict === 'unavailable') {
+		return json(503, { error: 'The spam check is unavailable right now.' });
+	}
+	if (verdict === 'rejected') {
+		return json(403, { error: 'The spam check failed. Reload the page and try again.' });
+	}
+	const wait = limiters.formPerIp.take(ipKey, now);
+	if (wait) return tooMany(wait, 'Too many messages from this address. Try again later.');
+	return send(result.submission, deps.deliver);
+}
+
+async function send(submission: ContactSubmission, deliver: Deliver): Promise<ContactResponse> {
 	try {
-		await deliver(result.submission);
+		await deliver(submission);
 	} catch {
 		return json(502, { error: 'The message could not be delivered.' });
 	}

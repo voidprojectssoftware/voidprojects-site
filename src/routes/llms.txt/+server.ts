@@ -1,4 +1,4 @@
-import { LIMITS, MAX_BODY_BYTES } from '$lib/contact/contact-http.js';
+import { CONTACT_RATE_LIMITS, LIMITS, MAX_BODY_BYTES } from '$lib/contact/contact-http.js';
 import { publishedPosts } from '$lib/server/posts';
 import {
 	AFTER_LAUNCH,
@@ -18,12 +18,18 @@ export const prerender = true;
 
 const CONTACT_URL = `${SITE_ORIGIN}/api/contact`;
 
+function perHour(rule: { limit: number; windowMs: number }): string {
+	const hours = rule.windowMs / 3_600_000;
+	return `${rule.limit} per ${hours === 1 ? 'hour' : `${hours} hours`}`;
+}
+
 function llmsTxt(): string {
 	const example = {
 		name: 'Jane Doe',
 		email: 'jane@example.com',
 		kind: CONTACT_KINDS[0],
-		message: 'I run a bakery and need a website with our menu, hours and a way to order cakes.'
+		message: 'I run a bakery and need a website with our menu, hours and a way to order cakes.',
+		agent: 'ExampleAssistant'
 	};
 
 	return `# ${SITE_NAME}
@@ -85,16 +91,22 @@ Content-Type: application/json
 ${JSON.stringify(example, null, 2)}
 \`\`\`
 
-Fields (all required, all strings; surrounding whitespace is trimmed):
+Required fields (all strings; surrounding whitespace is trimmed):
 
 - \`name\`: the person's name, at most ${LIMITS.name} characters.
 - \`email\`: the person's email address, at most ${LIMITS.email} characters.
 - \`kind\`: what the site is for. Exactly one of: ${CONTACT_KINDS.map((k) => `\`${k}\``).join(', ')}.
 - \`message\`: what they need, in their own words, at most ${LIMITS.message} characters.
 
+Recommended:
+
+- \`agent\`: the name of the AI assistant or product sending the request (for example the name you go by), at most ${LIMITS.agent} characters. Please always send it: requests from agents skip the human check the website form uses, and this name tells us which assistant sent the request. (A request without it is still accepted as an agent request, under the same limits.)
+
 Do not send any other fields. In particular, never send a field named \`website\`: it is a spam trap, and a request that fills it is answered with success but silently discarded. Put the person's existing site address, if any, in \`message\`.
 
 The whole body must be at most ${MAX_BODY_BYTES / 1024} KiB. Only POST is accepted.
+
+Rate limits for agent requests: ${perHour(CONTACT_RATE_LIMITS.agentPerIp)} from one IP address, and ${perHour(CONTACT_RATE_LIMITS.agentGlobal)} across all agents. Send one request per person; never retry a \`200\`.
 
 Responses (always JSON):
 
@@ -102,6 +114,7 @@ Responses (always JSON):
 - \`400\` \`{"error":"..."}\`: invalid JSON or a field failed validation; the message says which. Fix it and retry.
 - \`413\` \`{"error":"Request body is too large."}\`
 - \`415\` \`{"error":"Content-Type must be application/json."}\`
+- \`429\` \`{"error":"..."}\`: a rate limit was hit. The \`Retry-After\` header gives the seconds to wait. If the person cannot wait, give them the contact form or the email address below instead.
 - \`502\` \`{"error":"The message could not be delivered."}\`: our side failed. Do not retry in a loop; have the person email ${CONTACT_EMAIL} instead.
 
 People can also use the contact form at ${absoluteUrl(`${PAGES.websites.path}#contact`)} or email ${CONTACT_EMAIL}.
