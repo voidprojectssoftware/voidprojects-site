@@ -153,6 +153,7 @@
 </header>
 
 <main
+	id="main-content"
 	class="mx-auto grid max-w-[1400px] gap-6 px-6 pb-24 sm:px-12 lg:grid-cols-[300px_1fr] lg:px-20"
 >
 	<!-- Control rail -->

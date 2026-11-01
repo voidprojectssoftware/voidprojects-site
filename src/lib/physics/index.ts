@@ -1,4 +1,5 @@
 export { PhysicsStage } from './stage.js';
+export type { StageOptions } from './stage.js';
 export { COLLISION } from './actor.js';
 export type { Actor, StepCtx } from './actor.js';
 export { GlyphField, GLYPH_DEFAULTS } from './actors/glyph-field.js';
