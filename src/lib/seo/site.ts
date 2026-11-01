@@ -28,13 +28,19 @@ export const PAGES = {
 		path: '/websites',
 		title: 'Websites by Void Projects',
 		description:
-			'Custom websites from engineers with years of enterprise experience, sped up by our own AI tooling. You talk to a person, never touch the technical side, and pay our costs plus 30%.'
+			'Custom websites from engineers with years of enterprise experience, sped up by our own AI tooling. You talk to a person and never touch the technical side. Static sites are $25 a month, and if you already pay for a site, we match it and take over hosting and upkeep.'
 	},
 	causes: {
 		path: CAUSES.href,
 		title: 'Websites for causes | Void Projects',
 		description:
 			'Memorials, cancer support, fundraisers, community groups. If your site exists to help people, Void Projects will do our best to build it for free.'
+	},
+	brand: {
+		path: '/about/brand',
+		title: 'Our brand | Void Projects',
+		description:
+			'Why the Void Projects logo is drawn fresh on every visit from real NASA/JPL spacecraft trajectories, and why everything on the site floats.'
 	},
 	blog: {
 		path: '/blog',
@@ -43,10 +49,11 @@ export const PAGES = {
 	}
 } satisfies Record<string, PageMeta>;
 
-// "Free when we can make it so. ..." : the pricing section read as sentences.
-export const PRICING_SUMMARY = PRICING.map(
-	(p) => `${p.figure.charAt(0).toUpperCase()}${p.figure.slice(1)} ${p.body}`
-).join(' ');
+// "Free for causes, ... $25 a month ..." : the pricing section read as sentences.
+export const PRICING_SUMMARY = PRICING.map((p) => {
+	const lead = p.spoken ?? p.figure;
+	return `${lead.charAt(0).toUpperCase()}${lead.slice(1)} ${p.body}`;
+}).join(' ');
 
 type JsonLd = Record<string, unknown>;
 

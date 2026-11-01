@@ -11,7 +11,10 @@
 </svelte:head>
 
 <SiteHeader transparent={false} />
-<Section class="min-h-[calc(100dvh-4rem)] bg-transparent">
-	<!-- eslint-disable-next-line svelte/no-at-html-tags -- post HTML is rendered at build time from our own markdown in src/lib/content/blog, never user input -->
-	{@html data.html}
-</Section>
+
+<main id="main-content" class="flex flex-col">
+	<Section class="min-h-[calc(100dvh-4rem)] bg-transparent">
+		<!-- eslint-disable-next-line svelte/no-at-html-tags -- post HTML is rendered at build time from our own markdown in src/lib/content/blog, never user input -->
+		{@html data.html}
+	</Section>
+</main>

@@ -40,6 +40,13 @@
 	{#if faviconHref}<link rel="icon" href={faviconHref} />{/if}
 </svelte:head>
 
+<!-- First in the DOM so it is the first Tab stop; every page's <main> carries the id. -->
+<a
+	href="#main-content"
+	class="sr-only rounded-full bg-background text-sm font-semibold ring-1 ring-primary focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:px-4 focus:py-2"
+	>Skip to content</a
+>
+
 <SpaceBackground />
 
 <div class="flex flex-col">
