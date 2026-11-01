@@ -7,7 +7,12 @@
 	import { PageMeta } from '$lib/components/page-meta/index.js';
 	import { SkyExplainerBody, skyFacts } from '$lib/components/space-background/index.js';
 	import { PAGES } from '$lib/seo/site.js';
-	import { DATA, buildTrajectory } from '$lib/trajectory';
+	import {
+		CRAFT_META,
+		buildTrajectory,
+		loadTrajectories,
+		type TrajectoryData
+	} from '$lib/trajectory';
 	import { renderSpec } from '$lib/brand/labs/trajectory-logo.js';
 	import { pickMarkSpec, randomSeed } from '$lib/brand/mark.js';
 	import { brandColor } from '$lib/brand/colors.js';
@@ -21,18 +26,23 @@
 	let visitSeed = $state<number | null>(null);
 	let seed = $state<number | null>(null);
 	let ink = $state('');
+	let data = $state.raw<TrajectoryData | null>(null);
 	onMount(async () => {
-		const { VISIT_SEED } = await import('$lib/brand/visit-seed.js');
+		const [{ VISIT_SEED }, loaded] = await Promise.all([
+			import('$lib/brand/visit-seed.js'),
+			loadTrajectories()
+		]);
 		ink = brandColor('--color-primary');
+		data = loaded;
 		visitSeed = seed = VISIT_SEED;
 	});
 
-	const spec = $derived(seed === null ? null : pickMarkSpec(seed, ink || undefined));
-	const craft = $derived(spec && DATA.craft.find((c) => c.id === spec.craftId));
-	const markSvg = $derived(spec ? renderSpec(spec).svg : '');
+	const spec = $derived(seed === null || !data ? null : pickMarkSpec(data, seed, ink || undefined));
+	const craft = $derived(spec && CRAFT_META.find((c) => c.id === spec.craftId));
+	const markSvg = $derived(spec && data ? renderSpec(data, spec).svg : '');
 	const pathSvg = $derived(
-		spec
-			? buildTrajectory({
+		spec && data
+			? buildTrajectory(data, {
 					craft: [spec.craftId],
 					scale: spec.scale,
 					maxAU: spec.reach,
@@ -147,7 +157,7 @@
 					our logo will be different, and hopefully our projects will stay constantly evolving.
 				</p>
 				<p class="leading-relaxed text-foreground/65">
-					Each mark starts from a real spacecraft. We took the paths of {DATA.craft.length} probes from
+					Each mark starts from a real spacecraft. We took the paths of {CRAFT_META.length} probes from
 					NASA/JPL HORIZONS, one position a month, measured from the Sun and flattened onto the plane
 					the planets orbit in, as if you were looking down on the solar system from above.
 				</p>
@@ -210,10 +220,10 @@
 
 		<div class="flex flex-col gap-3 pt-10">
 			<h3 class="text-sm font-semibold tracking-[0.14em] text-foreground/60 uppercase">
-				The {DATA.craft.length} probes
+				The {CRAFT_META.length} probes
 			</h3>
 			<ul class="flex flex-wrap gap-2">
-				{#each DATA.craft as c (c.id)}
+				{#each CRAFT_META as c (c.id)}
 					<li class="rounded-full bg-foreground/8 px-3 py-1 text-sm text-foreground/75">
 						{c.name} <span class="text-foreground/45">{launchYear(c.launch)}</span>
 					</li>

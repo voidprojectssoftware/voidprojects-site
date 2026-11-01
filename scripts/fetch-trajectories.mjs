@@ -1,7 +1,9 @@
 // Pull heliocentric ecliptic trajectories for deep-space probes from NASA/JPL
-// HORIZONS and write a compact JSON the brand renderer reads. Position is
-// projected onto the ecliptic X-Y plane (the "viewed from north ecliptic pole"
-// view); the Z climb out of the plane is dropped. Re-run: npm run gen:trajectories
+// HORIZONS and write trajectories.json, the source of truth. The browser does not
+// import it: gen-trajectory-bin.mjs turns it into trajectories.bin plus
+// trajectory-meta.json. Position is projected onto the ecliptic X-Y plane (the
+// "viewed from north ecliptic pole" view); the Z climb out of the plane is
+// dropped. Re-run both steps with: npm run gen:trajectories
 //
 // COMMAND is the SPICE spacecraft id. Each craft has its own coverage window, so
 // if a guessed start/stop falls outside it HORIZONS reports the valid bounds and

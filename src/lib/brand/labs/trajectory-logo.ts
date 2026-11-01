@@ -11,7 +11,7 @@
 // spec straight to renderSpec so every knob is adjustable. The derivation's RNG
 // draw order is fixed, so a given seed always yields the same mark.
 
-import { DATA, type TrajectoryCraft } from '$lib/trajectory';
+import type { TrajectoryCraft, TrajectoryData } from '$lib/trajectory';
 
 export type TLPalette = 'brand' | 'aurum' | 'argent' | 'mono' | 'spectral' | 'duo';
 export type TLScale = 'linear' | 'sqrt' | 'log';
@@ -105,8 +105,8 @@ const INK: Record<Exclude<TLPalette, 'spectral'>, string> = {
 };
 const DUO_B = '#e8c58a';
 
-const craftById = (id: string): TrajectoryCraft =>
-	DATA.craft.find((c) => c.id === id) ?? DATA.craft[0];
+const craftById = (data: TrajectoryData, id: string): TrajectoryCraft =>
+	data.craft.find((c) => c.id === id) ?? data.craft[0];
 
 function scaleR(r: number, reach: number, kind: TLScale): number {
 	const t =
@@ -204,10 +204,10 @@ function windowSlice(pts: [number, number][], mode: TLSegment): [number, number]
 
 // Roll a full spec from a seed + globals. RNG draw order is fixed so a seed maps
 // to a stable mark; new fields (smoothing, bg) are constants that consume no draw.
-export function deriveSpec(seed: number, g: TLGlobals): TLSpec {
+export function deriveSpec(data: TrajectoryData, seed: number, g: TLGlobals): TLSpec {
 	const rnd = mulberry32(seed);
-	const pool = DATA.craft.filter((c) => g.pool.includes(c.id));
-	const craft = pool.length ? pool[Math.floor(rnd() * pool.length)] : DATA.craft[0];
+	const pool = data.craft.filter((c) => g.pool.includes(c.id));
+	const craft = pool.length ? pool[Math.floor(rnd() * pool.length)] : data.craft[0];
 	const last = craft.points[craft.points.length - 1];
 	const craftMaxR = Math.hypot(last[0], last[1]);
 
@@ -284,8 +284,8 @@ export function deriveSpec(seed: number, g: TLGlobals): TLSpec {
 
 // One arm of the emblem in viewBox coordinates: the craft's path cropped to the
 // reach, windowed to the segment, projected through the radial scale.
-function projectArm(spec: TLSpec): [number, number][] {
-	const craft = craftById(spec.craftId);
+function projectArm(data: TrajectoryData, spec: TLSpec): [number, number][] {
+	const craft = craftById(data, spec.craftId);
 	const rot = (spec.rotationDeg * Math.PI) / 180;
 
 	let cut = craft.points.length;
@@ -307,8 +307,8 @@ function projectArm(spec: TLSpec): [number, number][] {
 // How much a spec actually draws, as fractions of the content radius: `extent` is
 // how far the arm reaches from the center, `length` is the arm's path length.
 // Low values mean the symmetric copies collapse into a small blob.
-export function armDetail(spec: TLSpec): { extent: number; length: number } {
-	const proj = projectArm(spec);
+export function armDetail(data: TrajectoryData, spec: TLSpec): { extent: number; length: number } {
+	const proj = projectArm(data, spec);
 	let extent = 0;
 	let length = 0;
 	for (let i = 0; i < proj.length; i++) {
@@ -318,10 +318,10 @@ export function armDetail(spec: TLSpec): { extent: number; length: number } {
 	return { extent: extent / R, length: length / R };
 }
 
-export function renderSpec(spec: TLSpec): BuiltTL {
-	const craft = craftById(spec.craftId);
+export function renderSpec(data: TrajectoryData, spec: TLSpec): BuiltTL {
+	const craft = craftById(data, spec.craftId);
 	const w = 1.1 * spec.stroke;
-	const proj = projectArm(spec);
+	const proj = projectArm(data, spec);
 
 	let fragment = '';
 	if (spec.style !== 'dots') {
@@ -380,8 +380,8 @@ export function renderSpec(spec: TLSpec): BuiltTL {
 	};
 }
 
-export function buildTrajectoryLogo(seed: number, g: TLGlobals): BuiltTL {
-	return renderSpec(deriveSpec(seed, g));
+export function buildTrajectoryLogo(data: TrajectoryData, seed: number, g: TLGlobals): BuiltTL {
+	return renderSpec(data, deriveSpec(data, seed, g));
 }
 
 // Stable per-tile seed from a base seed and index (matches the constellation lab).
