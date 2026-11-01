@@ -40,16 +40,20 @@ export function markSpec(seed: number, ink?: string): TLSpec {
 // rendered as an image is isolated and can't resolve var(). Omitted, the
 // palette default is used. Weak rolls are re-rolled from seeds derived from
 // `seed`, so a given seed still always yields the same mark.
-export function generateMarkSvg(seed: number = randomSeed(), ink?: string): string {
+export function pickMarkSpec(seed: number = randomSeed(), ink?: string): TLSpec {
 	let best: TLSpec | undefined;
 	let bestScore = -1;
 	for (let i = 0; i < MAX_ROLLS; i++) {
 		const spec = markSpec(i ? seedFor(seed, i) : seed, ink);
 		const score = quality(armDetail(spec)); // >= 1 passes every threshold
-		if (score >= 1) return renderSpec(spec).svg;
+		if (score >= 1) return spec;
 		if (score > bestScore) [best, bestScore] = [spec, score];
 	}
-	return renderSpec(best!).svg;
+	return best!;
+}
+
+export function generateMarkSvg(seed: number = randomSeed(), ink?: string): string {
+	return renderSpec(pickMarkSpec(seed, ink)).svg;
 }
 
 export function randomSeed(): number {
