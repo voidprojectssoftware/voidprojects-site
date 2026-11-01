@@ -618,7 +618,6 @@
 								role="Co-Founder"
 								subrole={member.subrole}
 								skills={member.skills}
-								email={member.email}
 								linkedin={member.linkedin}
 								desc={member.desc}
 							/>

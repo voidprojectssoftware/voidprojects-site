@@ -128,7 +128,10 @@
 		URL.revokeObjectURL(url);
 	}
 	function downloadSvg(i: number) {
-		saveBlob(new Blob([tiles[i].svg], { type: 'image/svg+xml' }), `voidprojects-orbitmark-${seeds[i].toString(36)}.svg`);
+		saveBlob(
+			new Blob([tiles[i].svg], { type: 'image/svg+xml' }),
+			`voidprojects-orbitmark-${seeds[i].toString(36)}.svg`
+		);
 		toast(`Downloaded mark #${String(i + 1).padStart(2, '0')}`);
 	}
 	// Rasterize the mark's SVG onto a canvas. A transparent background is kept when
@@ -189,7 +192,11 @@
 	const bgShapes: TLBgShape[] = ['none', 'rect', 'rounded', 'circle', 'hex', 'diamond'];
 	// `space` is the dark backdrop the marks sit on by default.
 	const bgFills: { id: string; color: string; swatch: string }[] = [
-		{ id: 'none', color: 'none', swatch: 'repeating-conic-gradient(#333 0 90deg,#222 0 180deg) 0/8px 8px' },
+		{
+			id: 'none',
+			color: 'none',
+			swatch: 'repeating-conic-gradient(#333 0 90deg,#222 0 180deg) 0/8px 8px'
+		},
 		{ id: 'space', color: '#0f1220', swatch: '#0f1220' },
 		{ id: 'ink', color: '#0b0d13', swatch: '#0b0d13' },
 		{ id: 'violet', color: '#171029', swatch: '#171029' },
@@ -289,7 +296,9 @@
 	<span class="text-xs tracking-[0.22em] text-foreground/40 uppercase">Orbit Mark Lab</span>
 </header>
 
-<main class="mx-auto grid max-w-[1400px] gap-6 px-6 pb-24 sm:px-12 lg:grid-cols-[300px_1fr] lg:px-20">
+<main
+	class="mx-auto grid max-w-[1400px] gap-6 px-6 pb-24 sm:px-12 lg:grid-cols-[300px_1fr] lg:px-20"
+>
 	<aside class="lg:sticky lg:top-20 lg:h-fit">
 		<GlassCard class="flex flex-col gap-6 p-6">
 			<div>
@@ -436,7 +445,8 @@
 					onclick={() => downloadSvg(i)}
 					title="Download SVG"
 					aria-label="Download mark {i + 1}"
-					class="tool right-11 opacity-0 group-hover:opacity-100"><Download class="size-3.5" /></button
+					class="tool right-11 opacity-0 group-hover:opacity-100"
+					><Download class="size-3.5" /></button
 				>
 				<button
 					type="button"
@@ -463,7 +473,8 @@
 					onclick={() => downloadPng(i)}
 					title="Download PNG ({pngSize}px)"
 					aria-label="Download PNG mark {i + 1}"
-					class="tool left-11 opacity-0 group-hover:opacity-100"><ImageDown class="size-3.5" /></button
+					class="tool left-11 opacity-0 group-hover:opacity-100"
+					><ImageDown class="size-3.5" /></button
 				>
 
 				<span
@@ -518,12 +529,25 @@
 						</label>
 
 						<div>
-							<div class="edrow"><span class="edlabel">Symmetry</span><span class="edval">{spec.order}×</span></div>
+							<div class="edrow">
+								<span class="edlabel">Symmetry</span><span class="edval">{spec.order}×</span>
+							</div>
 							<input type="range" min="1" max="8" step="1" bind:value={spec.order} class="range" />
 						</div>
 						<div>
-							<div class="edrow"><span class="edlabel">Rotation</span><span class="edval">{Math.round(spec.rotationDeg)}°</span></div>
-							<input type="range" min="0" max="360" step="1" bind:value={spec.rotationDeg} class="range" />
+							<div class="edrow">
+								<span class="edlabel">Rotation</span><span class="edval"
+									>{Math.round(spec.rotationDeg)}°</span
+								>
+							</div>
+							<input
+								type="range"
+								min="0"
+								max="360"
+								step="1"
+								bind:value={spec.rotationDeg}
+								class="range"
+							/>
 						</div>
 						<label class="flex items-center justify-between">
 							<span class="edlabel">Mirror</span><Switch bind:checked={spec.mirror} />
@@ -533,36 +557,75 @@
 							<span class="edlabel">Radial scale</span>
 							<div class="mt-1 flex gap-1.5">
 								{#each scaleOpts as s (s)}
-									<button type="button" onclick={() => (spec.scale = s)} aria-pressed={spec.scale === s} class="chip flex-1 capitalize">{s}</button>
+									<button
+										type="button"
+										onclick={() => (spec.scale = s)}
+										aria-pressed={spec.scale === s}
+										class="chip flex-1 capitalize">{s}</button
+									>
 								{/each}
 							</div>
 						</div>
 						<div>
-							<div class="edrow"><span class="edlabel">Reach</span><span class="edval">{spec.reach} AU</span></div>
+							<div class="edrow">
+								<span class="edlabel">Reach</span><span class="edval">{spec.reach} AU</span>
+							</div>
 							<input type="range" min="6" max="74" step="1" bind:value={spec.reach} class="range" />
 						</div>
 						<div>
 							<span class="edlabel">Segment</span>
 							<div class="mt-1 flex gap-1.5">
 								{#each segOpts as s (s)}
-									<button type="button" onclick={() => (spec.segment = s)} aria-pressed={spec.segment === s} class="chip flex-1 capitalize">{s}</button>
+									<button
+										type="button"
+										onclick={() => (spec.segment = s)}
+										aria-pressed={spec.segment === s}
+										class="chip flex-1 capitalize">{s}</button
+									>
 								{/each}
 							</div>
 						</div>
 
 						<div>
-							<div class="edrow"><span class="edlabel">Smoothing</span><span class="edval">{spec.smoothing.toFixed(2)}</span></div>
-							<input type="range" min="0" max="1.5" step="0.05" bind:value={spec.smoothing} class="range" />
+							<div class="edrow">
+								<span class="edlabel">Smoothing</span><span class="edval"
+									>{spec.smoothing.toFixed(2)}</span
+								>
+							</div>
+							<input
+								type="range"
+								min="0"
+								max="1.5"
+								step="0.05"
+								bind:value={spec.smoothing}
+								class="range"
+							/>
 						</div>
 						<div>
-							<div class="edrow"><span class="edlabel">Stroke</span><span class="edval">{spec.stroke.toFixed(2)}×</span></div>
-							<input type="range" min="0.5" max="2" step="0.05" bind:value={spec.stroke} class="range" />
+							<div class="edrow">
+								<span class="edlabel">Stroke</span><span class="edval"
+									>{spec.stroke.toFixed(2)}×</span
+								>
+							</div>
+							<input
+								type="range"
+								min="0.5"
+								max="2"
+								step="0.05"
+								bind:value={spec.stroke}
+								class="range"
+							/>
 						</div>
 						<div>
 							<span class="edlabel">Style</span>
 							<div class="mt-1 flex gap-1.5">
 								{#each styleOpts as s (s.id)}
-									<button type="button" onclick={() => (spec.style = s.id)} aria-pressed={spec.style === s.id} class="chip flex-1">{s.label}</button>
+									<button
+										type="button"
+										onclick={() => (spec.style = s.id)}
+										aria-pressed={spec.style === s.id}
+										class="chip flex-1">{s.label}</button
+									>
 								{/each}
 							</div>
 						</div>
@@ -571,7 +634,15 @@
 							<span class="edlabel">Palette</span>
 							<div class="mt-1 flex flex-wrap gap-2">
 								{#each palettes as p (p.id)}
-									<button type="button" onclick={() => (spec.palette = p.id)} aria-pressed={spec.palette === p.id} title={p.label} aria-label={p.label} class="sw" style="background:{p.swatch}"></button>
+									<button
+										type="button"
+										onclick={() => (spec.palette = p.id)}
+										aria-pressed={spec.palette === p.id}
+										title={p.label}
+										aria-label={p.label}
+										class="sw"
+										style="background:{p.swatch}"
+									></button>
 								{/each}
 							</div>
 						</div>
@@ -579,7 +650,12 @@
 							<span class="edlabel">Frame</span>
 							<div class="mt-1 flex flex-wrap gap-1.5">
 								{#each specFrames as fr (fr)}
-									<button type="button" onclick={() => (spec.frame = fr)} aria-pressed={spec.frame === fr} class="chip capitalize">{fr}</button>
+									<button
+										type="button"
+										onclick={() => (spec.frame = fr)}
+										aria-pressed={spec.frame === fr}
+										class="chip capitalize">{fr}</button
+									>
 								{/each}
 							</div>
 						</div>
@@ -591,22 +667,50 @@
 							<span class="edlabel text-primary/80">Background shape</span>
 							<div class="mt-1 flex flex-wrap gap-1.5">
 								{#each bgShapes as s (s)}
-									<button type="button" onclick={() => (spec.bg.shape = s)} aria-pressed={spec.bg.shape === s} class="chip capitalize">{s}</button>
+									<button
+										type="button"
+										onclick={() => (spec.bg.shape = s)}
+										aria-pressed={spec.bg.shape === s}
+										class="chip capitalize">{s}</button
+									>
 								{/each}
 							</div>
 							<div class="mt-3">
-								<div class="edrow"><span class="edlabel">Size</span><span class="edval">{Math.round(spec.bg.size * 100)}%</span></div>
-								<input type="range" min="0.4" max="1.4" step="0.02" bind:value={spec.bg.size} class="range" />
+								<div class="edrow">
+									<span class="edlabel">Size</span><span class="edval"
+										>{Math.round(spec.bg.size * 100)}%</span
+									>
+								</div>
+								<input
+									type="range"
+									min="0.4"
+									max="1.4"
+									step="0.02"
+									bind:value={spec.bg.size}
+									class="range"
+								/>
 							</div>
 							<div class="mt-3">
 								<span class="edlabel">Fill</span>
 								<div class="mt-1 flex flex-wrap items-center gap-2">
 									{#each bgFills as bf (bf.id)}
-										<button type="button" onclick={() => (spec.bg.fill = bf.color)} aria-pressed={spec.bg.fill === bf.color} title={bf.id} aria-label={bf.id} class="sw" style="background:{bf.swatch}"></button>
+										<button
+											type="button"
+											onclick={() => (spec.bg.fill = bf.color)}
+											aria-pressed={spec.bg.fill === bf.color}
+											title={bf.id}
+											aria-label={bf.id}
+											class="sw"
+											style="background:{bf.swatch}"
+										></button>
 									{/each}
 									<!-- current custom color preview (only when it isn't a preset) -->
 									{#if isHex(spec.bg.fill) && !bgFills.some((b) => b.color === spec.bg.fill)}
-										<span class="sw" style="border-color:var(--foreground);background:{spec.bg.fill}" title={spec.bg.fill}></span>
+										<span
+											class="sw"
+											style="border-color:var(--foreground);background:{spec.bg.fill}"
+											title={spec.bg.fill}
+										></span>
 									{/if}
 									<input
 										type="text"
