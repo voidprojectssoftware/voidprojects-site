@@ -10,7 +10,6 @@
 		role,
 		subrole,
 		skills,
-		email,
 		linkedin,
 		desc,
 		layout = 'horizontal'
@@ -21,7 +20,6 @@
 		role: string;
 		subrole: string;
 		skills: string[];
-		email: string;
 		linkedin?: string;
 		desc?: Snippet;
 		layout?: 'horizontal' | 'vertical'; // vertical: photo on top, for side-by-side columns

@@ -311,9 +311,11 @@
 			<div class="grid gap-6 lg:grid-cols-2">
 				<div class="grid overflow-hidden rounded-2xl ring-1 ring-white/10 sm:grid-cols-2">
 					<div class="grid place-items-center p-10 text-[#1a1a1a]" style="background:#ffffff">
+						<!-- eslint-disable-next-line svelte/no-at-html-tags -- FOOTER_BADGE is a static string constant defined in this file -->
 						{@html FOOTER_BADGE}
 					</div>
 					<div class="grid place-items-center p-10 text-white/80" style="background:#0e0e17">
+						<!-- eslint-disable-next-line svelte/no-at-html-tags -- FOOTER_BADGE is a static string constant defined in this file -->
 						{@html FOOTER_BADGE}
 					</div>
 				</div>

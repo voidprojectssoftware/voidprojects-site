@@ -106,7 +106,6 @@
 					role={ENGINEER.role}
 					subrole={ENGINEER.subrole}
 					skills={ENGINEER.skills}
-					email={ENGINEER.email}
 					linkedin={ENGINEER.linkedin}
 				>
 					{#snippet desc()}
