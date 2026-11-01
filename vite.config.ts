@@ -1,4 +1,5 @@
 import tailwindcss from '@tailwindcss/vite';
+import { enhancedImages } from '@sveltejs/enhanced-img';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig, type Plugin } from 'vite';
 import { brandPrimary } from './scripts/brand-primary.mjs';
@@ -50,7 +51,7 @@ function contactApiDev(): Plugin {
 }
 
 export default defineConfig({
-	plugins: [markApiDev(), contactApiDev(), tailwindcss(), sveltekit()],
+	plugins: [markApiDev(), contactApiDev(), tailwindcss(), enhancedImages(), sveltekit()],
 	ssr: {
 		noExternal: ['bits-ui', '@melt-ui/svelte']
 	}
