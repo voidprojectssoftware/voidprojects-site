@@ -99,21 +99,25 @@ export const PRICING: {
 	spoken?: string; // the figure as prose, for PRICING_SUMMARY, when the display form is shorthand
 	body: string;
 	link?: { href: string; label: string };
+	offer: { name: string; usd?: number; monthly?: boolean }; // the JSON-LD Offer; no usd means quoted
 }[] = [
 	{
 		figure: 'Free',
 		body: 'for causes, whenever we can manage it.',
-		link: { href: '/websites/causes', label: 'Building for a cause?' }
+		link: { href: '/websites/causes', label: 'Building for a cause?' },
+		offer: { name: 'Website for a cause', usd: 0 }
 	},
 	{
 		figure: '$25/m',
 		spoken: '$25 a month',
-		body: 'for a static site: business or personal pages that don’t change, with your domain at cost. Already paying for a site? We’ll match what you pay now and take over hosting and upkeep.'
+		body: 'for a static site: business or personal pages that don’t change, with your domain at cost. Already paying for a site? We’ll match what you pay now and take over hosting and upkeep.',
+		offer: { name: 'Static website', usd: 25, monthly: true }
 	},
 	{
 		figure: 'Quote',
 		body: 'for anything dynamic, like live data, accounts, or bookings, or anything that needs higher reliability or extra care. We price it from what hosting and maintaining it costs us.',
-		link: { href: '/websites?preset=quote#contact', label: 'Ask for a quote' }
+		link: { href: '/websites?preset=quote#contact', label: 'Ask for a quote' },
+		offer: { name: 'Dynamic website' }
 	}
 ];
 

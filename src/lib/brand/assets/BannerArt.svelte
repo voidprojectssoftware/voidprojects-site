@@ -6,8 +6,9 @@
 
 	// Size the content off the guaranteed-visible band (the safe zone) when there is
 	// one, so nothing important lands in the crop-away margins. Falls back to the
-	// full height for banners with no safe zone (LinkedIn).
-	const contentH = $derived(spec.safe?.height ?? spec.height);
+	// full height for banners with no safe zone (LinkedIn), capped so the wordmark
+	// still fits the width on near-square banners (share images).
+	const contentH = $derived(Math.min(spec.safe?.height ?? spec.height, spec.width * 0.36));
 	const wordSize = $derived(contentH * 0.26);
 	const tagSize = $derived(contentH * 0.078);
 	const gap = $derived(contentH * 0.04);
@@ -19,18 +20,20 @@
 	const wide = $derived(spec.width / spec.height >= 3);
 
 	// Cross-promotion: each banner points to the *other* social platform plus
-	// GitHub (GitHub on both).
+	// GitHub (GitHub on both). A spec with a `link` shows that one text pill instead.
 	type Platform = 'github' | 'youtube' | 'linkedin';
-	const ctas = $derived<{ platform: Platform; label: string }[]>(
-		spec.platform === 'youtube'
-			? [
-					{ platform: 'linkedin', label: BRAND.linkedin },
-					{ platform: 'github', label: BRAND.github }
-				]
-			: [
-					{ platform: 'youtube', label: BRAND.youtube },
-					{ platform: 'github', label: BRAND.github }
-				]
+	const ctas = $derived<{ platform?: Platform; label: string }[]>(
+		spec.link
+			? [{ label: spec.link }]
+			: spec.platform === 'youtube'
+				? [
+						{ platform: 'linkedin', label: BRAND.linkedin },
+						{ platform: 'github', label: BRAND.github }
+					]
+				: [
+						{ platform: 'youtube', label: BRAND.youtube },
+						{ platform: 'github', label: BRAND.github }
+					]
 	);
 
 	const ICONS: Record<Platform, string> = {
@@ -43,11 +46,13 @@
 	};
 </script>
 
-{#snippet ctaPill(platform: Platform, label: string)}
+{#snippet ctaPill(platform: Platform | undefined, label: string)}
 	<div class="cta" style="font-size:{ctaFont}px">
-		<svg viewBox="0 0 24 24" fill="currentColor" style="width:{iconSize}px;height:{iconSize}px">
-			<path d={ICONS[platform]} />
-		</svg>
+		{#if platform}
+			<svg viewBox="0 0 24 24" fill="currentColor" style="width:{iconSize}px;height:{iconSize}px">
+				<path d={ICONS[platform]} />
+			</svg>
+		{/if}
 		<span>{label}</span>
 	</div>
 {/snippet}
@@ -65,18 +70,18 @@
 			{BRAND.name}
 		</div>
 		<div class="tagline" style="font-size:{tagSize}px;letter-spacing:{tagSize * 0.02}px">
-			{BRAND.tagline}
+			{spec.tagline ?? BRAND.tagline}
 		</div>
 		{#if !wide}
 			<div class="cta-row" style="margin-top:{contentH * 0.03}px;gap:{gap}px">
-				{#each ctas as c (c.platform)}{@render ctaPill(c.platform, c.label)}{/each}
+				{#each ctas as c (c.label)}{@render ctaPill(c.platform, c.label)}{/each}
 			</div>
 		{/if}
 	</div>
 
 	{#if wide}
 		<div class="cta-stack" style="right:{spec.width * 0.04}px;gap:{contentH * 0.06}px">
-			{#each ctas as c (c.platform)}{@render ctaPill(c.platform, c.label)}{/each}
+			{#each ctas as c (c.label)}{@render ctaPill(c.platform, c.label)}{/each}
 		</div>
 	{/if}
 </div>

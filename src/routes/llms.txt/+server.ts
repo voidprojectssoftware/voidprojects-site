@@ -28,13 +28,13 @@ function llmsTxt(): string {
 
 	return `# ${SITE_NAME}
 
-> ${PAGES.websites.description}
+> ${PAGES.websites.summary}
 
 ${SITE_NAME}: ${PAGES.home.description} We build custom websites for people who want one without doing the technical work themselves. ${INSTEAD}
 
 ## What we build
 
-- Custom websites: ${PAGES.websites.description}
+- Custom websites: ${PAGES.websites.summary}
 - Websites for causes: ${CAUSES.body}
 - After launch: ${AFTER_LAUNCH.body}
 
@@ -62,7 +62,7 @@ ${FLOW.loopLabel}
 
 ## Pages
 
-- [Websites](${absoluteUrl(PAGES.websites.path)}): ${PAGES.websites.description}
+- [Websites](${absoluteUrl(PAGES.websites.path)}): ${PAGES.websites.summary}
 - [Websites for causes](${absoluteUrl(PAGES.causes.path)}): ${PAGES.causes.description}
 - [Home](${absoluteUrl(PAGES.home.path)}): ${PAGES.home.description}
 - [Blog](${absoluteUrl(PAGES.blog.path)}): ${PAGES.blog.description}
