@@ -12,8 +12,6 @@ export const CONTACT_KINDS = [
 ] as const;
 export type ContactKind = (typeof CONTACT_KINDS)[number];
 
-export const MARGIN_PERCENT = 30;
-
 // Minecraft-style splash on the hero headline; one is picked at random per load.
 export const SPLASHES = [
 	'We hate Wix too!',
@@ -36,6 +34,7 @@ export interface ShowcaseSite {
 	kind: string; // short label, e.g. "Cause" or "Small business"
 	blurb: string;
 	free: boolean; // built at no charge (cause work)
+	price?: string; // what the client pays, shown on the card, e.g. "$50/m"
 	screenshot: string; // desktop capture under static/
 }
 
@@ -48,6 +47,7 @@ export const SHOWCASE: ShowcaseSite[] = [
 		blurb:
 			'Connects family and friends to Hallie’s journey overcoming breast cancer: her own updates, an email list so nobody misses one, and a shirt store that funds her care. Hallie is the mother of one of our own, and the site was built free.',
 		free: true,
+		price: '$0/m',
 		screenshot: '/websites/rally4hallie-desktop.jpg'
 	},
 	{
@@ -58,6 +58,7 @@ export const SHOWCASE: ShowcaseSite[] = [
 		blurb:
 			'A booking-first home for Angela Di Donna’s hair, skin, brow, and lash studio in Hernando, Mississippi: every service and price in one place, her story, and the way to book.',
 		free: false,
+		price: '$50/m',
 		screenshot: '/websites/didonnastudio-desktop.jpg'
 	}
 ];
@@ -93,21 +94,38 @@ export const ENGINEER = {
 };
 
 // "What it costs": a big figure with its explanation.
-export const PRICING: { figure: string; body: string; link?: { href: string; label: string } }[] = [
+export const PRICING: {
+	figure: string;
+	spoken?: string; // the figure as prose, for PRICING_SUMMARY, when the display form is shorthand
+	body: string;
+	link?: { href: string; label: string };
+}[] = [
 	{
 		figure: 'Free',
-		body: 'Some simple sites only cost our agents time on maintenance and implementation. We will build and host these for free for you. If a site grows complex enough, or its traffic and usage start costing us real money, it can’t reasonably stay free, and we’ll talk that through with you first.',
+		body: 'for causes, whenever we can manage it.',
 		link: { href: '/websites/causes', label: 'Building for a cause?' }
 	},
 	{
-		figure: `+${MARGIN_PERCENT}%`,
-		body: 'on top of what it costs us. That’s the whole bill.'
+		figure: '$25/m',
+		spoken: '$25 a month',
+		body: 'for a static site: business or personal pages that don’t change, with your domain at cost. Already paying for a site? We’ll match what you pay now and take over hosting and upkeep.'
 	},
 	{
-		figure: '$0',
-		body: 'for our time, design, and build, and for keeping it updated and secure after launch.'
+		figure: 'Quote',
+		body: 'for anything dynamic, like live data, accounts, or bookings, or anything that needs higher reliability or extra care. We price it from what hosting and maintaining it costs us.',
+		link: { href: '/websites?preset=quote#contact', label: 'Ask for a quote' }
 	}
 ];
+
+// Contact form starters, picked by a link's ?preset= key so the URL stays short and
+// shareable. The form only fills an empty message, and the visitor can edit or clear it.
+export const CONTACT_PRESETS: Record<string, { kind: ContactKind; message: string }> = {
+	quote: {
+		kind: 'A business',
+		message:
+			'I’d like a quote for a site that needs (live data, accounts, bookings, higher reliability, something else): \n\nAbout my business: '
+	}
+};
 
 // The "How we work" flow: one conversation in, a build/review/feedback loop that
 // repeats until the client is happy, then launch.
@@ -205,6 +223,6 @@ export const HOW: Point[] = [
 	},
 	{
 		title: 'Feedback without the overhead',
-		body: 'Our own feedback tools cut out the usual back-and-forth, so your vision becomes a finished site far more smoothly than was possible before.'
+		body: 'Our own feedback tools cut out the usual back-and-forth, so your idea turns into a finished site faster, with far less fuss.'
 	}
 ];
