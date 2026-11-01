@@ -57,6 +57,13 @@
 	});
 	$effect(() => () => chain.destroy());
 
+	// Below 360px the nav has no gap, so neighbouring plain links' 24px boxes would touch (and the
+	// float drift then overlaps them). Trade 2px of padding on each facing side for a 4px margin:
+	// the glyphs stay where they were and the boxes no longer meet.
+	const plain = (i: number) => !!LINKS[i] && !LINKS[i].children;
+	const narrowSpacing = (i: number) =>
+		`${plain(i - 1) ? 'max-[359px]:ml-1 max-[359px]:pl-0.5' : ''} ${plain(i + 1) ? 'max-[359px]:pr-0.5' : ''}`;
+
 	const isCurrent = (href: string) => path === href;
 	const inSection = (link: NavLink) =>
 		isCurrent(link.href) || (link.children ?? []).some((c) => isCurrent(c.href));
@@ -90,7 +97,7 @@
 			>
 		</div>
 		<nav class="flex items-center gap-0 text-xs sm:gap-3 sm:text-sm">
-			{#each LINKS as link (link.href)}
+			{#each LINKS as link, i (link.href)}
 				{#if link.children}
 					<div
 						class="group relative flex items-center"
@@ -172,7 +179,7 @@
 						href={link.href}
 						aria-current={isCurrent(link.href) ? 'page' : undefined}
 						aria-label={link.short ? link.label : undefined}
-						class={linkClass(isCurrent(link.href))}
+						class="{linkClass(isCurrent(link.href))} {narrowSpacing(i)}"
 						use:float={link.href}
 						>{#if link.short}<span class="max-[359px]:hidden">{link.label}</span><span
 								class="hidden max-[359px]:inline">{link.short}</span
