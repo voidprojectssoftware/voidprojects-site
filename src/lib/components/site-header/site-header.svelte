@@ -4,7 +4,8 @@
 	import { NudgeChain } from '$lib/nudge/index.js';
 	import { brandViolet } from '$lib/physics/colors.js';
 
-	type NavLink = { href: string; label: string; children?: NavLink[] };
+	// `short` is the visible label below 360px, where the full one overflows the header; the full label stays the accessible name.
+	type NavLink = { href: string; label: string; short?: string; children?: NavLink[] };
 
 	const LINKS: NavLink[] = [
 		{
@@ -13,7 +14,7 @@
 			children: [{ href: '/websites/causes', label: 'Causes' }]
 		},
 		{ href: '/blog', label: 'Blog' },
-		{ href: '/about/brand', label: 'Our Brand' }
+		{ href: '/about/brand', label: 'Our Brand', short: 'Brand' }
 	];
 
 	// The compact nav that fades in once the hero has scrolled past, showing the
@@ -170,8 +171,12 @@
 					<a
 						href={link.href}
 						aria-current={isCurrent(link.href) ? 'page' : undefined}
+						aria-label={link.short ? link.label : undefined}
 						class={linkClass(isCurrent(link.href))}
-						use:float={link.href}>{link.label}</a
+						use:float={link.href}
+						>{#if link.short}<span class="max-[359px]:hidden">{link.label}</span><span
+								class="hidden max-[359px]:inline">{link.short}</span
+							>{:else}{link.label}{/if}</a
 					>
 				{/if}
 			{/each}
