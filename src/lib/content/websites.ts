@@ -121,7 +121,7 @@ export const PRICING: {
 	}
 ];
 
-// The $25/m row, quoted in the /websites hero and the head copy.
+// The $25/m row, quoted in the /websites head copy.
 export const STATIC_SITE = PRICING.find((p) => p.offer.monthly)!;
 
 // Contact form starters, picked by a link's ?preset= key so the URL stays short and

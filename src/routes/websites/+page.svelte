@@ -19,8 +19,7 @@
 		SPLASHES,
 		CAUSES,
 		INSTEAD,
-		ENGINEER,
-		STATIC_SITE
+		ENGINEER
 	} from '$lib/content/websites.js';
 	import { CAUSE_ICONS } from '$lib/content/cause-icons.js';
 	import { JsonLd } from '$lib/components/json-ld/index.js';
@@ -57,18 +56,13 @@
 		<!-- Explicit lines + w-fit so the box ends where the text does, giving the
 		     splash a real corner to sit on. -->
 		<h1 class="relative w-fit text-4xl font-bold tracking-tight sm:text-6xl">
-			<span class="block">The website you</span>
-			<span class="block">need, without effort.</span>
+			<span class="block lg:inline">Website</span>
+			<span class="block lg:inline">Development</span>
+			<span class="block lg:inline">Services</span>
 			<Splash lines={SPLASHES} />
 		</h1>
 		<p class="pt-6 text-2xl font-semibold tracking-tight text-balance text-primary sm:text-3xl">
-			Site-builder prices. We do the building.
-		</p>
-		<p class="pt-4 text-lg text-foreground/70">
-			Static sites from {STATIC_SITE.figure}.
-			<a href="#pricing" class="font-medium text-primary underline-offset-4 hover:underline"
-				>See pricing</a
-			>
+			Site-builder prices. Engineers doing the building.
 		</p>
 		<div class="flex flex-wrap justify-center gap-3 pt-10">
 			<a
