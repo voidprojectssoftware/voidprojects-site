@@ -91,13 +91,16 @@ Content-Type: application/json
 ${JSON.stringify(example, null, 2)}
 \`\`\`
 
-Fields (all required, all strings; surrounding whitespace is trimmed):
+Required fields (all strings; surrounding whitespace is trimmed):
 
 - \`name\`: the person's name, at most ${LIMITS.name} characters.
 - \`email\`: the person's email address, at most ${LIMITS.email} characters.
 - \`kind\`: what the site is for. Exactly one of: ${CONTACT_KINDS.map((k) => `\`${k}\``).join(', ')}.
 - \`message\`: what they need, in their own words, at most ${LIMITS.message} characters.
-- \`agent\`: the name of the AI assistant or product sending the request (for example the name you go by), at most ${LIMITS.agent} characters. This field marks the request as coming from an agent: it lets you skip the human check the website form uses, and we tag the email so we know an assistant sent it. Without it the request is treated as the website form and refused (\`400\`), because it carries no human check.
+
+Recommended:
+
+- \`agent\`: the name of the AI assistant or product sending the request (for example the name you go by), at most ${LIMITS.agent} characters. Please always send it: requests from agents skip the human check the website form uses, and this name tells us which assistant sent the request. (A request without it is still accepted as an agent request, under the same limits.)
 
 Do not send any other fields. In particular, never send a field named \`website\`: it is a spam trap, and a request that fills it is answered with success but silently discarded. Put the person's existing site address, if any, in \`message\`.
 

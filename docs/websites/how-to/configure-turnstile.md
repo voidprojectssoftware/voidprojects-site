@@ -2,7 +2,7 @@
 
 # Configure Turnstile for the contact form
 
-The contact form on `/websites` and `/websites/causes` carries a Cloudflare Turnstile widget. `/api/contact` checks its token with Cloudflare's siteverify before it sends any email. AI agents use a second path documented in `/llms.txt`: they send an `agent` field instead of a token, skip Turnstile, and get stricter rate limits and an `[agent]` subject tag.
+The contact form on `/websites` and `/websites/causes` carries a Cloudflare Turnstile widget. `/api/contact` checks its token with Cloudflare's siteverify before it sends any email. Every request without a token takes the agent path documented in `/llms.txt`: agents are asked to name themselves in an `agent` field, but older ones that do not are accepted too. That path skips Turnstile and gets stricter rate limits and an `[agent]` subject tag.
 
 ## The keys
 

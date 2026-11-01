@@ -9,7 +9,7 @@ export interface ContactSubmission {
 	email: string;
 	kind: ContactKind;
 	message: string;
-	agent?: string; // set on the agent path: the assistant's self-reported name, unverified
+	agent?: { name?: string }; // set on the agent path; name is self-reported and unverified, absent when unnamed
 }
 
 export interface ContactRequest {
@@ -32,8 +32,8 @@ export const MAX_BODY_BYTES = 16 * 1024;
 
 export const LIMITS = { name: 200, email: 320, message: 5000, agent: 100 };
 
-// The browser form proves a person with Turnstile; the agent path (an `agent` field,
-// documented in /llms.txt) skips it, so anyone can claim to be an agent. Its limits
+// The browser form proves a person with Turnstile; the agent path (documented in
+// /llms.txt) skips it, so anyone can claim to be an agent. Its limits
 // are what make that claim worthless to a spammer: a per-IP cap, and a global cap that
 // holds however many IPs a flood rotates through. Exhausting the global cap only
 // closes the agent path for the hour; the form and email keep working. Agent mail is
@@ -121,8 +121,10 @@ export function validateContact(
 }
 
 // `website` is a honeypot hidden from people; a bot that fills it gets the same
-// success body and nothing is delivered. A non-empty `agent` field selects the agent
-// path (no Turnstile, stricter limits); anything else needs a `turnstileToken`.
+// success body and nothing is delivered. A `turnstileToken` (only the browser form
+// has one) selects the form path; every other request, named by an `agent` field or
+// not, takes the agent path (no Turnstile, stricter limits), so agents following an
+// older /llms.txt without `agent` keep working.
 export async function contactResponse(
 	request: ContactRequest,
 	deps: ContactDeps
@@ -151,11 +153,12 @@ export async function contactResponse(
 	if ('error' in result) return json(400, { error: result.error });
 	const raw = input as Record<string, unknown>;
 	const agent = text(raw.agent);
+	const token = typeof raw.turnstileToken === 'string' ? raw.turnstileToken.trim() : '';
 	const now = deps.now?.() ?? Date.now();
 	const ipKey = rateKeyForIp(request.clientIp);
 	const { limiters } = deps;
 
-	if (agent) {
+	if (agent || !token) {
 		if (agent.length > LIMITS.agent) {
 			return json(400, { error: `Agent must be at most ${LIMITS.agent} characters.` });
 		}
@@ -168,15 +171,11 @@ export async function contactResponse(
 				'The agent endpoint is busy. Try later, or have the person use the contact form.'
 			);
 		}
-		return send({ ...result.submission, agent }, deps.deliver);
+		return send({ ...result.submission, agent: agent ? { name: agent } : {} }, deps.deliver);
 	}
 
-	const token = typeof raw.turnstileToken === 'string' ? raw.turnstileToken.trim() : '';
-	if (!token || token.length > MAX_TOKEN_LENGTH) {
-		return json(400, {
-			error:
-				'The spam check is missing; reload the page and try again. AI agents: send an "agent" field instead (see /llms.txt).'
-		});
+	if (token.length > MAX_TOKEN_LENGTH) {
+		return json(400, { error: 'The spam check token is too long. Reload the page and try again.' });
 	}
 	const verdict = await deps.verify(token);
 	if (verdict === 'unavailable') {

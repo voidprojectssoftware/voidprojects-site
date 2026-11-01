@@ -42,7 +42,8 @@ export function composeContactEmail(
 	to: string
 ): EmailMessage {
 	const name = oneLine(submission.name);
-	const agent = submission.agent ? oneLine(submission.agent) : '';
+	const agent = submission.agent;
+	const agentName = agent?.name ? oneLine(agent.name) : '';
 	return {
 		senderAddress: from,
 		recipients: { to: [{ address: to }] },
@@ -54,7 +55,7 @@ export function composeContactEmail(
 				`Email: ${submission.email}`,
 				`Kind: ${submission.kind}`,
 				agent
-					? `Via: AI agent "${agent}" (self-reported, no Turnstile check)`
+					? `Via: AI agent ${agentName ? `"${agentName}"` : '(unnamed)'} (self-reported, no Turnstile check)`
 					: 'Via: contact form (Turnstile verified)',
 				'',
 				'Message:',
