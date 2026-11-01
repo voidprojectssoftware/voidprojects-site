@@ -1,5 +1,13 @@
 <script lang="ts">
-	import { CONTACT_EMAIL, CONTACT_KINDS, type ContactKind } from '$lib/content/websites.js';
+	import { untrack } from 'svelte';
+	import { browser } from '$app/environment';
+	import { page } from '$app/state';
+	import {
+		CONTACT_EMAIL,
+		CONTACT_KINDS,
+		CONTACT_PRESETS,
+		type ContactKind
+	} from '$lib/content/websites.js';
 
 	let {
 		class: className = '',
@@ -17,6 +25,19 @@
 	let website = $state(''); // honeypot; people never see it
 	let status = $state<'idle' | 'sent' | 'error'>('idle');
 	let error = $state('');
+
+	// A ?preset= link (CONTACT_PRESETS) picks the kind and seeds an empty message, on load
+	// and on a same-page click. Client only: the page is prerendered, and SvelteKit forbids
+	// reading url.searchParams while prerendering.
+	const presetKey = $derived(browser ? page.url.searchParams.get('preset') : null);
+	$effect(() => {
+		if (!presetKey || !Object.hasOwn(CONTACT_PRESETS, presetKey)) return;
+		const preset = CONTACT_PRESETS[presetKey];
+		untrack(() => {
+			kind = preset.kind;
+			if (!message.trim()) message = preset.message;
+		});
+	});
 
 	// The browser has already enforced the required fields, so the thank-you shows at once
 	// while delivery finishes; a failure brings the form back with its values intact.
