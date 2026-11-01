@@ -62,7 +62,7 @@
 	// the glyphs stay where they were and the boxes no longer meet.
 	const plain = (i: number) => !!LINKS[i] && !LINKS[i].children;
 	const narrowSpacing = (i: number) =>
-		`${plain(i - 1) ? 'max-[359px]:ml-1 max-[359px]:pl-0.5' : ''} ${plain(i + 1) ? 'max-[359px]:pr-0.5' : ''}`;
+		`${plain(i - 1) ? 'max-[360px]:ml-1 max-[360px]:pl-0.5' : ''} ${plain(i + 1) ? 'max-[360px]:pr-0.5' : ''}`;
 
 	const isCurrent = (href: string) => path === href;
 	const inSection = (link: NavLink) =>
@@ -181,8 +181,8 @@
 						aria-label={link.short ? link.label : undefined}
 						class="{linkClass(isCurrent(link.href))} {narrowSpacing(i)}"
 						use:float={link.href}
-						>{#if link.short}<span class="max-[359px]:hidden">{link.label}</span><span
-								class="hidden max-[359px]:inline">{link.short}</span
+						>{#if link.short}<span class="max-[360px]:hidden">{link.label}</span><span
+								class="hidden max-[360px]:inline">{link.short}</span
 							>{:else}{link.label}{/if}</a
 					>
 				{/if}
