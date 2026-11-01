@@ -42,22 +42,28 @@ export function composeContactEmail(
 	to: string
 ): EmailMessage {
 	const name = oneLine(submission.name);
+	const agent = submission.agent ? oneLine(submission.agent) : '';
 	return {
 		senderAddress: from,
 		recipients: { to: [{ address: to }] },
 		replyTo: [{ address: submission.email }],
 		content: {
-			subject: `Website request from ${name} (${submission.kind})`,
+			subject: `${agent ? '[agent] ' : ''}Website request from ${name} (${submission.kind})`,
 			plainText: [
 				`Name: ${name}`,
 				`Email: ${submission.email}`,
 				`Kind: ${submission.kind}`,
+				agent
+					? `Via: AI agent "${agent}" (self-reported, no Turnstile check)`
+					: 'Via: contact form (Turnstile verified)',
 				'',
 				'Message:',
 				submission.message,
 				'',
 				'--',
-				'Sent by the voidprojects.ai /websites contact form. Reply to answer the visitor directly.'
+				agent
+					? "Sent through /api/contact by an AI agent on the visitor's behalf. Reply to answer the visitor directly."
+					: 'Sent by the voidprojects.ai /websites contact form. Reply to answer the visitor directly.'
 			].join('\n')
 		}
 	};

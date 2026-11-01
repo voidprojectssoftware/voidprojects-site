@@ -8,6 +8,7 @@
 		CONTACT_PRESETS,
 		type ContactKind
 	} from '$lib/content/websites.js';
+	import { turnstile } from '$lib/contact/turnstile-client.js';
 
 	let {
 		class: className = '',
@@ -25,6 +26,31 @@
 	let website = $state(''); // honeypot; people never see it
 	let status = $state<'idle' | 'sent' | 'error'>('idle');
 	let error = $state('');
+	let token = ''; // current Turnstile token; single use, so each mount of the form gets its own
+	let waiting = $state(false); // submitted before Turnstile produced a token
+	let checkFailed = false;
+
+	const CHECK_FAILED = 'The spam check could not run. Reload the page and try again.';
+
+	const widget = turnstile(__TURNSTILE_SITE_KEY__, {
+		onToken(t) {
+			token = t;
+			if (waiting) {
+				waiting = false;
+				deliver();
+			}
+		},
+		onExpire() {
+			token = '';
+		},
+		onError() {
+			checkFailed = true;
+			if (waiting) {
+				waiting = false;
+				fail(CHECK_FAILED);
+			}
+		}
+	});
 
 	// A ?preset= link (CONTACT_PRESETS) picks the kind and seeds an empty message, on load
 	// and on a same-page click. Client only: the page is prerendered, and SvelteKit forbids
@@ -40,23 +66,39 @@
 	});
 
 	// The browser has already enforced the required fields, so the thank-you shows at once
-	// while delivery finishes; a failure brings the form back with its values intact.
-	async function submit(event: SubmitEvent) {
+	// while delivery finishes; a failure brings the form back with its values intact. The
+	// Turnstile token is nearly always ready by now (the widget starts as the form nears
+	// view); if not, the button waits for it.
+	function submit(event: SubmitEvent) {
 		event.preventDefault();
+		if (checkFailed) return fail(CHECK_FAILED);
+		if (!token) {
+			waiting = true;
+			return;
+		}
+		deliver();
+	}
+
+	async function deliver() {
+		const turnstileToken = token;
 		status = 'sent';
 		sent = true;
 		try {
 			const res = await fetch('/api/contact', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ name, email, kind, message, website })
+				body: JSON.stringify({ name, email, kind, message, website, turnstileToken })
 			});
 			if (res.ok) return;
 			const data = await res.json().catch(() => null);
-			error = data?.error ?? 'Something went wrong sending your message.';
+			fail(data?.error ?? 'Something went wrong sending your message.');
 		} catch {
-			error = 'Your message could not be sent. Check your connection and try again.';
+			fail('Your message could not be sent. Check your connection and try again.');
 		}
+	}
+
+	function fail(message: string) {
+		error = message;
 		status = 'error';
 		sent = false;
 	}
@@ -140,12 +182,14 @@
 				<input name="website" tabindex="-1" autocomplete="off" bind:value={website} />
 			</label>
 		</div>
+		<div {@attach widget} class="-mb-4 empty:hidden"></div>
 		<div class="flex flex-wrap items-center gap-x-4 gap-y-2 pt-1">
 			<button
 				type="submit"
-				class="h-11 rounded-full bg-primary-strong px-6 text-sm font-semibold text-white transition-colors hover:bg-primary-strong/85 focus-visible:ring-3 focus-visible:ring-primary/40 focus-visible:outline-none"
+				disabled={waiting}
+				class="h-11 rounded-full bg-primary-strong px-6 text-sm font-semibold text-white transition-colors hover:bg-primary-strong/85 focus-visible:ring-3 focus-visible:ring-primary/40 focus-visible:outline-none disabled:opacity-60"
 			>
-				Start the conversation
+				{waiting ? 'Checking...' : 'Start the conversation'}
 			</button>
 			<p class="text-sm text-foreground/50">
 				Goes straight to us, or write us at

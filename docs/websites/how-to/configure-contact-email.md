@@ -12,7 +12,7 @@ The `/websites` contact form posts to `/api/contact`. When three app settings ar
 | `CONTACT_FROM`          | The sender, on the verified ACS domain, for example `noreply@voidprojects.ai`                                |
 | `CONTACT_TO`            | The inbox that receives submissions, for example `hello@voidprojects.ai`. It must exist before you set this. |
 
-Each email is plain text, with the subject `Website request from {name} ({kind})` and Reply-To set to the visitor's address, so replying from the inbox answers the visitor.
+Each email is plain text, with the subject `Website request from {name} ({kind})` and Reply-To set to the visitor's address, so replying from the inbox answers the visitor. Requests sent by AI agents (the `agent` field documented in `/llms.txt`) get the subject prefix `[agent] ` and a `Via:` line naming the agent, so an inbox rule can sort them. Spam protection (Turnstile) is configured separately: see [Configure Turnstile](configure-turnstile.md).
 
 The function uses the connection string rather than a managed identity: Static Web Apps managed functions do not support managed identities.
 
