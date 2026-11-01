@@ -95,6 +95,13 @@
 		let targetX = 0;
 		let targetY = 0;
 
+		// At rest the sky redraws at about 30 Hz: the twinkle and the sidereal drift are
+		// far slower than that, and each redraw re-uploads the whole canvas. While the
+		// parallax is still easing toward the pointer it redraws every frame instead.
+		const IDLE_REDRAW_MS = 31; // just under 2 frames at 60 Hz, 4 at 120 Hz
+		const SETTLED_PX = 0.05; // parallax this close to its target counts as at rest
+		let lastDrawAt = 0;
+
 		const isDark = () => document.documentElement.classList.contains('dark');
 
 		// Filled asynchronously from the binary catalogue so it never blocks paint.
@@ -265,10 +272,22 @@
 
 		const draw = (now: number) => {
 			if (!startPerf) startPerf = now;
+			const settled =
+				Math.abs(targetX - px) * CONFIG.parallax < SETTLED_PX &&
+				Math.abs(targetY - py) * CONFIG.parallax < SETTLED_PX;
+			if (settled && lastDrawAt && now - lastDrawAt < IDLE_REDRAW_MS && !projectDirty) {
+				if (running && !reduce) raf = requestAnimationFrame(draw);
+				return;
+			}
+			// Ease by elapsed time, so the parallax glides the same at any redraw rate:
+			// 4% of the remaining gap per 60 Hz frame, as before.
+			const frames = lastDrawAt ? Math.min(now - lastDrawAt, 100) / (1000 / 60) : 1;
+			lastDrawAt = now;
+			const ease = 1 - Math.pow(0.96, frames);
+			px += (targetX - px) * ease;
+			py += (targetY - py) * ease;
 			ctx.clearRect(0, 0, w, h);
 
-			px += (targetX - px) * 0.04;
-			py += (targetY - py) * 0.04;
 			const offX = px * CONFIG.parallax;
 			const offY = py * CONFIG.parallax;
 
@@ -299,12 +318,13 @@
 			}
 
 			ctx.globalAlpha = 1;
-			if (!reduce) raf = requestAnimationFrame(draw);
+			if (running && !reduce) raf = requestAnimationFrame(draw);
 		};
 
 		const start = () => {
 			if (running || !stars.length) return;
 			running = true;
+			if (raf) cancelAnimationFrame(raf); // a pending static frame must not become a second loop
 			raf = requestAnimationFrame(draw);
 		};
 		const stop = () => {
@@ -318,7 +338,10 @@
 			if (isDark() && !document.hidden) start();
 			else {
 				stop();
-				if (isDark()) requestAnimationFrame(draw); // one static frame
+				if (isDark()) {
+					lastDrawAt = 0; // draw it even if a frame went out moments ago
+					raf = requestAnimationFrame(draw); // one static frame
+				}
 			}
 		};
 
