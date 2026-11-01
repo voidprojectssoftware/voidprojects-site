@@ -1,7 +1,7 @@
 // Absolute URLs, page meta and structured data for search engines and AI agents.
 // Everything here is assembled from the content modules so it cannot drift from
 // the page copy.
-import { CAUSES, CONTACT_EMAIL, PRICING } from '$lib/content/websites.js';
+import { CAUSES, CONTACT_EMAIL, PRICING, STATIC_SITE } from '$lib/content/websites.js';
 
 export const SITE_ORIGIN = 'https://voidprojects.ai';
 export const SITE_NAME = 'Void Projects';
@@ -25,8 +25,6 @@ export interface PageMeta {
 	image?: ShareImage; // og:image and twitter:image; without one the share card is text only
 }
 
-const STATIC_SITE = PRICING.find((p) => p.offer.monthly)!;
-
 // Head copy for the public pages; each page's <svelte:head> renders its entry
 // through PageMeta, and /llms.txt reuses the descriptions (or the summary, where one is given).
 export const PAGES = {
@@ -38,7 +36,7 @@ export const PAGES = {
 	websites: {
 		path: '/websites',
 		title: 'Custom websites for businesses and causes | Void Projects',
-		description: `Custom websites from engineers, sped up by our own AI tooling. You talk to a person, never the technical side. Static sites are ${STATIC_SITE.spoken}.`,
+		description: `Custom websites from engineers, sped up by our own AI tooling. You talk to a person, never the technical side. Static sites are ${STATIC_SITE.spoken}, no build fee.`,
 		summary: `Custom websites from engineers with years of enterprise experience, sped up by our own AI tooling. You talk to a person and never touch the technical side. Static sites are ${STATIC_SITE.spoken}, and if you already pay for a site, we match it and take over hosting and upkeep.`,
 		image: {
 			path: '/og/websites.png', // exported by npm run export:brand (og-websites), then copied to static/

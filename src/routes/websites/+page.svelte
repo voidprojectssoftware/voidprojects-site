@@ -19,7 +19,8 @@
 		SPLASHES,
 		CAUSES,
 		INSTEAD,
-		ENGINEER
+		ENGINEER,
+		STATIC_SITE
 	} from '$lib/content/websites.js';
 	import { CAUSE_ICONS } from '$lib/content/cause-icons.js';
 	import { JsonLd } from '$lib/components/json-ld/index.js';
@@ -60,8 +61,14 @@
 			<span class="block">need, without effort.</span>
 			<Splash lines={SPLASHES} />
 		</h1>
-		<p class="pt-6 text-2xl font-semibold tracking-tight text-primary sm:text-3xl">
-			Free if we can. Fair if we can’t.
+		<p class="pt-6 text-2xl font-semibold tracking-tight text-balance text-primary sm:text-3xl">
+			Site-builder prices. We do the building.
+		</p>
+		<p class="pt-4 text-lg text-foreground/70">
+			Static sites from {STATIC_SITE.figure}.
+			<a href="#pricing" class="font-medium text-primary underline-offset-4 hover:underline"
+				>See pricing</a
+			>
 		</p>
 		<div class="flex flex-wrap justify-center gap-3 pt-10">
 			<a
@@ -130,12 +137,12 @@
 	</Section>
 
 	<Section wide class="pb-24">
-		<GlassCard class="grid gap-10 p-6 sm:p-10 lg:grid-cols-[1fr_1.4fr] lg:items-center lg:gap-16">
+		<GlassCard
+			id="pricing"
+			class="grid scroll-mt-24 gap-10 p-6 sm:p-10 lg:grid-cols-[1fr_1.4fr] lg:items-center lg:gap-16"
+		>
 			<div class="flex flex-col gap-4">
 				<h2 class="text-3xl font-bold tracking-tight">What it costs</h2>
-				<p class="text-2xl font-semibold tracking-tight text-primary">
-					Site-builder prices. We do the building.
-				</p>
 				<p class="leading-relaxed text-foreground/65">Most sites fit one of these three.</p>
 			</div>
 			<dl class="flex flex-col divide-y divide-foreground/10">

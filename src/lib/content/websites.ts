@@ -110,7 +110,7 @@ export const PRICING: {
 	{
 		figure: '$25/m',
 		spoken: '$25 a month',
-		body: 'for a static site: business or personal pages that don’t change, with your domain at cost. Already paying for a site? We’ll match what you pay now and take over hosting and upkeep.',
+		body: 'for a static site: business or personal pages that don’t change, with your domain at cost. Already paying for a site? We’ll match what you pay now and take over hosting and upkeep. No build fee. No contract. Cancel any time.',
 		offer: { name: 'Static website', usd: 25, monthly: true }
 	},
 	{
@@ -120,6 +120,9 @@ export const PRICING: {
 		offer: { name: 'Dynamic website' }
 	}
 ];
+
+// The $25/m row, quoted in the /websites hero and the head copy.
+export const STATIC_SITE = PRICING.find((p) => p.offer.monthly)!;
 
 // Contact form starters, picked by a link's ?preset= key so the URL stays short and
 // shareable. The form only fills an empty message, and the visitor can edit or clear it.
