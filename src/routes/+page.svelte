@@ -515,7 +515,7 @@
 {/snippet}
 
 <SiteHeader {scrolled}></SiteHeader>
-<main class="flex flex-col">
+<main id="main-content" class="flex flex-col">
 	<Section
 		bind:ref={heroRef}
 		glass={false}

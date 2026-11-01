@@ -89,6 +89,7 @@
 </header>
 
 <main
+	id="main-content"
 	class="mx-auto grid max-w-[1200px] gap-6 px-6 pb-24 sm:px-12 lg:grid-cols-[300px_1fr] lg:px-20"
 >
 	<aside class="lg:sticky lg:top-20 lg:h-fit">
