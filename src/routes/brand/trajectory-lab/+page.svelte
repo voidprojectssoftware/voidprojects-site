@@ -10,6 +10,7 @@
 		type RadialScale,
 		type TrajectoryPalette
 	} from '$lib/trajectory';
+	import { TRAJECTORIES } from '$lib/trajectory/source.js';
 
 	// Default to the four probes that left the solar system; the rest toggle on.
 	const OUTBOUND = ['pioneer10', 'pioneer11', 'voyager1', 'voyager2'];
@@ -26,7 +27,7 @@
 	let sun = $state(true);
 
 	const built = $derived(
-		buildTrajectory({
+		buildTrajectory(TRAJECTORIES, {
 			craft: selected,
 			scale,
 			maxAU,

@@ -16,7 +16,7 @@
 				import('$lib/brand/favicon.js'),
 				import('$lib/brand/visit-seed.js')
 			]);
-			faviconHref = generateFaviconDataUri(VISIT_SEED); // same mark as OrbitMark this visit
+			faviconHref = await generateFaviconDataUri(VISIT_SEED); // same mark as OrbitMark this visit
 		};
 		if ('requestIdleCallback' in window) {
 			window.requestIdleCallback(() => roll(), { timeout: 2000 });

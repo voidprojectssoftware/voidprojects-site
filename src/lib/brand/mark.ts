@@ -1,9 +1,10 @@
 // The randomly rolled Void Projects orbit mark: a bold, monochromatic emblem from
 // the trajectory logo generator (line style, transparent, no frame). DOM-free so
 // the same recipe backs the browser favicon ({@link generateFaviconSvg}) and the
-// /api/mark.svg endpoint that client-site footers embed.
+// /api/mark.svg endpoint that client-site footers embed. Callers pass the
+// trajectory data: the browser awaits loadTrajectories(), Node imports the JSON.
 import { armDetail, deriveSpec, renderSpec, seedFor, type TLSpec } from './labs/trajectory-logo.js';
-import { CRAFT_IDS } from '$lib/trajectory';
+import type { TrajectoryData } from '$lib/trajectory';
 
 // Bolder than the lab's UI max (2) on purpose: the mark renders at favicon and
 // footer-badge sizes, where the fine trajectory lines need weight to survive.
@@ -22,14 +23,14 @@ function quality({ extent, length }: { extent: number; length: number }): number
 	return Math.min(extent / MIN_EXTENT, length / MIN_LENGTH, MAX_DENSITY / density);
 }
 
-export function markSpec(seed: number, ink?: string): TLSpec {
-	const spec = deriveSpec(seed, {
+export function markSpec(data: TrajectoryData, seed: number, ink?: string): TLSpec {
+	const spec = deriveSpec(data, seed, {
 		stroke: MARK_STROKE,
 		palette: 'brand',
 		ink,
 		frameMode: 'none',
 		symmetry: 'emblem',
-		pool: CRAFT_IDS
+		pool: data.craft.map((c) => c.id)
 	});
 	spec.style = 'line';
 	spec.sun = false;
@@ -40,20 +41,28 @@ export function markSpec(seed: number, ink?: string): TLSpec {
 // rendered as an image is isolated and can't resolve var(). Omitted, the
 // palette default is used. Weak rolls are re-rolled from seeds derived from
 // `seed`, so a given seed still always yields the same mark.
-export function pickMarkSpec(seed: number = randomSeed(), ink?: string): TLSpec {
+export function pickMarkSpec(
+	data: TrajectoryData,
+	seed: number = randomSeed(),
+	ink?: string
+): TLSpec {
 	let best: TLSpec | undefined;
 	let bestScore = -1;
 	for (let i = 0; i < MAX_ROLLS; i++) {
-		const spec = markSpec(i ? seedFor(seed, i) : seed, ink);
-		const score = quality(armDetail(spec)); // >= 1 passes every threshold
+		const spec = markSpec(data, i ? seedFor(seed, i) : seed, ink);
+		const score = quality(armDetail(data, spec)); // >= 1 passes every threshold
 		if (score >= 1) return spec;
 		if (score > bestScore) [best, bestScore] = [spec, score];
 	}
 	return best!;
 }
 
-export function generateMarkSvg(seed: number = randomSeed(), ink?: string): string {
-	return renderSpec(pickMarkSpec(seed, ink)).svg;
+export function generateMarkSvg(
+	data: TrajectoryData,
+	seed: number = randomSeed(),
+	ink?: string
+): string {
+	return renderSpec(data, pickMarkSpec(data, seed, ink)).svg;
 }
 
 export function randomSeed(): number {

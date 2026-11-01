@@ -1,0 +1,101 @@
+{
+	"meta": {
+		"generated": "2026-07-07T01:26:28.868Z",
+		"source": "NASA/JPL HORIZONS",
+		"frame": "heliocentric ecliptic, X-Y projection (north ecliptic pole)",
+		"step": "1 month",
+		"units": "AU"
+	},
+	"planets": [
+		{
+			"name": "Jupiter",
+			"a": 5.2
+		},
+		{
+			"name": "Saturn",
+			"a": 9.54
+		},
+		{
+			"name": "Uranus",
+			"a": 19.19
+		},
+		{
+			"name": "Neptune",
+			"a": 30.07
+		}
+	],
+	"craft": [
+		{
+			"id": "pioneer10",
+			"name": "Pioneer 10",
+			"color": "#e8c58a",
+			"launch": "1972-03-04"
+		},
+		{
+			"id": "pioneer11",
+			"name": "Pioneer 11",
+			"color": "#e79a72",
+			"launch": "1973-04-07"
+		},
+		{
+			"id": "voyager2",
+			"name": "Voyager 2",
+			"color": "#b79cf5",
+			"launch": "1977-08-21"
+		},
+		{
+			"id": "voyager1",
+			"name": "Voyager 1",
+			"color": "#7fd7e8",
+			"launch": "1977-09-06"
+		},
+		{
+			"id": "newhorizons",
+			"name": "New Horizons",
+			"color": "#86e8b0",
+			"launch": "2006-01-20"
+		},
+		{
+			"id": "cassini",
+			"name": "Cassini",
+			"color": "#f0a6c8",
+			"launch": "1997-10-16"
+		},
+		{
+			"id": "galileo",
+			"name": "Galileo",
+			"color": "#c9b68a",
+			"launch": "1989-10-20"
+		},
+		{
+			"id": "ulysses",
+			"name": "Ulysses",
+			"color": "#9aa8f5",
+			"launch": "1990-10-07"
+		},
+		{
+			"id": "juno",
+			"name": "Juno",
+			"color": "#e6d27a",
+			"launch": "2011-08-06"
+		},
+		{
+			"id": "parker",
+			"name": "Parker Solar Probe",
+			"color": "#ff9d6f",
+			"launch": "2018-08-13"
+		},
+		{
+			"id": "messenger",
+			"name": "MESSENGER",
+			"color": "#8fd0c0",
+			"launch": "2004-08-04"
+		},
+		{
+			"id": "dawn",
+			"name": "Dawn",
+			"color": "#d6a0e8",
+			"launch": "2007-09-28"
+		}
+	]
+}
