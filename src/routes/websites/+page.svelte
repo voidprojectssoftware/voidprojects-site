@@ -8,6 +8,7 @@
 	import { ContactForm } from '$lib/components/contact-form/index.js';
 	import { ProcessFlow } from '$lib/components/process-flow/index.js';
 	import { Splash } from '$lib/components/splash/index.js';
+	import { Maintenance } from '$lib/components/maintenance/index.js';
 	import { AfterLaunch } from '$lib/components/after-launch/index.js';
 	import { NeverGrid } from '$lib/components/never-grid/index.js';
 	import { ProfileCard } from '$lib/components/profile-card/index.js';
@@ -40,7 +41,7 @@
 
 <main id="main-content" class="flex flex-col">
 	<!-- Order follows the visitor's questions: what is it, what's it like for me, how
-	     does it run, what does it cost (and is it free for causes), how is that possible, show me, let's talk. -->
+	     does it run, what does it cost (and does it stay safe; is it free for causes), how is that possible, show me, let's talk. -->
 
 	<Section
 		wide
@@ -161,6 +162,10 @@
 				{/each}
 			</dl>
 		</GlassCard>
+	</Section>
+
+	<Section wide class="pb-24">
+		<Maintenance />
 	</Section>
 
 	<Section wide class="pb-24">

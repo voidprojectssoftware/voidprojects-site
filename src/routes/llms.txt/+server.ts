@@ -7,6 +7,7 @@ import {
 	CONTACT_KINDS,
 	FLOW,
 	INSTEAD,
+	MAINTENANCE,
 	NEVER,
 	SHOWCASE
 } from '$lib/content/websites.js';
@@ -37,6 +38,7 @@ ${SITE_NAME}: ${PAGES.home.description} We build custom websites for people who 
 - Custom websites: ${PAGES.websites.summary}
 - Websites for causes: ${CAUSES.body}
 - After launch: ${AFTER_LAUNCH.body}
+- ${MAINTENANCE.title} ${MAINTENANCE.body.join(' ')}
 
 ## Pricing
 
