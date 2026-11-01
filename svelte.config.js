@@ -30,6 +30,21 @@ const config = {
 		// If your environment is not supported, or you settled on a specific environment, switch out the adapter.
 		// See https://svelte.dev/docs/kit/adapters for more information about adapters.
 		adapter: adapter(),
+		typescript: {
+			// Vite's Oxc transform picks a file's tsconfig by walking up until one's include
+			// covers it, but it resolves the include that tsconfig.json inherits from
+			// .svelte-kit/tsconfig.json against the repo root, so `../src/**` never matches.
+			// The walk then leaves the repo and, in a worktree nested inside another
+			// checkout, fails on that checkout's tsconfig (#35). Each `../x` gains an `x`
+			// twin: Oxc reads the twin from the root; TypeScript resolves it under
+			// .svelte-kit/, where it matches nothing.
+			config: (tsconfig) => {
+				const twins = tsconfig.include
+					.filter((pattern) => pattern.startsWith('../'))
+					.map((pattern) => pattern.slice(3));
+				tsconfig.include.push(...twins);
+			}
+		},
 		prerender: {
 			handleUnseenRoutes: 'ignore',
 			// /api/* is the managed Azure Function (api/), served at runtime, not prerendered.
