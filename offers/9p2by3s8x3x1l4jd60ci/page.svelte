@@ -82,17 +82,6 @@
 		};
 	});
 
-	// One voice on the card: the shared ENGINEER bio is first person (it is Blake's own
-	// card on /websites), so here a third-person line is drawn from his skills instead.
-	// The role already sits under his name, so the line names only what he works on.
-	const FOCUS: Record<string, string> = {
-		'Agentic Development': 'AI agents',
-		'.NET': '.NET',
-		'Web Dev': 'the web'
-	};
-	const focus = ENGINEER.skills.filter((s) => s in FOCUS).map((s) => FOCUS[s]);
-	const bioLine = `He works across ${focus.slice(0, -1).join(', ')} and ${focus.at(-1)}.`;
-
 	// Dark theme only: a sparse, dim, static star field as texture (the home page's
 	// live sky draws ~9k catalogue stars every frame, too heavy for this page). Seeded,
 	// so the server and the browser draw the same stars and hydration matches.
@@ -106,6 +95,23 @@
 			o: +(0.12 + rand() ** 2 * 0.45).toFixed(2)
 		}));
 	})();
+
+	// QR modules in a deep Void violet on white, the same in both themes: dark on light,
+	// with the block's 4-module quiet zone, so phones read it as easily as black.
+	const QR_INK = '#2a1450';
+
+	// The hero's "Accept offer" jumps to the plan picker, since monthly or annual is
+	// chosen there first; it moves focus to that section's heading for keyboard and
+	// screen reader users. Without JavaScript it is a plain anchor link.
+	function toPlans(e: MouseEvent) {
+		const heading = document.getElementById('offer-plans');
+		if (!heading) return;
+		e.preventDefault();
+		const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+		heading.setAttribute('tabindex', '-1');
+		heading.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+		heading.focus({ preventScroll: true });
+	}
 
 	// Screenshot evidence for a concern, keyed by its title in offer.ts. Captured from the
 	// live current sites on 2026-11-04 (Playwright, iPhone 15 emulation, cookie banner
@@ -470,11 +476,15 @@
 			<p class="max-w-2xl text-lg text-(--offer-muted)">
 				Larry, we propose to host, secure and maintain both websites we rebuilt for you, First Touch
 				Payment Solutions and Software Earnings, and keep them fast and easy for search engines and
-				AI assistants to read. Below is where your sites are today and where they can be; sign up at
-				the bottom or reply with any questions.
+				AI assistants to read. Below is where your sites are today and where they can be; accept the
+				offer when you are ready, or reply with any questions.
 			</p>
 			<p class="price">
 				<strong>{money(monthly)}</strong> a month for both sites, or {money(yearly)} a year
+			</p>
+			<p class="cta">
+				<a class="accept" href="#offer-plans" onclick={toPlans}>Accept offer</a>
+				<a href="mailto:{ENGINEER.email}">Questions? Email {ENGINEER.name.split(' ')[0]}</a>
 			</p>
 		</section>
 
@@ -497,7 +507,6 @@
 						>{ENGINEER.name.split(' ')[0]} built both of your new sites and is your contact for anything
 						you need.</strong
 					>
-					{bioLine}
 				</p>
 				<p class="promise">
 					<span class="badge">Always a human, never a bot</span>
@@ -643,7 +652,7 @@
 			</ul>
 		</section>
 
-		<section class="grid gap-8" aria-label="Sign up">
+		<section class="grid gap-8" aria-label="Accept the offer">
 			<PlanPicker
 				{offer}
 				bind:selection
@@ -663,9 +672,15 @@
 			</div>
 			<div class="grid items-center gap-8 sm:grid-cols-[1fr_auto]">
 				<SignUpButton offerId={offer.id} {selection} endpoint={context.checkoutEndpoint}
-					>Sign up securely</SignUpButton
+					>Accept offer</SignUpButton
 				>
-				<QrCode qr={context.qr} url={context.url} />
+				<QrCode
+					qr={context.qr}
+					url={context.url}
+					title="Accept on your phone"
+					fg={QR_INK}
+					bg="#fff"
+				/>
 			</div>
 			<p class="renewal">
 				Your plan renews automatically each month, or each year on the annual plan, until you
@@ -1149,6 +1164,34 @@
 	.price {
 		font-size: 1.125rem;
 		color: var(--offer-muted);
+	}
+	.cta {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.75rem 1.5rem;
+		margin-top: 0.25rem;
+	}
+	.accept {
+		display: inline-flex;
+		align-items: center;
+		height: 2.75rem;
+		padding: 0 1.5rem;
+		border-radius: 999px;
+		background: var(--void-primary-strong);
+		color: #fff;
+		font-weight: 600;
+	}
+	.accept:hover {
+		text-decoration: none;
+		background: oklch(0.52 0.1876 301.62);
+	}
+	.accept:focus-visible {
+		outline: 2px solid var(--void-primary-text);
+		outline-offset: 2px;
+	}
+	:global(#offer-plans) {
+		scroll-margin-top: 1.5rem;
 	}
 	.price strong {
 		font-size: 2rem;
