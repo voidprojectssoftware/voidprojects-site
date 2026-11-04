@@ -32,6 +32,7 @@ export type StageOptions = {
 	 * scrolls it around. The cursor only counts as present while it is over the element.
 	 */
 	bounds?: HTMLElement;
+	cursorForces?: boolean; // default true; false keeps a bounded scene parked while the cursor merely hovers it
 };
 
 /**
@@ -64,6 +65,7 @@ export class PhysicsStage {
 	readonly reduceMotion: boolean;
 	private readonly frame: (now: number) => void;
 	private readonly bounds: HTMLElement | null;
+	private readonly cursorForces: boolean;
 	private boundsObserver: ResizeObserver | null = null;
 	private paused = false;
 	private ready = false; // world built (or reduced motion, which never needs one)
@@ -105,6 +107,7 @@ export class PhysicsStage {
 
 	constructor(opts: StageOptions = {}) {
 		this.bounds = opts.bounds ?? null;
+		this.cursorForces = opts.cursorForces ?? true;
 		this.reduceMotion =
 			typeof window !== 'undefined' &&
 			window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -410,7 +413,8 @@ export class PhysicsStage {
 		// Keep the loop alive while any actor is busy or a cue is still pending, so the
 		// frame clock that times the cues keeps advancing until they all fire.
 		// A bounded scene also stays up while the cursor is live over it, so its pull acts.
-		let busy = this.cues.length > 0 || (this.bounds !== null && this.pointer.active);
+		let busy =
+			this.cues.length > 0 || (this.bounds !== null && this.cursorForces && this.pointer.active);
 		for (const a of this.actors) if (a.isBusy()) busy = true;
 		if (!busy) {
 			this.rafId = 0; // park until something wakes us
@@ -511,7 +515,7 @@ export class PhysicsStage {
 		this.pointerInside = p.inside;
 		this.lastPointerMove = e.timeStamp;
 		// A bounded scene parks when still, so the cursor has to wake it to be felt.
-		if (this.bounds && (p.inside || this.dragBody)) this.wake();
+		if (this.bounds && (this.dragBody || (this.cursorForces && p.inside))) this.wake();
 
 		// Promote a press into a drag once it travels past the click threshold.
 		if (this.pendingGrab && !this.dragBody) {

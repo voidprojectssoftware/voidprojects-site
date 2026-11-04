@@ -6,6 +6,8 @@ export { GlyphField, GLYPH_DEFAULTS } from './actors/glyph-field.js';
 export type { GlyphConfig } from './actors/glyph-field.js';
 export { ProjectCard, CARD_DEFAULTS } from './actors/project-card.js';
 export type { CardConfig } from './actors/project-card.js';
+export { LooseBlocks, LOOSE_BLOCK_DEFAULTS } from './actors/loose-blocks.js';
+export type { LooseBlocksConfig } from './actors/loose-blocks.js';
 export { RelationGraph, GRAPH_DEFAULTS } from './relation-graph.js';
 export type {
 	GraphConfig,
