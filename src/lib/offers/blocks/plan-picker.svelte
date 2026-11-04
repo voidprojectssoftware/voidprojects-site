@@ -102,9 +102,11 @@
 					value={plan.id}
 					disabled={!price}
 					checked={selection.planId === plan.id}
+					aria-labelledby="offer-plan-{plan.id}"
 					onchange={() => (selection = { ...selection, planId: plan.id })}
 				/>
-				<span class="head">
+				<!-- The radio is named by its label and price alone; the rest of the card stays readable content. -->
+				<span class="head" id="offer-plan-{plan.id}">
 					<span class="label">{plan.label}</span>
 					{#if price}
 						<span class="price"
