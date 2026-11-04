@@ -20,7 +20,8 @@
 		"gen:trajectories": "node scripts/fetch-trajectories.mjs && node scripts/gen-trajectory-bin.mjs",
 		"gen:trajectory-bin": "node scripts/gen-trajectory-bin.mjs",
 		"export:brand": "node scripts/export-brand.mjs",
-		"audit:offer": "node scripts/offer-audit.mjs"
+		"audit:offer": "node scripts/offer-audit.mjs",
+		"stripe-setup": "node scripts/stripe-setup.mjs"
 	},
 	"devDependencies": {
 		"@azure/communication-email": "^1.1.0",
