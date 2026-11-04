@@ -6,7 +6,7 @@
 
 export type BrandFormat = 'png' | 'jpg';
 export type ArtKind = 'banner' | 'logo';
-export type Platform = 'youtube' | 'linkedin';
+export type Platform = 'youtube' | 'linkedin' | 'web';
 
 // A region of the asset that platforms guarantee to keep visible / uncropped.
 // Drawn as an overlay in the gallery so we can keep the important content inside
@@ -35,6 +35,8 @@ export interface BrandAssetSpec {
 	scale?: number;
 	safe?: SafeZone;
 	note?: string;
+	tagline?: string; // replaces BRAND.tagline under the wordmark
+	link?: string; // a single text pill in place of the social CTAs
 }
 
 // The site's deep-space background (layout.css :root.dark --background).
@@ -102,6 +104,19 @@ export const ASSETS: BrandAssetSpec[] = [
 		background: BRAND_BG,
 		safe: { width: 300, height: 300, shape: 'rect', label: 'Square, min 268px' },
 		note: 'Company Page logo, 300×300 (square). Shown small in feeds — keep it bold.'
+	},
+	{
+		id: 'og-websites',
+		platform: 'web',
+		kind: 'banner',
+		label: 'Share image: /websites',
+		width: 1200,
+		height: 630,
+		format: 'png',
+		background: BRAND_BG,
+		tagline: 'Custom websites for businesses and causes',
+		link: 'voidprojects.ai/websites',
+		note: 'og:image and twitter:image for /websites. Copy the export to static/og/websites.png.'
 	}
 ];
 

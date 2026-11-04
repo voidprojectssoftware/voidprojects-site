@@ -52,6 +52,7 @@ function contactApiDev(): Plugin {
 
 export default defineConfig({
 	plugins: [markApiDev(), contactApiDev(), tailwindcss(), enhancedImages(), sveltekit()],
+	define: { __BRAND_PRIMARY__: JSON.stringify(brandPrimary()) },
 	ssr: {
 		noExternal: ['bits-ui', '@melt-ui/svelte']
 	}
