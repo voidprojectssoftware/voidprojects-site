@@ -8,10 +8,27 @@ import type { CheckoutSelection } from './checkout-http.js';
 export const TERMS_URL = 'https://voidprojects.ai/terms'; // the terms page (#82)
 export const THANKS_PATH = '/thanks'; // generic thank-you page; it reads the session id, never an offer id
 
-// Stripe Customer Portal login link (https://billing.stripe.com/p/login/...). Public,
-// not a secret. Set it once the portal is configured (#81); while null the thank-you
-// page offers email instead of the link.
-export const BILLING_PORTAL_URL: string | null = null;
+/**
+ * The Customer Portal login link (`https://billing.stripe.com/p/login/...`, printed by
+ * `npm run stripe-setup`) from PUBLIC_STRIPE_PORTAL_URL at build time, so test and live
+ * builds differ without code edits. Public, not a secret. Unset or blank gives null and
+ * the thank-you page offers email instead; anything that is not an https URL throws,
+ * so a typo fails the build rather than shipping a broken link.
+ */
+export function billingPortalUrl(
+	env: Record<string, string | undefined> = process.env
+): string | null {
+	const value = env.PUBLIC_STRIPE_PORTAL_URL?.trim();
+	if (!value) return null;
+	let url: URL;
+	try {
+		url = new URL(value);
+	} catch {
+		throw new Error(`PUBLIC_STRIPE_PORTAL_URL is not a URL: ${value}`);
+	}
+	if (url.protocol !== 'https:') throw new Error(`PUBLIC_STRIPE_PORTAL_URL is not https: ${value}`);
+	return url.href;
+}
 
 // Custom field keys must be alphanumeric.
 export const FIELD_KEYS = { business: 'businessname', bestTime: 'besttime' } as const;

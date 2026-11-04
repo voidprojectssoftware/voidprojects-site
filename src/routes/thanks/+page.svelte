@@ -9,7 +9,8 @@
 	import { Section } from '$lib/components/voidprojects/section/index.js';
 	import { GlassCard } from '$lib/components/voidprojects/glass-card/index.js';
 	import { CONTACT_EMAIL } from '$lib/content/websites.js';
-	import { BILLING_PORTAL_URL } from '$lib/offers/stripe.js';
+
+	let { data } = $props();
 
 	// Client only: the page is prerendered, and SvelteKit forbids reading
 	// url.searchParams while prerendering.
@@ -121,9 +122,9 @@
 		</div>
 
 		<p class="pt-10 text-sm text-foreground/55">
-			{#if BILLING_PORTAL_URL}
-				<a class={link} href={BILLING_PORTAL_URL} rel="noreferrer">Manage billing</a>: update your
-				card, see invoices or cancel, any time.
+			{#if data.portalUrl}
+				<a class={link} href={data.portalUrl} rel="noreferrer">Manage billing</a>: update your card,
+				see invoices or cancel, any time.
 			{:else}
 				To manage billing, write us at
 				<a class={link} href="mailto:{CONTACT_EMAIL}">{CONTACT_EMAIL}</a>.
