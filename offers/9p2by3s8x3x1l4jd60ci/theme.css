@@ -1,0 +1,48 @@
+/* First Touch's colors, as measured from their current site
+   (firsttouchpaymentsolutions-website, docs/discovery/atlas/brand.md): brand blue
+   #0069a7, lime #cfdb00, grey #646569, body text #333333, light grey #f5f5f5. */
+@import 'tailwindcss' source('.');
+@source not './figures.json';
+@source not './figures.mjs';
+
+:root {
+	--offer-bg: #f5f5f5;
+	--offer-fg: #333333;
+	--offer-muted: #595a5e;
+	--offer-surface: #ffffff;
+	--offer-border: #dcdcdc;
+	--offer-accent: #0069a7;
+	--offer-accent-fg: #ffffff;
+	--offer-good: #2f6b3a;
+	--offer-warn: #8a5d12;
+	--offer-bad: #b42318;
+	--offer-radius: 0.5rem;
+	--ftps-grey: #646569;
+	--ftps-lime: #cfdb00;
+}
+
+body {
+	margin: 0;
+	background: var(--offer-bg);
+	color: var(--offer-fg);
+	font-family: Roboto, ui-sans-serif, system-ui, sans-serif;
+	line-height: 1.55;
+}
+
+h1,
+h2,
+.serif {
+	font-family: 'Droid Serif', Georgia, Cambria, 'Times New Roman', serif;
+	font-weight: 400;
+	letter-spacing: -0.005em;
+}
+
+h2 {
+	margin-bottom: 1rem;
+	font-size: 1.75rem;
+	line-height: 1.25;
+}
+
+h3 {
+	font-weight: 700;
+}

@@ -1,0 +1,136 @@
+{
+	"sites": [
+		{
+			"id": "ftps",
+			"name": "First Touch Payment Solutions",
+			"current": "https://www.firsttouchpaymentsolutions.com/",
+			"preview": "https://firsttouchpaymentsolutions-website.pages.dev/",
+			"measured": "October 28, 2026",
+			"pages": 11,
+			"source": {
+				"commit": "093cc1c",
+				"run": "docs/discovery/seo-audit/2026-10-28-after-88/result.json"
+			},
+			"rows": [
+				{
+					"label": "Speed score on phones",
+					"note": "Google Lighthouse performance, out of 100, averaged over 11 pages.",
+					"before": "63",
+					"after": "99"
+				},
+				{
+					"label": "Time until the main content shows",
+					"note": "On a phone. Google counts 2.5 s or less as good: 0 of 11 pages meet it today, 11 of 11 rebuilt.",
+					"before": "4.9 s",
+					"after": "1.8 s"
+				},
+				{
+					"label": "Accessibility score",
+					"note": "Google Lighthouse accessibility on phones, out of 100.",
+					"before": "97",
+					"after": "100"
+				},
+				{
+					"label": "Search engine score",
+					"note": "Google Lighthouse SEO on phones, out of 100. 100 on 8 of 11 pages today, 11 of 11 rebuilt.",
+					"before": "98",
+					"after": "100"
+				},
+				{
+					"label": "Business details for search engines",
+					"note": "Structured data: name, phone, location and services, in the format Google reads.",
+					"before": "11 of 11",
+					"after": "11 of 11"
+				},
+				{
+					"label": "Headings in order",
+					"note": "One clear outline per page, which search engines and screen readers both follow.",
+					"before": "1 of 11",
+					"after": "11 of 11"
+				}
+			],
+			"ai": null
+		},
+		{
+			"id": "se",
+			"name": "Software Earnings",
+			"current": "https://www.softwareearnings.com/",
+			"preview": "https://softwareearnings-website.pages.dev/",
+			"measured": "November 3, 2026",
+			"pages": 11,
+			"source": {
+				"commit": "0e621cf",
+				"run": "docs/discovery/seo-audit/2026-11-03-after-69/result.json",
+				"aeo": "docs/discovery/aeo/2026-11-04-after-96"
+			},
+			"rows": [
+				{
+					"label": "Speed score on phones",
+					"note": "Google Lighthouse performance, out of 100, averaged over 11 pages.",
+					"before": "69",
+					"after": "100"
+				},
+				{
+					"label": "Time until the main content shows",
+					"note": "On a phone. Google counts 2.5 s or less as good: 1 of 11 pages meet it today, 11 of 11 rebuilt.",
+					"before": "5.3 s",
+					"after": "1.7 s"
+				},
+				{
+					"label": "Accessibility score",
+					"note": "Google Lighthouse accessibility on phones, out of 100.",
+					"before": "98",
+					"after": "100"
+				},
+				{
+					"label": "Search engine score",
+					"note": "Google Lighthouse SEO on phones, out of 100. 100 on 0 of 11 pages today, 11 of 11 rebuilt.",
+					"before": "91",
+					"after": "100"
+				},
+				{
+					"label": "Business details for search engines",
+					"note": "Structured data: name, phone, location and services, in the format Google reads.",
+					"before": "11 of 11",
+					"after": "11 of 11"
+				},
+				{
+					"label": "Headings in order",
+					"note": "One clear outline per page, which search engines and screen readers both follow.",
+					"before": "1 of 11",
+					"after": "10 of 11"
+				}
+			],
+			"ai": {
+				"facts": 121,
+				"checks": 216,
+				"rows": [
+					{
+						"label": "Facts in the structured data",
+						"note": "Business details written into each page for search engines and AI tools.",
+						"before": "under 1%",
+						"after": "38%"
+					},
+					{
+						"label": "Facts in the page text without scripts",
+						"note": "How a crawler that does not run scripts reads the page.",
+						"before": "75%",
+						"after": "95%"
+					},
+					{
+						"label": "Facts in the llms.txt summary for AI tools",
+						"note": "A plain list of the site’s pages and what they say.",
+						"before": "34%",
+						"after": "99%"
+					},
+					{
+						"label": "geoctl agent readiness score",
+						"note": "An open-source audit, out of 100; the rebuild as it will run at launch.",
+						"before": "48",
+						"after": "99.5"
+					}
+				]
+			}
+		}
+	]
+}
