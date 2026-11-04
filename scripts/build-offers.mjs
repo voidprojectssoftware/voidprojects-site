@@ -33,6 +33,7 @@ function entryPlugin(id, ssr) {
 				`import input from ${JSON.stringify(offerFile(id, 'offer.ts'))};`,
 				`import * as offers from ${JSON.stringify(join(lib, 'offers/offer.ts'))};`,
 				`import { SITE_ORIGIN } from ${JSON.stringify(join(lib, 'seo/site.ts'))};`,
+				`export { analyticsBeacon } from ${JSON.stringify(join(lib, 'analytics/beacon.ts'))};`,
 				`export const offer = offers.resolveOffer(${JSON.stringify(id)}, input);`,
 				`export { offers, SITE_ORIGIN };`,
 				`export const renderPage = (props) => render(Page, { props });`
@@ -124,9 +125,10 @@ async function clientAssets(id) {
 	return { script: href(entry.file), css: [...css].map(href), preload: [...preload].map(href) };
 }
 
-function page({ offer, html, assets, props }) {
+function page({ offer, html, assets, props, beacon }) {
 	const json = JSON.stringify(props).replace(/</g, '\\u003c');
 	const head = [
+		beacon, // the site's Cloudflare Web Analytics tag; offer views count too (#83)
 		...assets.css.map((href) => `<link rel="stylesheet" href="${href}" />`),
 		...assets.preload.map((href) => `<link rel="modulepreload" href="${href}" />`),
 		html.head
@@ -159,7 +161,7 @@ async function buildOffer(id, builtAt) {
 	const ssr = await import(
 		`${pathToFileURL(join(ssrRoot, id, 'render.mjs')).href}?t=${Date.now()}`
 	);
-	const { offer, offers, SITE_ORIGIN } = ssr;
+	const { offer, offers, SITE_ORIGIN, analyticsBeacon } = ssr;
 	const url = new URL(offers.offerPath(id), SITE_ORIGIN).href;
 	const props = {
 		offer: offers.publicOffer(offer),
@@ -170,7 +172,7 @@ async function buildOffer(id, builtAt) {
 	const assets = await clientAssets(id);
 	await writeFile(
 		join(outRoot, id, 'index.html'),
-		page({ offer, html: ssr.renderPage(props), assets, props })
+		page({ offer, html: ssr.renderPage(props), assets, props, beacon: analyticsBeacon() })
 	);
 	return { offer, offers };
 }
