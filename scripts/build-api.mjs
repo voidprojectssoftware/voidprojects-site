@@ -9,6 +9,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { build } from 'rolldown';
 import { brandPrimary } from './brand-primary.mjs';
+import { offersPlugin } from './offers.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const out = join(root, 'build-api');
@@ -18,6 +19,7 @@ await mkdir(out, { recursive: true });
 
 await build({
 	input: join(root, 'api/src/index.ts'),
+	plugins: [offersPlugin()],
 	platform: 'node',
 	tsconfig: join(root, 'tsconfig.json'), // pinned: api/ is outside its include, so discovery walks up past the repo (#35)
 	external: ['@azure/functions-core'],

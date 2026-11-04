@@ -1,0 +1,16 @@
+// Shared blocks for offer pages (offers/<id>/page.svelte). None hard-codes a look:
+// each reads these custom properties, which the offer's page sets on an ancestor,
+// and takes a `class` (and most a `title`) for local adjustments.
+//   --offer-fg, --offer-muted          text and secondary text
+//   --offer-surface, --offer-border    card background and its edge
+//   --offer-accent, --offer-accent-fg  selected states and the sign-up button
+//   --offer-good, --offer-bad          better and worse audit figures
+//   --offer-radius                     card corner radius
+export { default as ConcernsList } from './concerns-list.svelte';
+export { default as AuditComparison } from './audit-comparison.svelte';
+export { default as PlanPicker } from './plan-picker.svelte';
+export { default as SignUpButton } from './sign-up-button.svelte';
+export { default as QrCode } from './qr-code.svelte';
+export { default as ExpiredState } from './expired-state.svelte';
+export { default as OfferGate } from './offer-gate.svelte';
+export { initialSelection, type Selection } from './selection.js';
