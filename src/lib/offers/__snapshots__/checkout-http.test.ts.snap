@@ -1,0 +1,90 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`checkoutResponse > creates a session priced from server data and answers with its url 1`] = `
+[
+  {
+    "automatic_tax": {
+      "enabled": true,
+    },
+    "billing_address_collection": "required",
+    "cancel_url": "https://voidprojects.ai/o/testofferaaaa0000/",
+    "consent_collection": {
+      "terms_of_service": "required",
+    },
+    "custom_fields": [
+      {
+        "key": "businessname",
+        "label": {
+          "custom": "Business name",
+          "type": "custom",
+        },
+        "type": "text",
+      },
+      {
+        "key": "besttime",
+        "label": {
+          "custom": "Best time to reach you",
+          "type": "custom",
+        },
+        "optional": true,
+        "type": "text",
+      },
+    ],
+    "custom_text": {
+      "terms_of_service_acceptance": {
+        "message": "I agree to the [Terms of Service](https://voidprojects.ai/terms).",
+      },
+    },
+    "line_items": [
+      {
+        "price_data": {
+          "currency": "usd",
+          "product_data": {
+            "description": "Hosted and kept up to date.",
+            "name": "Static site",
+          },
+          "recurring": {
+            "interval": "month",
+          },
+          "tax_behavior": "exclusive",
+          "unit_amount": 2500,
+        },
+        "quantity": 1,
+      },
+      {
+        "price_data": {
+          "currency": "usd",
+          "product_data": {
+            "name": "Newsletter sign-up",
+          },
+          "recurring": {
+            "interval": "month",
+          },
+          "tax_behavior": "exclusive",
+          "unit_amount": 500,
+        },
+        "quantity": 1,
+      },
+    ],
+    "metadata": {
+      "add_ons": "newsletter",
+      "interval": "month",
+      "offer_id": "testofferaaaa0000",
+      "plan": "static",
+    },
+    "mode": "subscription",
+    "phone_number_collection": {
+      "enabled": true,
+    },
+    "subscription_data": {
+      "metadata": {
+        "add_ons": "newsletter",
+        "interval": "month",
+        "offer_id": "testofferaaaa0000",
+        "plan": "static",
+      },
+    },
+    "success_url": "https://voidprojects.ai/thanks?session_id={CHECKOUT_SESSION_ID}",
+  },
+]
+`;
