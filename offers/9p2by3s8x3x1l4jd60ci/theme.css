@@ -91,8 +91,8 @@ h2 {
 		backdrop-filter: blur(2px) brightness(2.1) contrast(1.3);
 	}
 }
+/* Selected: one accent line, the card's own border, as in light. */
 :root[data-theme='dark'] .plans .plan:has(input:checked) {
-	box-shadow:
-		inset 0 0 0 1px var(--offer-accent),
-		0 0 0 1px var(--offer-accent);
+	border-color: var(--offer-accent);
+	box-shadow: none;
 }

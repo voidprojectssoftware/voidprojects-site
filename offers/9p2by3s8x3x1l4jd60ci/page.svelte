@@ -1,10 +1,5 @@
 <script lang="ts">
 	import './theme.css';
-	// Inlined so no asset path, which carries the offer id, sits in the script.
-	import logo from './logo.png?inline';
-	// Software Earnings' own file (262x94) with its black and grey parts turned white so
-	// it reads on the dark pill; the lime and the swoosh are unchanged. No light version exists.
-	import seLogo from './se-logo.png?inline';
 	import { generateMarkSvg } from '$lib/brand/mark.js';
 	import { TRAJECTORIES } from '$lib/trajectory/source.js';
 	import figures from './figures.json';
@@ -33,6 +28,16 @@
 	// Files from offers/<id>/public/, by path from the page's own URL (a prop), so the
 	// offer id is in the HTML but never in the page script.
 	const asset = (path: string) => new URL(path, context.url).pathname;
+
+	// Client logos in public/logos/, one for each theme's pill. Each client publishes one
+	// version only: FTPS a white wordmark (ftps-white.png), Software Earnings dark artwork
+	// (se.png). The other two are ours with only the wordmark recoloured: FTPS's white to
+	// its body text #333333 (ftps-dark.png), Software Earnings' black and grey to white
+	// (se-white.png).
+	const LOGOS = {
+		ftps: { light: asset('logos/ftps-dark.png'), dark: asset('logos/ftps-white.png') },
+		se: { light: asset('logos/se.png'), dark: asset('logos/se-white.png') }
+	};
 
 	// Dark theme: off by default, remembered in localStorage when turned on. THEME_SCRIPT
 	// runs in the head before first paint, so a returning visitor sees no flash.
@@ -78,6 +83,20 @@
 	});
 
 	const bioLine = ENGINEER.bio[0].split('. ')[0] + '.';
+
+	// Dark theme only: a sparse, dim, static star field as texture (the home page's
+	// live sky draws ~9k catalogue stars every frame, too heavy for this page). Seeded,
+	// so the server and the browser draw the same stars and hydration matches.
+	const STARS = (() => {
+		let s = 20261104;
+		const rand = () => (s = (s * 1664525 + 1013904223) >>> 0) / 2 ** 32;
+		return Array.from({ length: 220 }, () => ({
+			x: +(rand() * 1600).toFixed(1),
+			y: +(rand() * 1000).toFixed(1),
+			r: +(0.5 + rand() ** 3 * 1.1).toFixed(2),
+			o: +(0.12 + rand() ** 2 * 0.45).toFixed(2)
+		}));
+	})();
 
 	// Screenshot evidence for a concern, keyed by its title in offer.ts. Captured from the
 	// live current sites on 2026-11-04 (Playwright, iPhone 15 emulation, cookie banner
@@ -365,6 +384,10 @@
 	</ul>
 {/snippet}
 
+<svg class="stars" viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+	{#each STARS as star, i (i)}<circle cx={star.x} cy={star.y} r={star.r} opacity={star.o} />{/each}
+</svg>
+
 <header class="top px-4 pt-5 sm:px-8">
 	<div class="lockup">
 		<span class="void">
@@ -380,9 +403,29 @@
 		</span>
 		<span class="clients">
 			<span class="plus" aria-hidden="true">+</span>
-			<img class="ftps" src={logo} alt="First Touch Payment Solutions" width="179" height="48" />
+			<img
+				class="ftps on-light"
+				src={LOGOS.ftps.light}
+				alt="First Touch Payment Solutions"
+				width="179"
+				height="48"
+			/>
+			<img
+				class="ftps on-dark"
+				src={LOGOS.ftps.dark}
+				alt="First Touch Payment Solutions"
+				width="179"
+				height="48"
+			/>
 			<span class="plus" aria-hidden="true">&amp;</span>
-			<img class="se" src={seLogo} alt="Software Earnings" width="262" height="94" />
+			<img
+				class="se on-light"
+				src={LOGOS.se.light}
+				alt="Software Earnings"
+				width="262"
+				height="94"
+			/>
+			<img class="se on-dark" src={LOGOS.se.dark} alt="Software Earnings" width="262" height="94" />
 		</span>
 	</div>
 	<button type="button" class="theme" aria-pressed={dark} onclick={toggleTheme}>
@@ -653,6 +696,19 @@
 </main>
 
 <style>
+	.stars {
+		display: none;
+		position: fixed;
+		inset: 0;
+		z-index: -1;
+		width: 100%;
+		height: 100%;
+		fill: #fff;
+		pointer-events: none;
+	}
+	:global([data-theme='dark']) .stars {
+		display: block;
+	}
 	.top {
 		display: flex;
 		align-items: center;
@@ -693,13 +749,22 @@
 		justify-content: center;
 		gap: 0.375rem 0.625rem;
 		padding: 0.5rem 1.125rem;
+		border: 1px solid var(--offer-border);
 		border-radius: 1.25rem;
-		background: var(--void-night);
-		color: #fff;
-		box-shadow: 0 10px 30px -12px oklch(0.17 0.018 285 / 0.45);
+		background: var(--offer-surface);
+		color: var(--offer-fg);
 	}
 	:global([data-theme='dark']) .lockup {
-		outline: 1px solid oklch(1 0 0 / 0.12);
+		border-color: oklch(1 0 0 / 0.12);
+		background: var(--void-night);
+	}
+	/* The theme is set before first paint, so the right logo shows from the start. */
+	.on-dark,
+	:global([data-theme='dark']) .on-light {
+		display: none;
+	}
+	:global([data-theme='dark']) .on-dark {
+		display: block;
 	}
 	.void {
 		display: flex;
@@ -735,12 +800,10 @@
 		gap: 0.625rem;
 	}
 	.ftps {
-		display: block;
 		height: 30px;
 		width: auto;
 	}
 	.se {
-		display: block;
 		height: 30px;
 		width: auto;
 	}
@@ -809,7 +872,6 @@
 		border: 1px solid oklch(1 0 0 / 0.1);
 		border-radius: 0.75rem;
 		background: oklch(0.21 0.015 285);
-		box-shadow: 0 24px 60px -30px oklch(0 0 0 / 0.8);
 	}
 	.chrome {
 		display: flex;
@@ -860,9 +922,7 @@
 		padding: 0.3rem;
 		border-radius: 1.1rem;
 		background: oklch(0.21 0.015 285);
-		box-shadow:
-			0 0 0 1px oklch(1 0 0 / 0.1),
-			0 20px 40px -18px oklch(0 0 0 / 0.7);
+		box-shadow: 0 0 0 1px oklch(1 0 0 / 0.1); /* a thin rim, no drop shadow */
 	}
 	.phone img {
 		display: block;
@@ -1296,9 +1356,6 @@
 		border: 1px solid var(--offer-border);
 		border-radius: 1rem;
 		background: var(--offer-surface);
-	}
-	.longer {
-		border-left: 3px solid var(--void-primary);
 	}
 	.icon {
 		flex: none;
