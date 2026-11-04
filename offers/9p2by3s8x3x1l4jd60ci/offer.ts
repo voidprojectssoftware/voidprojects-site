@@ -8,34 +8,30 @@ export default defineOffer({
 	prospect: 'First Touch Payment Solutions',
 	sent: '2026-11-05',
 	previewUrl: 'https://firsttouchpaymentsolutions-website.pages.dev/',
-	// "About 5 seconds": figures.json wait row, 4.9 s (FTPS) and 5.1 s (Software Earnings).
 	// "Dozens of scripts": atlas observations, about 35 script requests per FTPS page
 	// (item 36) and 25 Hibu runtime plus 10 AudioEye requests on the Software Earnings home page (item 33).
 	concerns: [
 		{
-			title: 'Slow on a phone',
-			detail:
-				'About 5 seconds before each page shows. Many visitors leave before they see your number.'
-		},
-		{
 			title: 'Someone else’s advert on your home page',
 			detail:
-				'On phones, both home pages show Hibu’s “Now Insurance” filler in place of your own words.'
+				'On phones, both home pages show Hibu’s “Now Insurance” filler in place of your own words.',
+			impact: 'Your visitors are pointed at someone else’s business.'
 		},
 		{
 			title: 'Contact details search engines often miss',
-			detail:
-				'Your phone number and hours are added by a script that does not always run, so search engines and AI assistants often never see them.'
+			detail: 'Your phone number and hours are added by a script that does not always run.',
+			impact: 'Search engines and AI assistants often never see them.'
 		},
 		{
 			title: 'Leftovers and broken links',
-			detail:
-				'A stock Hibu blog post, a “Hibu Video Splash” page and dead links tell a visitor nobody is minding the site.'
+			detail: 'A stock Hibu blog post, a “Hibu Video Splash” page and dead links.',
+			impact: 'They tell a visitor nobody is minding the site.'
 		},
 		{
 			title: 'Code you do not control on every page',
 			detail:
-				'Dozens of scripts from outside services, including an accessibility overlay that papers over problems instead of fixing them.'
+				'Dozens of scripts from outside services, including an accessibility overlay that papers over problems instead of fixing them.',
+			impact: 'Each one is code you depend on and do not control.'
 		}
 	],
 	plans: [

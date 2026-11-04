@@ -1,12 +1,14 @@
 /* Void Projects' look, from src/routes/layout.css: the light lavender background,
    brand violet (--color-primary) and its darker solid (--color-primary-strong,
    4.66:1 under white text), near-black text and Inter. The site has no dark mode in
-   use (.dark is never set), so neither does this page. Inter is named but not
+   use (.dark is never set); this page adds a switchable dark theme from the site's
+   .dark tokens, chosen on [data-theme='dark'] by the header toggle. Inter is named but not
    bundled: a bundled font file's URL would carry the offer id into the CSS, so
    visitors without Inter get the system sans. */
 @import 'tailwindcss' source('.');
 @source not './figures.json';
 @source not './figures.mjs';
+@source not './public';
 
 :root {
 	--void-primary: oklch(0.6534 0.1876 301.62);
@@ -25,6 +27,26 @@
 	--offer-warn: oklch(0.55 0.12 75);
 	--offer-bad: oklch(0.55 0.2 27);
 	--offer-radius: 1rem;
+	--offer-callout: var(--void-primary-text);
+	--void-track: oklch(0.145 0 0 / 0.07);
+	--void-tile: var(--offer-bg);
+	--void-icon-no: oklch(0.55 0.006 300);
+	color-scheme: light;
+}
+
+/* The site's .dark tokens; violet text lightened to 7.3:1 and grey bars to 3.9:1. */
+:root[data-theme='dark'] {
+	--void-primary-text: oklch(0.72 0.16 301.62);
+	--void-neutral: oklch(0.55 0.006 300);
+	--offer-bg: oklch(0.17 0.018 285);
+	--offer-fg: oklch(0.985 0 0);
+	--offer-muted: oklch(0.708 0 0);
+	--offer-surface: oklch(0.205 0 0);
+	--offer-border: oklch(1 0 0 / 0.1);
+	--void-track: oklch(1 0 0 / 0.1);
+	--void-tile: oklch(0.17 0.018 285);
+	--void-icon-no: oklch(0.45 0.006 300);
+	color-scheme: dark;
 }
 
 html,
@@ -51,4 +73,26 @@ h2 {
 	margin-bottom: 0.75rem;
 	font-size: 1.875rem;
 	line-height: 1.2;
+}
+
+/* The shared blocks' cards (plan, concerns) get the same glass as the page's own
+   dark surfaces; see the dark rule in page.svelte. */
+:root[data-theme='dark'] :is(.plans .plan, .addon, ol > li) {
+	border-color: transparent;
+	background: oklch(1 0 0 / 0.05);
+	box-shadow:
+		inset 0 1px 0 0 oklch(1 0 0 / 0.08),
+		inset 0 0 0 1px oklch(1 0 0 / 0.07),
+		0 16px 36px -20px oklch(0 0 0 / 0.65);
+}
+@supports (backdrop-filter: blur(2px)) {
+	:root[data-theme='dark'] :is(.plans .plan, .addon, ol > li) {
+		background: oklch(0.17 0.018 285 / 0.08);
+		backdrop-filter: blur(2px) brightness(2.1) contrast(1.3);
+	}
+}
+:root[data-theme='dark'] .plans .plan:has(input:checked) {
+	box-shadow:
+		inset 0 0 0 1px var(--offer-accent),
+		0 0 0 1px var(--offer-accent);
 }

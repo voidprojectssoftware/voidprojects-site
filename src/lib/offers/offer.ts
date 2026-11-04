@@ -37,6 +37,7 @@ export interface AddOnInput extends Pricing {
 export interface Concern {
 	title: string;
 	detail: string;
+	impact?: string; // what it costs the business; shown after the detail as a highlighted callout
 }
 
 export interface OfferContact {

@@ -60,7 +60,7 @@ function viteConfig(id, ssr) {
 		configFile: false,
 		root,
 		base: `/o/${id}/`,
-		publicDir: false,
+		publicDir: ssr ? false : offerFile(id, 'public'), // offers/<id>/public/ is copied as is into build/o/<id>/
 		logLevel: 'warn',
 		resolve: { alias: { $lib: lib } },
 		define: { __BRAND_PRIMARY__: JSON.stringify(brandPrimary()) }, // as vite.config.ts, for the orbit mark

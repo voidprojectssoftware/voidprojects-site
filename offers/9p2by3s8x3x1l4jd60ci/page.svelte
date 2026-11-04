@@ -2,9 +2,14 @@
 	import './theme.css';
 	// Inlined so no asset path, which carries the offer id, sits in the script.
 	import logo from './logo.png?inline';
+	// Software Earnings' own file (262x94) with its black and grey parts turned white so
+	// it reads on the dark pill; the lime and the swoosh are unchanged. No light version exists.
+	import seLogo from './se-logo.png?inline';
 	import { generateMarkSvg } from '$lib/brand/mark.js';
 	import { TRAJECTORIES } from '$lib/trajectory/source.js';
 	import figures from './figures.json';
+	import { onMount } from 'svelte';
+	import { ENGINEER } from '$lib/content/websites.js';
 	import {
 		ConcernsList,
 		OfferGate,
@@ -21,8 +26,86 @@
 		type Plan
 	} from '$lib/offers/offer.js';
 	import type { OfferPageProps } from '$lib/offers/page.js';
+	import type { Concern } from '$lib/offers/offer.js';
 
 	let { offer, context }: OfferPageProps = $props();
+
+	// Files from offers/<id>/public/, by path from the page's own URL (a prop), so the
+	// offer id is in the HTML but never in the page script.
+	const asset = (path: string) => new URL(path, context.url).pathname;
+
+	// Dark theme: off by default, remembered in localStorage when turned on. THEME_SCRIPT
+	// runs in the head before first paint, so a returning visitor sees no flash.
+	const THEME_KEY = 'offer-theme';
+	const THEME_SCRIPT =
+		`<script>try{if(localStorage.getItem('${THEME_KEY}')==='dark')document.documentElement.dataset.theme='dark'}catch(e){}</` +
+		'script>';
+	let dark = $state(false);
+	function toggleTheme() {
+		dark = !dark;
+		document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+		try {
+			if (dark) localStorage.setItem(THEME_KEY, 'dark');
+			else localStorage.removeItem(THEME_KEY);
+		} catch {
+			// storage blocked: the choice lasts for this visit only
+		}
+	}
+
+	// Info disclosures (<details class="info">) close on Escape and on a click elsewhere.
+	onMount(() => {
+		dark = document.documentElement.dataset.theme === 'dark';
+		const seed = Math.floor(Math.random() * 0x7fffffff);
+		markSrc = new URL(`/api/mark.svg?seed=${seed}`, context.url).href;
+		const closeOthers = (e: MouseEvent) => {
+			for (const d of document.querySelectorAll<HTMLDetailsElement>('details.info[open]')) {
+				if (!d.contains(e.target as Node)) d.open = false;
+			}
+		};
+		const closeOnEscape = (e: KeyboardEvent) => {
+			if (e.key !== 'Escape') return;
+			for (const d of document.querySelectorAll<HTMLDetailsElement>('details.info[open]')) {
+				d.open = false;
+				if (d.contains(document.activeElement)) d.querySelector('summary')?.focus();
+			}
+		};
+		document.addEventListener('click', closeOthers);
+		document.addEventListener('keydown', closeOnEscape);
+		return () => {
+			document.removeEventListener('click', closeOthers);
+			document.removeEventListener('keydown', closeOnEscape);
+		};
+	});
+
+	const bioLine = ENGINEER.bio[0].split('. ')[0] + '.';
+
+	// Screenshot evidence for a concern, keyed by its title in offer.ts. Captured from the
+	// live current sites on 2026-11-04 (Playwright, iPhone 15 emulation, cookie banner
+	// declined), cropped to the paragraph and nothing else changed.
+	const EVIDENCE: Record<string, { site: string; file: string; width: number; height: number }[]> =
+		{
+			'Someone else’s advert on your home page': [
+				{
+					site: 'First Touch Payment Solutions',
+					file: 'evidence/ftps-insurance.webp',
+					width: 600,
+					height: 334
+				},
+				{ site: 'Software Earnings', file: 'evidence/se-insurance.webp', width: 600, height: 444 }
+			]
+		};
+	let shotDialog: HTMLDialogElement | undefined = $state();
+	let shot = $state({ src: '', alt: '', width: 600, height: 400 });
+	let opener: HTMLElement | null = null;
+	function openShot(e: MouseEvent, next: typeof shot) {
+		if (!shotDialog?.showModal) return; // no dialog support: the link opens the image itself
+		e.preventDefault();
+		opener = e.currentTarget as HTMLElement;
+		shot = next;
+		shotDialog.showModal();
+	}
+	const shotAlt = (site: string) =>
+		`Screenshot of the current ${site} home page on a phone, with Hibu’s “Now Insurance” text in place of your own`;
 
 	// svelte-ignore state_referenced_locally
 	let selection = $state(initialSelection(offer));
@@ -73,9 +156,13 @@
 	// on the server only so the trajectory table never ships in the page script. The
 	// client reads the server's markup back before hydrating, so {@html} matches.
 	const FAVICON_SEED = 42;
+	// After mount the marks switch to a fresh one from the site's /api/mark.svg endpoint
+	// (the footer badge's), one random seed per page load shared by both, as the site
+	// header rolls a new mark each visit. The fixed-seed mark stays for no-JS visitors.
+	let markSrc = $state('');
 	const voidMark = import.meta.env.SSR
 		? generateMarkSvg(TRAJECTORIES, FAVICON_SEED, __BRAND_PRIMARY__)
-		: (document.querySelector('[data-void-mark]')?.innerHTML ?? '');
+		: (document.querySelector('[data-void-mark] svg')?.outerHTML ?? '');
 
 	const PER: Record<Interval, string> = { month: '/month', year: '/year' };
 
@@ -89,6 +176,7 @@
 		before: string;
 		after: string;
 		bar: { before: number; after: number; max: number };
+		impact?: string; // the consequence, shown as a callout after `why`
 		target?: { value: number; label: string; good: string; text: string; source: string }; // benchmark line, see figures.mjs
 	}
 
@@ -105,7 +193,7 @@
 		'Dozens of outside scripts on every page'
 	];
 	const MOVE = [
-		'Pages show in under 2 seconds on a phone',
+		'Pages show in under 2 seconds on a phone', // the one callout in this list
 		'Your own words on every screen',
 		'Contact details every search engine and assistant can read',
 		'Clean pages, and someone checking they stay that way',
@@ -145,6 +233,8 @@
 </script>
 
 <svelte:head>
+	<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+	{@html THEME_SCRIPT}
 	<title>Hosting proposal for {offer.prospect} | Void Projects</title>
 </svelte:head>
 
@@ -179,11 +269,57 @@
 	</svg>
 {/snippet}
 
+{#snippet evidence(concern: Concern)}
+	{#if EVIDENCE[concern.title]}
+		<div class="evidence">
+			{#each EVIDENCE[concern.title] as item (item.file)}
+				{@const next = {
+					src: asset(item.file),
+					alt: shotAlt(item.site),
+					width: item.width,
+					height: item.height
+				}}
+				<a class="thumb" href={next.src} onclick={(e) => openShot(e, next)}>
+					<img
+						src={next.src}
+						alt={next.alt}
+						width={item.width}
+						height={item.height}
+						loading="lazy"
+						decoding="async"
+					/>
+					<span>{item.site}</span>
+				</a>
+			{/each}
+			<p class="evidence-note">
+				Captured from your live sites on a phone, November 4, 2026. Tap to enlarge.
+			</p>
+		</div>
+	{/if}
+{/snippet}
+
+{#snippet info(text: string, name: string)}
+	<details class="info">
+		<summary>
+			<span class="sr-only">{name}</span>
+			<svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true">
+				<circle cx="10" cy="10" r="8.5" />
+				<path d="M10 9v5M10 6.2v.1" />
+			</svg>
+		</summary>
+		<p class="info-panel">{text}</p>
+	</details>
+{/snippet}
+
 {#snippet tiles(list: Row[])}
 	<ul class="tiles">
 		{#each list as row (row.label)}
 			<li class="tile">
-				<p class="font-semibold">{row.label}</p>
+				<p class="tile-label font-semibold">{row.label}</p>
+				{@render info(
+					row.target ? `${row.fine} Line: ${row.target.source}` : row.fine,
+					'How this was measured'
+				)}
 				<div class="bars">
 					<span class="who">{NOW}</span>
 					<span class="track"
@@ -219,32 +355,62 @@
 						</span>
 					{/if}
 				</div>
-				<p class="why">{row.why}</p>
-				<p class="fine">
-					{row.target ? `${row.fine} Line: ${row.target.source}` : row.fine}
+				<p class="why">
+					{row.why}
+					{#if row.impact}
+						<strong class="callout">{row.impact}</strong>{/if}
 				</p>
 			</li>
 		{/each}
 	</ul>
 {/snippet}
 
-<header class="px-4 pt-5 sm:px-8">
-	<div class="lockup mx-auto flex w-fit items-center">
+<header class="top px-4 pt-5 sm:px-8">
+	<div class="lockup">
 		<span class="void">
-			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-			<span class="mark" data-void-mark aria-hidden="true">{@html voidMark}</span>
+			<span class="mark" data-void-mark aria-hidden="true">
+				{#if markSrc}
+					<img src={markSrc} alt="" width="36" height="36" />
+				{:else}
+					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+					{@html voidMark}
+				{/if}
+			</span>
 			<span>Void Projects</span>
 		</span>
-		<span class="plus" aria-hidden="true">+</span>
-		<img class="ftps" src={logo} alt="First Touch Payment Solutions" width="179" height="48" />
+		<span class="clients">
+			<span class="plus" aria-hidden="true">+</span>
+			<img class="ftps" src={logo} alt="First Touch Payment Solutions" width="179" height="48" />
+			<span class="plus" aria-hidden="true">&amp;</span>
+			<img class="se" src={seLogo} alt="Software Earnings" width="262" height="94" />
+		</span>
 	</div>
+	<button type="button" class="theme" aria-pressed={dark} onclick={toggleTheme}>
+		<span class="sr-only">Dark theme</span>
+		<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+			{#if dark}
+				<circle cx="12" cy="12" r="4.5" />
+				<path
+					d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"
+				/>
+			{:else}
+				<path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" />
+			{/if}
+		</svg>
+	</button>
 </header>
 
-<main class="mx-auto grid max-w-4xl gap-14 px-4 py-12 sm:px-8 sm:py-16">
+<main class="mx-auto grid max-w-4xl grid-cols-1 gap-14 px-4 py-12 sm:px-8 sm:py-16">
 	<OfferGate {offer} builtAt={context.builtAt}>
 		<section class="hero relative isolate grid gap-4" aria-labelledby="offer-title">
-			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-			<span class="hero-mark" aria-hidden="true">{@html voidMark}</span>
+			<span class="hero-mark" aria-hidden="true">
+				{#if markSrc}
+					<img src={markSrc} alt="" width="416" height="416" />
+				{:else}
+					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+					{@html voidMark}
+				{/if}
+			</span>
 			<p class="eyebrow">Proposal</p>
 			<h1 id="offer-title" class="text-4xl leading-tight sm:text-5xl">
 				Hosting and maintenance proposal for your two websites
@@ -260,30 +426,95 @@
 			</p>
 		</section>
 
-		<section class="grid gap-6" aria-labelledby="offer-sites">
-			<div class="grid gap-3">
-				<h2 id="offer-sites">Your two sites, measured</h2>
-				<p class="legend">
-					<span><span class="swatch now"></span>{NOW}: your current site</span>
-					<span><span class="swatch next"></span>{NEXT}: the site we rebuilt</span>
+		<section class="engineer" aria-labelledby="offer-engineer">
+			<img
+				class="face"
+				src={asset('engineer.webp')}
+				alt={ENGINEER.name}
+				width="112"
+				height="112"
+				decoding="async"
+			/>
+			<div class="grid gap-1.5">
+				<p class="eyebrow">Your engineer</p>
+				<h2 id="offer-engineer" class="engineer-name">
+					{ENGINEER.name}<span>{ENGINEER.role}, Void Projects</span>
+				</h2>
+				<p>
+					<strong class="callout"
+						>{ENGINEER.name.split(' ')[0]} built both of your new sites and is your contact for anything
+						you need.</strong
+					>
+					{bioLine}
+				</p>
+				<p class="promise">
+					<span class="badge">Always a human, never a bot</span>
+					When you write to us, {ENGINEER.name.split(' ')[0]} answers. AI agents do the upkeep behind
+					the scenes; every conversation is with a person.
+				</p>
+				<p class="flex flex-wrap gap-x-5 gap-y-1 text-sm">
+					<a href="mailto:{ENGINEER.email}">{ENGINEER.email}</a>
+					<a href={ENGINEER.linkedin} rel="noreferrer">LinkedIn</a>
 				</p>
 			</div>
+		</section>
 
+		<div class="grid grid-cols-1 gap-14">
 			{#each figures.sites as site (site.id)}
-				<article class="site grid gap-5" aria-labelledby="site-{site.id}">
-					<div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
-						<h3 id="site-{site.id}" class="text-2xl">{site.name}</h3>
-						<div class="flex flex-wrap gap-x-5 gap-y-1 text-sm font-semibold">
+				<section class="site grid grid-cols-1 gap-6" aria-labelledby="site-{site.id}">
+					{@render info(
+						`Measured ${site.measured} on ${site.pages} pages of both versions, as a phone loads them.`,
+						'When and how these were measured'
+					)}
+					<div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2 pr-8">
+						<h2 id="site-{site.id}" class="site-name">{site.name}</h2>
+						<div class="flex flex-wrap items-center gap-x-5 gap-y-1 text-sm font-semibold">
 							<a href={site.preview} rel="noreferrer">Open the rebuilt site</a>
 							<a href="{site.preview}site-comparison/" rel="noreferrer">Full comparison</a>
 						</div>
 					</div>
 
+					<a class="preview" href={site.preview} rel="noreferrer">
+						<span class="frame">
+							<span class="chrome" aria-hidden="true">
+								<span class="dots"><span></span><span></span><span></span></span>
+								<span class="host">{new URL(site.preview).host}</span>
+								<span class="spacer"></span>
+							</span>
+							<img
+								src={asset(`shots/${site.id}-desktop-1280.webp`)}
+								srcset="{asset(`shots/${site.id}-desktop-640.webp`)} 640w, {asset(
+									`shots/${site.id}-desktop-1280.webp`
+								)} 1280w"
+								sizes="(min-width: 56rem) 760px, calc(100vw - 5rem)"
+								alt="The rebuilt {site.name} home page on a computer"
+								width="1280"
+								height="800"
+								loading="lazy"
+								decoding="async"
+							/>
+						</span>
+						<span class="phone">
+							<img
+								src={asset(`shots/${site.id}-phone.webp`)}
+								alt="The rebuilt {site.name} home page on a phone"
+								width="300"
+								height="503"
+								loading="lazy"
+								decoding="async"
+							/>
+						</span>
+					</a>
+
+					<p class="legend">
+						<span><span class="swatch now"></span>{NOW}: your current site</span>
+						<span><span class="swatch next"></span>{NEXT}: the site we rebuilt</span>
+					</p>
 					{@render tiles(site.rows)}
 
 					{#if site.ai}
 						<div class="grid gap-3">
-							<h4 class="text-lg font-semibold">What AI assistants can read about you</h4>
+							<h3 class="text-lg font-semibold">What AI assistants can read about you</h3>
 							{@render tiles(site.ai.rows)}
 						</div>
 					{:else}
@@ -292,15 +523,15 @@
 							upkeep.
 						</p>
 					{/if}
-
-					<p class="fine">
-						Measured {site.measured} on {site.pages} pages of both versions, as a phone loads them.
-					</p>
-				</article>
+				</section>
 			{/each}
-		</section>
+		</div>
 
-		<ConcernsList concerns={offer.concerns} title="What holds your current sites back" />
+		<ConcernsList
+			concerns={offer.concerns}
+			title="What holds your current sites back"
+			extra={evidence}
+		/>
 
 		<section class="grid gap-4" aria-labelledby="offer-choice">
 			<h2 id="offer-choice">The difference for your business</h2>
@@ -314,7 +545,12 @@
 				<div class="move">
 					<h3>Where you can be</h3>
 					<ul>
-						{#each MOVE as line (line)}<li>{@render icon('yes')}<span>{line}</span></li>{/each}
+						{#each MOVE as line, i (line)}
+							<li>
+								{@render icon('yes')}{#if i === 0}<strong class="callout">{line}</strong
+									>{:else}<span>{line}</span>{/if}
+							</li>
+						{/each}
 					</ul>
 				</div>
 			</div>
@@ -379,8 +615,27 @@
 				>
 				<QrCode qr={context.qr} url={context.url} />
 			</div>
+			<p class="renewal">
+				Your plan renews automatically each month, or each year on the annual plan, until you
+				cancel. You can cancel any time from your billing page; your sites stay up to the end of the
+				period you have paid for, and we email a reminder before each annual renewal.
+			</p>
 		</section>
 	</OfferGate>
+
+	<dialog
+		class="shot"
+		bind:this={shotDialog}
+		aria-label="Screenshot"
+		onclick={(e) => e.target === shotDialog && shotDialog?.close()}
+		onclose={() => opener?.focus()}
+	>
+		{#if shot.src}
+			<img src={shot.src} alt={shot.alt} width={shot.width} height={shot.height} />
+			<p>{shot.alt}.</p>
+		{/if}
+		<button type="button" onclick={() => shotDialog?.close()}>Close</button>
+	</dialog>
 
 	<footer
 		class="flex flex-wrap items-center justify-between gap-3 border-t border-(--offer-border) pt-6 text-sm text-(--offer-muted)"
@@ -398,13 +653,53 @@
 </main>
 
 <style>
-	.lockup {
-		gap: 0.625rem;
-		padding: 0.5rem 1.125rem;
+	.top {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.5rem;
+		max-width: 56rem;
+		margin: 0 auto;
+	}
+	.theme {
+		display: grid;
+		place-items: center;
+		flex: none;
+		width: 2.5rem;
+		height: 2.5rem;
+		border: 1px solid var(--offer-border);
 		border-radius: 999px;
+		background: var(--offer-surface);
+		color: var(--offer-fg);
+		cursor: pointer;
+	}
+	.theme:focus-visible,
+	.info summary:focus-visible,
+	.preview:focus-visible {
+		outline: 2px solid var(--void-primary-text);
+		outline-offset: 2px;
+	}
+	.theme svg {
+		fill: none;
+		stroke: currentColor;
+		stroke-width: 1.75;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+	}
+	.lockup {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: center;
+		gap: 0.375rem 0.625rem;
+		padding: 0.5rem 1.125rem;
+		border-radius: 1.25rem;
 		background: var(--void-night);
 		color: #fff;
 		box-shadow: 0 10px 30px -12px oklch(0.17 0.018 285 / 0.45);
+	}
+	:global([data-theme='dark']) .lockup {
+		outline: 1px solid oklch(1 0 0 / 0.12);
 	}
 	.void {
 		display: flex;
@@ -417,11 +712,13 @@
 	}
 	.mark {
 		display: block;
-		width: 28px;
-		height: 28px;
+		width: 26px;
+		height: 26px;
 	}
 	.mark :global(svg),
-	.hero-mark :global(svg) {
+	.hero-mark :global(svg),
+	.mark img,
+	.hero-mark img {
 		display: block;
 		width: 100%;
 		height: 100%;
@@ -432,10 +729,312 @@
 		line-height: 1;
 		opacity: 0.7;
 	}
+	.clients {
+		display: flex;
+		align-items: center;
+		gap: 0.625rem;
+	}
 	.ftps {
 		display: block;
-		height: 34px;
+		height: 30px;
 		width: auto;
+	}
+	.se {
+		display: block;
+		height: 30px;
+		width: auto;
+	}
+	.callout {
+		font-weight: 600;
+		color: var(--offer-callout);
+	}
+
+	.engineer {
+		display: flex;
+		align-items: flex-start;
+		gap: 1.25rem;
+		padding: 1.25rem 1.5rem;
+		border: 1px solid var(--offer-border);
+		border-radius: 1.5rem;
+		background: var(--offer-surface);
+	}
+	.face {
+		flex: none;
+		width: 4.5rem;
+		height: 4.5rem;
+		border-radius: 999px;
+		object-fit: cover;
+		box-shadow: 0 0 0 1px var(--offer-border);
+	}
+	.promise {
+		font-size: 0.9375rem;
+		color: var(--offer-muted);
+	}
+	.badge {
+		display: inline-block;
+		margin: 0 0.5rem 0.25rem 0;
+		padding: 0.125rem 0.625rem;
+		border-radius: 999px;
+		background: oklch(0.6534 0.1876 301.62 / 0.14);
+		color: var(--void-primary-text);
+		font-size: 0.8125rem;
+		font-weight: 600;
+	}
+	.engineer a {
+		overflow-wrap: anywhere;
+	}
+	.engineer-name {
+		margin: 0;
+		font-size: 1.25rem;
+	}
+	.engineer-name span {
+		display: block;
+		font-size: 0.875rem;
+		font-weight: 500;
+		letter-spacing: 0;
+		color: var(--offer-muted);
+	}
+
+	/* The rebuilt site in the main site's browser frame (BrowserFrame on /websites),
+	   with a phone overlapping its corner. */
+	.preview {
+		position: relative;
+		display: block;
+		padding: 0 1.5rem 1.5rem 0;
+		border-radius: 0.75rem;
+	}
+	.frame {
+		display: block;
+		overflow: hidden;
+		border: 1px solid oklch(1 0 0 / 0.1);
+		border-radius: 0.75rem;
+		background: oklch(0.21 0.015 285);
+		box-shadow: 0 24px 60px -30px oklch(0 0 0 / 0.8);
+	}
+	.chrome {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		padding: 0.625rem 0.875rem;
+		border-bottom: 1px solid oklch(1 0 0 / 0.08);
+	}
+	.dots {
+		display: flex;
+		gap: 0.375rem;
+	}
+	.dots span {
+		width: 0.625rem;
+		height: 0.625rem;
+		border-radius: 999px;
+		background: oklch(1 0 0 / 0.15);
+	}
+	.host {
+		margin: 0 auto;
+		overflow: hidden;
+		padding: 0.125rem 0.75rem;
+		border-radius: 0.375rem;
+		background: oklch(1 0 0 / 0.06);
+		color: oklch(1 0 0 / 0.6);
+		font-size: 0.75rem;
+		font-weight: 400;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+	.spacer {
+		width: 2.625rem;
+	}
+	.frame img {
+		display: block;
+		width: 100%;
+		height: auto;
+		aspect-ratio: 16 / 10;
+		object-fit: cover;
+		object-position: top;
+	}
+	.phone {
+		position: absolute;
+		right: 0;
+		bottom: 0;
+		width: 22%;
+		min-width: 5.5rem;
+		padding: 0.3rem;
+		border-radius: 1.1rem;
+		background: oklch(0.21 0.015 285);
+		box-shadow:
+			0 0 0 1px oklch(1 0 0 / 0.1),
+			0 20px 40px -18px oklch(0 0 0 / 0.7);
+	}
+	.phone img {
+		display: block;
+		width: 100%;
+		height: auto;
+		border-radius: 0.8rem;
+	}
+
+	/* Method notes behind an "i": a native disclosure, so it works by touch, keyboard and
+	   without JavaScript; the page script adds Escape and click-outside to close. */
+	.info {
+		position: relative;
+	}
+	.tile > .info {
+		position: absolute;
+		top: 0.75rem;
+		right: 0.75rem;
+	}
+	.site > .info {
+		position: absolute;
+		top: 2.75rem;
+		right: 0;
+	}
+	.info summary {
+		display: grid;
+		place-items: center;
+		width: 1.75rem;
+		height: 1.75rem;
+		border-radius: 999px;
+		color: var(--offer-muted);
+		cursor: pointer;
+		list-style: none;
+	}
+	.info summary::-webkit-details-marker {
+		display: none;
+	}
+	/* Quiet at rest, full strength when hovered, focused or open. */
+	.info summary {
+		opacity: 0.55;
+		transition: opacity 0.15s;
+	}
+	.info summary:hover,
+	.info summary:focus-visible,
+	.info[open] summary {
+		opacity: 1;
+		color: var(--void-primary-text);
+		background: var(--void-track);
+	}
+	.info svg {
+		fill: none;
+		stroke: currentColor;
+		stroke-width: 1.6;
+		stroke-linecap: round;
+	}
+	.info-panel {
+		position: absolute;
+		z-index: 2;
+		top: 2rem;
+		right: 0;
+		width: min(17rem, calc(100vw - 4rem));
+		padding: 0.75rem 0.875rem;
+		border: 1px solid var(--offer-border);
+		border-radius: 0.75rem;
+		background: var(--offer-surface);
+		color: var(--offer-muted);
+		font-size: 0.8125rem;
+		font-weight: 400;
+		line-height: 1.45;
+		box-shadow: 0 16px 32px -16px oklch(0 0 0 / 0.35);
+	}
+	.tile-label {
+		padding-right: 2rem;
+	}
+
+	/* Dark theme surfaces: the main site's glass (GlassCard: bg-background/8 with
+	   backdrop blur 2px, brightness 2.1, contrast 1.3, and its inset rim and shadow).
+	   Without backdrop-filter they fall back to a faint white tint. */
+	:global([data-theme='dark']) :is(.tile, .choice > div, .engineer, .items li, .longer, .shot) {
+		border-color: transparent;
+		background: oklch(1 0 0 / 0.05);
+		box-shadow:
+			inset 0 1px 0 0 oklch(1 0 0 / 0.08),
+			inset 0 0 0 1px oklch(1 0 0 / 0.07),
+			0 16px 36px -20px oklch(0 0 0 / 0.65);
+	}
+	@supports (backdrop-filter: blur(2px)) {
+		:global([data-theme='dark']) :is(.tile, .choice > div, .engineer, .items li, .longer, .shot) {
+			background: oklch(0.17 0.018 285 / 0.08);
+			backdrop-filter: blur(2px) brightness(2.1) contrast(1.3);
+		}
+	}
+
+	.evidence {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.75rem;
+		margin-top: 0.75rem;
+	}
+	.thumb {
+		display: grid;
+		gap: 0.25rem;
+		width: 9rem;
+		font-size: 0.75rem;
+		font-weight: 600;
+		color: var(--offer-muted);
+	}
+	.thumb img {
+		display: block;
+		width: 100%;
+		height: 5.5rem;
+		object-fit: cover;
+		object-position: center;
+		border: 1px solid var(--offer-border);
+		border-radius: 0.5rem;
+	}
+	.thumb:hover img,
+	.thumb:focus-visible img {
+		outline: 2px solid var(--void-primary-text);
+		outline-offset: 2px;
+	}
+	.evidence-note {
+		flex-basis: 100%;
+		font-size: 0.75rem;
+		color: var(--offer-muted);
+	}
+	/* Centered in the viewport and never taller than it, so the page never scrolls. */
+	.shot {
+		position: fixed;
+		inset: 0;
+		margin: auto;
+		width: fit-content;
+		height: fit-content;
+		max-height: calc(100dvh - 2rem);
+		overflow: auto;
+		max-width: min(40rem, calc(100vw - 2rem));
+		padding: 1rem;
+		border: 1px solid var(--offer-border);
+		border-radius: 1rem;
+		background: var(--offer-surface);
+		color: var(--offer-fg);
+	}
+	.shot::backdrop {
+		background: oklch(0 0 0 / 0.6);
+	}
+	.shot img {
+		display: block;
+		max-width: 100%;
+		max-height: calc(100dvh - 11rem);
+		width: auto;
+		height: auto;
+		margin: 0 auto;
+		border-radius: 0.5rem;
+	}
+	.shot p {
+		margin: 0.75rem 0;
+		font-size: 0.875rem;
+		color: var(--offer-muted);
+	}
+	.shot button {
+		padding: 0.5rem 1.25rem;
+		border: 0;
+		border-radius: 999px;
+		background: var(--void-primary-strong);
+		color: #fff;
+		font: inherit;
+		font-weight: 600;
+		cursor: pointer;
+	}
+	.renewal {
+		max-width: 42rem;
+		font-size: 0.875rem;
+		color: var(--offer-muted);
 	}
 	p {
 		margin: 0;
@@ -465,7 +1064,7 @@
 		position: absolute;
 		z-index: -1;
 		top: -2rem;
-		right: -3rem;
+		right: 0;
 		width: 18rem;
 		height: 18rem;
 		opacity: 0.07;
@@ -513,12 +1112,16 @@
 		background: var(--void-primary);
 	}
 
+	/* Each site is its own section on the page background: a rule and space above,
+	   not a card around the tiles. */
+	.site-name {
+		margin: 0;
+		font-size: 1.75rem;
+	}
 	.site {
-		padding: 1.5rem;
-		border: 1px solid var(--offer-border);
-		border-radius: 1.5rem;
-		background: var(--offer-surface);
-		box-shadow: 0 20px 40px -28px oklch(0.4 0.1 300 / 0.35);
+		position: relative;
+		padding-top: 2.5rem;
+		border-top: 1px solid var(--offer-border);
 	}
 	.tiles,
 	.choice ul,
@@ -532,11 +1135,13 @@
 		gap: 0.75rem;
 	}
 	.tile {
+		position: relative;
 		display: grid;
 		gap: 0.5rem;
 		padding: 1rem 1.125rem;
+		border: 1px solid var(--offer-border);
 		border-radius: 1rem;
-		background: var(--offer-bg);
+		background: var(--offer-surface);
 	}
 	.bars {
 		display: grid;
@@ -559,7 +1164,7 @@
 		display: block;
 		height: 0.75rem;
 		border-radius: 999px;
-		background: oklch(0.145 0 0 / 0.07);
+		background: var(--void-track);
 	}
 	.fill {
 		display: block;
@@ -710,7 +1315,7 @@
 		fill: var(--void-primary-strong);
 	}
 	.icon.no circle {
-		fill: oklch(0.55 0.006 300);
+		fill: var(--void-icon-no);
 	}
 
 	@media (min-width: 40rem) {
@@ -725,11 +1330,29 @@
 			width: 36px;
 			height: 36px;
 		}
+		.face {
+			width: 7rem;
+			height: 7rem;
+		}
+		.engineer {
+			align-items: center;
+			padding: 1.5rem 2rem;
+		}
 		.plus {
 			font-size: 1.625rem;
 		}
 		.ftps {
 			height: 42px;
+		}
+		.se {
+			height: 40px;
+		}
+		.lockup {
+			flex-wrap: nowrap;
+			border-radius: 999px;
+		}
+		.preview {
+			padding: 0 2.5rem 2.5rem 0;
 		}
 		.hero-mark {
 			width: 26rem;
@@ -741,7 +1364,7 @@
 			grid-template-columns: 1fr 1fr;
 		}
 		.site {
-			padding: 2rem;
+			padding-top: 3rem;
 		}
 	}
 </style>

@@ -8,13 +8,14 @@
 			"measured": "October 28, 2026",
 			"pages": 11,
 			"source": {
-				"commit": "93710e0",
+				"commit": "e42c19b",
 				"run": "docs/discovery/seo-audit/2026-10-28-after-88/result.json"
 			},
 			"rows": [
 				{
 					"label": "Wait before the page shows on a phone",
-					"why": "Visitors see your page in 1.8 s instead of 4.9 s. People leave slow pages before they find your number.",
+					"why": "Visitors see your page in 1.8 s instead of 4.9 s.",
+					"impact": "People leave slow pages before they find your number.",
 					"fine": "Largest Contentful Paint, mean of 11 pages; 0 of 11 pages within 2.5 s today, 11 of 11 rebuilt.",
 					"before": "4.9 s",
 					"after": "1.8 s",
@@ -34,7 +35,8 @@
 				},
 				{
 					"label": "Speed on a phone, out of 100",
-					"why": "Most people check out a business on a phone first; this is that first impression.",
+					"why": "Most people check out a business on a phone first.",
+					"impact": "This is their first impression of you.",
 					"fine": "Google Lighthouse performance score, mean of 11 pages.",
 					"before": "63",
 					"after": "99",
@@ -145,7 +147,8 @@
 			"rows": [
 				{
 					"label": "Wait before the page shows on a phone",
-					"why": "Visitors see your page in 0.8 s instead of 5.1 s. People leave slow pages before they find your number.",
+					"why": "Visitors see your page in 0.8 s instead of 5.1 s.",
+					"impact": "People leave slow pages before they find your number.",
 					"fine": "Largest Contentful Paint, mean of 10 pages; 0 of 10 pages within 2.5 s today, 10 of 10 rebuilt.",
 					"before": "5.1 s",
 					"after": "0.8 s",
@@ -165,7 +168,8 @@
 				},
 				{
 					"label": "Speed on a phone, out of 100",
-					"why": "Most people check out a business on a phone first; this is that first impression.",
+					"why": "Most people check out a business on a phone first.",
+					"impact": "This is their first impression of you.",
 					"fine": "Google Lighthouse performance score, mean of 10 pages.",
 					"before": "71",
 					"after": "100",
@@ -265,7 +269,8 @@
 				"rows": [
 					{
 						"label": "Your facts AI assistants can read directly",
-						"why": "Assistants can quote your details instead of guessing them.",
+						"why": "AI assistants answer questions about businesses like yours.",
+						"impact": "They can quote your details instead of guessing them.",
 						"fine": "Structured data (JSON-LD). Share of 216 checks of 121 facts.",
 						"before": "under 1%",
 						"after": "38%",

@@ -40,9 +40,10 @@ function check(comparison, name) {
 
 // A row: plain label, why it matters to the business, the technical source in small
 // print, the two values as shown, and the numbers the bars are drawn from.
+// `why` may be [plain, impact]: the impact half is shown as a highlighted callout.
 const row = (label, why, fine, before, after, bar, target) => ({
 	label,
-	why,
+	...(Array.isArray(why) ? { why: why[0], impact: why[1] } : { why }),
 	fine,
 	before,
 	after,
@@ -93,7 +94,10 @@ function headline(comparison) {
 	return [
 		row(
 			'Wait before the page shows on a phone',
-			`Visitors see your page in ${seconds(h.lcpSeconds.after)} instead of ${seconds(h.lcpSeconds.before)}. People leave slow pages before they find your number.`,
+			[
+				`Visitors see your page in ${seconds(h.lcpSeconds.after)} instead of ${seconds(h.lcpSeconds.before)}.`,
+				'People leave slow pages before they find your number.'
+			],
 			`Largest Contentful Paint, mean of ${n} pages; ${h.lcpGood.before} of ${n} pages within 2.5 s today, ${h.lcpGood.after} of ${n} rebuilt.`,
 			seconds(h.lcpSeconds.before),
 			seconds(h.lcpSeconds.after),
@@ -107,7 +111,10 @@ function headline(comparison) {
 		),
 		row(
 			'Speed on a phone, out of 100',
-			'Most people check out a business on a phone first; this is that first impression.',
+			[
+				'Most people check out a business on a phone first.',
+				'This is their first impression of you.'
+			],
 			`Google Lighthouse performance score, mean of ${n} pages.`,
 			String(h.performance.before),
 			String(h.performance.after),
@@ -237,7 +244,10 @@ const figures = {
 					aiRow(
 						'a',
 						'Your facts AI assistants can read directly',
-						'Assistants can quote your details instead of guessing them.',
+						[
+							'AI assistants answer questions about businesses like yours.',
+							'They can quote your details instead of guessing them.'
+						],
 						'Structured data (JSON-LD).'
 					),
 					aiRow(
