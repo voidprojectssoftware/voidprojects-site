@@ -8,34 +8,34 @@ export default defineOffer({
 	prospect: 'First Touch Payment Solutions',
 	sent: '2026-11-05',
 	previewUrl: 'https://firsttouchpaymentsolutions-website.pages.dev/',
+	// "About 5 seconds": figures.json wait row, 4.9 s (FTPS) and 5.1 s (Software Earnings).
+	// "Dozens of scripts": atlas observations, about 35 script requests per FTPS page
+	// (item 36) and 25 Hibu runtime plus 10 AudioEye requests on the Software Earnings home page (item 33).
 	concerns: [
-		// Rounded from figures.mjs's sources, compareSites() headline: requests 64 and 64,
-		// kilobytes 1,044 and 1,070, LCP 4.9 s and 5.3 s (FTPS run 2026-10-28-after-88,
-		// Software Earnings run 2026-11-03-after-69).
 		{
-			title: 'Both sites are slow on a phone',
+			title: 'Slow on a phone',
 			detail:
-				'Each page of both current sites asks for about 64 files and around a megabyte of data, most of it the Hibu platform’s own scripts and widgets. The main content takes about 5 seconds to show on a phone, twice Google’s mark for a good result.'
+				'About 5 seconds before each page shows. Many visitors leave before they see your number.'
 		},
 		{
-			title: 'Phones see an insurance advert on the home page',
+			title: 'Someone else’s advert on your home page',
 			detail:
-				'On a phone, the “Why choose” section of both home pages shows Hibu’s template text, “Let Now Insurance help you compare quotes online”, in place of your own paragraph.'
+				'On phones, both home pages show Hibu’s “Now Insurance” filler in place of your own words.'
 		},
 		{
-			title: 'Your phone number depends on a script that does not always run',
+			title: 'Contact details search engines often miss',
 			detail:
-				'The phone number, email and hours are written in by a third-party script after the page loads. On the Software Earnings site it never runs on phones, and on most pages of both sites, search engines and AI assistants that do not run scripts never see those details.'
+				'Your phone number and hours are added by a script that does not always run, so search engines and AI assistants often never see them.'
 		},
 		{
-			title: 'Template pages and broken links are still live',
+			title: 'Leftovers and broken links',
 			detail:
-				'A stock Hibu blog post about flower stores and marathons is in both sites’ sitemaps, “Play Video” opens a page titled “Hibu Video Splash”, the First Touch “Press Release” menu item leads to a missing page, and three Software Earnings “form” links lead to a 404.'
+				'A stock Hibu blog post, a “Hibu Video Splash” page and dead links tell a visitor nobody is minding the site.'
 		},
 		{
-			title: 'An overlay instead of accessible pages',
+			title: 'Code you do not control on every page',
 			detail:
-				'Both sites load an accessibility overlay on every page while links without names, images without descriptions and headings out of order stay in the pages themselves. The rebuilds fix those in the pages.'
+				'Dozens of scripts from outside services, including an accessibility overlay that papers over problems instead of fixing them.'
 		}
 	],
 	plans: [
@@ -45,8 +45,8 @@ export default defineOffer({
 			summary:
 				'First Touch Payment Solutions and Software Earnings, the two rebuilt sites, kept running, up to date and easy to find.',
 			features: [
+				'Security updates, applied as fixes come out',
 				'Hosting for both sites',
-				'Security and dependency updates',
 				'We watch that both sites stay up',
 				'Small content edits: text, photos, hours, prices',
 				'Ongoing search engine and AI assistant upkeep'

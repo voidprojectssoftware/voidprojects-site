@@ -15,6 +15,7 @@ import { svelte, vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 import tailwindcss from '@tailwindcss/vite';
 import QRCode from 'qrcode';
 import { build } from 'vite';
+import { brandPrimary } from './brand-primary.mjs';
 import { listOfferIds, offerFile, root } from './offers.mjs';
 
 const lib = join(root, 'src/lib');
@@ -62,6 +63,7 @@ function viteConfig(id, ssr) {
 		publicDir: false,
 		logLevel: 'warn',
 		resolve: { alias: { $lib: lib } },
+		define: { __BRAND_PRIMARY__: JSON.stringify(brandPrimary()) }, // as vite.config.ts, for the orbit mark
 		plugins: [
 			entryPlugin(id, ssr),
 			svelte({ configFile: false, preprocess: vitePreprocess(), compilerOptions: { runes: true } }),

@@ -8,7 +8,7 @@
 //
 // Node 22.18 or later, which loads the repositories' TypeScript modules directly.
 import { execFileSync } from 'node:child_process';
-import { readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
@@ -20,11 +20,10 @@ if (!ftpsRepo || !seRepo) {
 	process.exit(1);
 }
 
-// The runs each /site-comparison/ page reads: FTPS names its run in the page,
-// Software Earnings takes the newest directory, which these are on 2026-11-04.
+// The runs each /site-comparison/ page reads: FTPS names its run in the page;
+// Software Earnings takes the newest run by when it says it was taken, which its own
+// newestRun() and takenAt pick here too.
 const FTPS_AUDIT = 'docs/discovery/seo-audit/2026-10-28-after-88/result.json';
-const SE_AUDIT = 'docs/discovery/seo-audit/2026-11-03-after-69/result.json';
-const SE_AEO = 'docs/discovery/aeo/2026-11-04-after-96';
 
 const json = (repo, file) => JSON.parse(readFileSync(join(repo, file), 'utf8'));
 const load = (repo, file) => import(pathToFileURL(join(repo, file)).href);
@@ -39,49 +38,72 @@ function check(comparison, name) {
 	return row;
 }
 
+// A row: plain label, why it matters to the business, the technical source in small
+// print, the two values as shown, and the numbers the bars are drawn from.
+const row = (label, why, fine, before, after, bar) => ({ label, why, fine, before, after, bar });
+const ofPages = (text) => Number(text.match(/^(\d+) of/)?.[1]);
+
 // The headline rows both sites share, from compareSites().
 function headline(comparison) {
 	const h = comparison.headline;
 	const n = comparison.pageCount;
 	const structured = check(comparison, 'Business details for search engines');
 	const headings = check(comparison, 'Headings in order, no skipped levels');
+	const of = (text) => text.replace(/ pages$/, '');
 	return [
-		{
-			label: 'Speed score on phones',
-			note: `Google Lighthouse performance, out of 100, averaged over ${n} pages.`,
-			before: String(h.performance.before),
-			after: String(h.performance.after)
-		},
-		{
-			label: 'Time until the main content shows',
-			note: `On a phone. Google counts 2.5 s or less as good: ${h.lcpGood.before} of ${n} pages meet it today, ${h.lcpGood.after} of ${n} rebuilt.`,
-			before: seconds(h.lcpSeconds.before),
-			after: seconds(h.lcpSeconds.after)
-		},
-		{
-			label: 'Accessibility score',
-			note: 'Google Lighthouse accessibility on phones, out of 100.',
-			before: String(h.accessibilityScore.before),
-			after: String(h.accessibilityScore.after)
-		},
-		{
-			label: 'Search engine score',
-			note: `Google Lighthouse SEO on phones, out of 100. 100 on ${h.seoPerfectPages.before} of ${n} pages today, ${h.seoPerfectPages.after} of ${n} rebuilt.`,
-			before: String(h.seo.before),
-			after: String(h.seo.after)
-		},
-		{
-			label: 'Business details for search engines',
-			note: 'Structured data: name, phone, location and services, in the format Google reads.',
-			before: structured.before.replace(/ pages$/, ''),
-			after: structured.after.replace(/ pages$/, '')
-		},
-		{
-			label: 'Headings in order',
-			note: 'One clear outline per page, which search engines and screen readers both follow.',
-			before: headings.before.replace(/ pages$/, ''),
-			after: headings.after.replace(/ pages$/, '')
-		}
+		row(
+			'Wait before the page shows on a phone',
+			`Visitors see your page in ${seconds(h.lcpSeconds.after)} instead of ${seconds(h.lcpSeconds.before)}. People leave slow pages before they find your number.`,
+			`Largest Contentful Paint, mean of ${n} pages; Google counts 2.5 s or less as good (${h.lcpGood.before} of ${n} pages today, ${h.lcpGood.after} of ${n} rebuilt).`,
+			seconds(h.lcpSeconds.before),
+			seconds(h.lcpSeconds.after),
+			{
+				before: h.lcpSeconds.before,
+				after: h.lcpSeconds.after,
+				max: Math.ceil(Math.max(h.lcpSeconds.before, h.lcpSeconds.after)),
+				lowerIsBetter: true
+			}
+		),
+		row(
+			'Speed on a phone, out of 100',
+			'Most people check out a business on a phone first; this is that first impression.',
+			`Google Lighthouse performance score, mean of ${n} pages.`,
+			String(h.performance.before),
+			String(h.performance.after),
+			{ before: h.performance.before, after: h.performance.after, max: 100 }
+		),
+		row(
+			'Ready for Google, out of 100',
+			'Nothing basic is missing when Google decides how to list you.',
+			`Google Lighthouse SEO score on phones, mean of ${n} pages; 100 on ${h.seoPerfectPages.before} of ${n} today, ${h.seoPerfectPages.after} of ${n} rebuilt.`,
+			String(h.seo.before),
+			String(h.seo.after),
+			{ before: h.seo.before, after: h.seo.after, max: 100 }
+		),
+		row(
+			'Usable by every visitor, out of 100',
+			'Customers using a screen reader or large text can read and use every page.',
+			`Google Lighthouse accessibility score on phones, mean of ${n} pages.`,
+			String(h.accessibilityScore.before),
+			String(h.accessibilityScore.after),
+			{ before: h.accessibilityScore.before, after: h.accessibilityScore.after, max: 100 }
+		),
+		row(
+			'Pages with a clear outline',
+			'Search engines and AI assistants can tell what each page is about.',
+			'Headings in order, no skipped levels.',
+			of(headings.before),
+			of(headings.after),
+			{ before: ofPages(headings.before), after: ofPages(headings.after), max: n }
+		),
+		row(
+			'Pages with your business details for Google',
+			'Kept as it is today: your name, phone and services stay readable to Google.',
+			'Structured data (JSON-LD) on the page.',
+			of(structured.before),
+			of(structured.after),
+			{ before: ofPages(structured.before), after: ofPages(structured.after), max: n }
+		)
 	];
 }
 
@@ -89,8 +111,31 @@ const ftpsLib = await load(ftpsRepo, 'src/lib/site-comparison.ts');
 const seLib = await load(seRepo, 'src/lib/site-comparison.ts');
 const seAgents = await load(seRepo, 'src/lib/agent-readiness.ts');
 
+// Every <dir>/<file> under a docs/discovery folder, keyed as import.meta.glob keys them.
+function runs(repo, folder, file) {
+	const files = {};
+	for (const dir of readdirSync(join(repo, folder))) {
+		const path = join(folder, dir, file);
+		if (existsSync(join(repo, path)))
+			files[`../../${path}`] = readFileSync(join(repo, path), 'utf8');
+	}
+	return files;
+}
+const seAuditRun = seLib.newestRun(
+	runs(seRepo, 'docs/discovery/seo-audit', 'result.json'),
+	'audit run',
+	seLib.takenAt.audit
+);
+const seAeoRun = seLib.newestRun(
+	runs(seRepo, 'docs/discovery/aeo', 'result.json'),
+	'fact recall run',
+	seLib.takenAt.factRecall
+);
+const SE_AUDIT = seAuditRun.path;
+const SE_AEO = dirname(seAeoRun.path);
+
 const ftps = ftpsLib.compareSites(json(ftpsRepo, FTPS_AUDIT));
-const se = seLib.compareSites(json(seRepo, SE_AUDIT));
+const se = seLib.compareSites(JSON.parse(seAuditRun.text));
 const aeo = (name) => json(seRepo, `${SE_AEO}/${name}`);
 const agents = seAgents.agentReadiness(
 	aeo('result.json'),
@@ -102,6 +147,19 @@ const agents = seAgents.agentReadiness(
 	aeo('agent-readiness.json')
 );
 const share = (channel, side) => seAgents.percent(agents.totals[channel][side]);
+const found = (channel, side) => {
+	const r = agents.totals[channel][side];
+	return (100 * r.found) / r.expected;
+};
+const aiRow = (channel, label, why, fine) =>
+	row(
+		label,
+		why,
+		`${fine} Share of ${agents.totals[channel].before.expected} checks of ${agents.facts} facts.`,
+		share(channel, 'before'),
+		share(channel, 'after'),
+		{ before: found(channel, 'before'), after: found(channel, 'after'), max: 100 }
+	);
 const checks = agents.totals.b.before.expected;
 
 const figures = {
@@ -130,30 +188,36 @@ const figures = {
 				facts: agents.facts,
 				checks,
 				rows: [
-					{
-						label: 'Facts in the structured data',
-						note: 'Business details written into each page for search engines and AI tools.',
-						before: share('a', 'before'),
-						after: share('a', 'after')
-					},
-					{
-						label: 'Facts in the page text without scripts',
-						note: 'How a crawler that does not run scripts reads the page.',
-						before: share('b', 'before'),
-						after: share('b', 'after')
-					},
-					{
-						label: 'Facts in the llms.txt summary for AI tools',
-						note: 'A plain list of the site’s pages and what they say.',
-						before: share('c', 'before'),
-						after: share('c', 'after')
-					},
-					{
-						label: 'geoctl agent readiness score',
-						note: `An open-source audit, out of ${agents.geoctl.live.max}; the rebuild as it will run at launch.`,
-						before: String(agents.geoctl.live.score),
-						after: String(agents.geoctl.launch.score)
-					}
+					aiRow(
+						'a',
+						'Your facts AI assistants can read directly',
+						'Assistants can quote your details instead of guessing them.',
+						'Structured data (JSON-LD).'
+					),
+					aiRow(
+						'b',
+						'Your facts readable without running scripts',
+						'Many AI tools do not run scripts; they now see what a visitor sees.',
+						'Page text with JavaScript off.'
+					),
+					aiRow(
+						'c',
+						'Your facts in the summary written for AI tools',
+						'AI tools get a clean list of your products, people and contact details.',
+						'llms.txt and markdown versions of each page.'
+					),
+					row(
+						'Independent AI readiness check, out of 100',
+						'Confirms AI crawlers are let in and can find and read the site.',
+						'geoctl open-source audit; the rebuild as it will run at launch.',
+						String(agents.geoctl.live.score),
+						String(agents.geoctl.launch.score),
+						{
+							before: agents.geoctl.live.score,
+							after: agents.geoctl.launch.score,
+							max: agents.geoctl.live.max
+						}
+					)
 				]
 			}
 		}

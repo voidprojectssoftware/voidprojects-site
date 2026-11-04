@@ -13,40 +13,77 @@
 			},
 			"rows": [
 				{
-					"label": "Speed score on phones",
-					"note": "Google Lighthouse performance, out of 100, averaged over 11 pages.",
-					"before": "63",
-					"after": "99"
-				},
-				{
-					"label": "Time until the main content shows",
-					"note": "On a phone. Google counts 2.5 s or less as good: 0 of 11 pages meet it today, 11 of 11 rebuilt.",
+					"label": "Wait before the page shows on a phone",
+					"why": "Visitors see your page in 1.8 s instead of 4.9 s. People leave slow pages before they find your number.",
+					"fine": "Largest Contentful Paint, mean of 11 pages; Google counts 2.5 s or less as good (0 of 11 pages today, 11 of 11 rebuilt).",
 					"before": "4.9 s",
-					"after": "1.8 s"
+					"after": "1.8 s",
+					"bar": {
+						"before": 4.855921597272726,
+						"after": 1.7968751454545455,
+						"max": 5,
+						"lowerIsBetter": true
+					}
 				},
 				{
-					"label": "Accessibility score",
-					"note": "Google Lighthouse accessibility on phones, out of 100.",
-					"before": "97",
-					"after": "100"
+					"label": "Speed on a phone, out of 100",
+					"why": "Most people check out a business on a phone first; this is that first impression.",
+					"fine": "Google Lighthouse performance score, mean of 11 pages.",
+					"before": "63",
+					"after": "99",
+					"bar": {
+						"before": 63,
+						"after": 99,
+						"max": 100
+					}
 				},
 				{
-					"label": "Search engine score",
-					"note": "Google Lighthouse SEO on phones, out of 100. 100 on 8 of 11 pages today, 11 of 11 rebuilt.",
+					"label": "Ready for Google, out of 100",
+					"why": "Nothing basic is missing when Google decides how to list you.",
+					"fine": "Google Lighthouse SEO score on phones, mean of 11 pages; 100 on 8 of 11 today, 11 of 11 rebuilt.",
 					"before": "98",
-					"after": "100"
+					"after": "100",
+					"bar": {
+						"before": 98,
+						"after": 100,
+						"max": 100
+					}
 				},
 				{
-					"label": "Business details for search engines",
-					"note": "Structured data: name, phone, location and services, in the format Google reads.",
-					"before": "11 of 11",
-					"after": "11 of 11"
+					"label": "Usable by every visitor, out of 100",
+					"why": "Customers using a screen reader or large text can read and use every page.",
+					"fine": "Google Lighthouse accessibility score on phones, mean of 11 pages.",
+					"before": "97",
+					"after": "100",
+					"bar": {
+						"before": 97,
+						"after": 100,
+						"max": 100
+					}
 				},
 				{
-					"label": "Headings in order",
-					"note": "One clear outline per page, which search engines and screen readers both follow.",
+					"label": "Pages with a clear outline",
+					"why": "Search engines and AI assistants can tell what each page is about.",
+					"fine": "Headings in order, no skipped levels.",
 					"before": "1 of 11",
-					"after": "11 of 11"
+					"after": "11 of 11",
+					"bar": {
+						"before": 1,
+						"after": 11,
+						"max": 11
+					}
+				},
+				{
+					"label": "Pages with your business details for Google",
+					"why": "Kept as it is today: your name, phone and services stay readable to Google.",
+					"fine": "Structured data (JSON-LD) on the page.",
+					"before": "11 of 11",
+					"after": "11 of 11",
+					"bar": {
+						"before": 11,
+						"after": 11,
+						"max": 11
+					}
 				}
 			],
 			"ai": null
@@ -56,49 +93,86 @@
 			"name": "Software Earnings",
 			"current": "https://www.softwareearnings.com/",
 			"preview": "https://softwareearnings-website.pages.dev/",
-			"measured": "November 3, 2026",
-			"pages": 11,
+			"measured": "November 4, 2026",
+			"pages": 10,
 			"source": {
-				"commit": "0e621cf",
-				"run": "docs/discovery/seo-audit/2026-11-03-after-69/result.json",
-				"aeo": "docs/discovery/aeo/2026-11-04-after-96"
+				"commit": "b947762",
+				"run": "docs/discovery/seo-audit/2026-11-04-production/result.json",
+				"aeo": "docs/discovery/aeo/2026-11-04-with-geoctl-every-page"
 			},
 			"rows": [
 				{
-					"label": "Speed score on phones",
-					"note": "Google Lighthouse performance, out of 100, averaged over 11 pages.",
-					"before": "69",
-					"after": "100"
+					"label": "Wait before the page shows on a phone",
+					"why": "Visitors see your page in 0.8 s instead of 5.1 s. People leave slow pages before they find your number.",
+					"fine": "Largest Contentful Paint, mean of 10 pages; Google counts 2.5 s or less as good (0 of 10 pages today, 10 of 10 rebuilt).",
+					"before": "5.1 s",
+					"after": "0.8 s",
+					"bar": {
+						"before": 5.1386271115,
+						"after": 0.7519790999999999,
+						"max": 6,
+						"lowerIsBetter": true
+					}
 				},
 				{
-					"label": "Time until the main content shows",
-					"note": "On a phone. Google counts 2.5 s or less as good: 1 of 11 pages meet it today, 11 of 11 rebuilt.",
-					"before": "5.3 s",
-					"after": "1.7 s"
+					"label": "Speed on a phone, out of 100",
+					"why": "Most people check out a business on a phone first; this is that first impression.",
+					"fine": "Google Lighthouse performance score, mean of 10 pages.",
+					"before": "71",
+					"after": "100",
+					"bar": {
+						"before": 71,
+						"after": 100,
+						"max": 100
+					}
 				},
 				{
-					"label": "Accessibility score",
-					"note": "Google Lighthouse accessibility on phones, out of 100.",
+					"label": "Ready for Google, out of 100",
+					"why": "Nothing basic is missing when Google decides how to list you.",
+					"fine": "Google Lighthouse SEO score on phones, mean of 10 pages; 100 on 0 of 10 today, 10 of 10 rebuilt.",
+					"before": "92",
+					"after": "100",
+					"bar": {
+						"before": 92,
+						"after": 100,
+						"max": 100
+					}
+				},
+				{
+					"label": "Usable by every visitor, out of 100",
+					"why": "Customers using a screen reader or large text can read and use every page.",
+					"fine": "Google Lighthouse accessibility score on phones, mean of 10 pages.",
 					"before": "98",
-					"after": "100"
+					"after": "100",
+					"bar": {
+						"before": 98,
+						"after": 100,
+						"max": 100
+					}
 				},
 				{
-					"label": "Search engine score",
-					"note": "Google Lighthouse SEO on phones, out of 100. 100 on 0 of 11 pages today, 11 of 11 rebuilt.",
-					"before": "91",
-					"after": "100"
+					"label": "Pages with a clear outline",
+					"why": "Search engines and AI assistants can tell what each page is about.",
+					"fine": "Headings in order, no skipped levels.",
+					"before": "1 of 10",
+					"after": "10 of 10",
+					"bar": {
+						"before": 1,
+						"after": 10,
+						"max": 10
+					}
 				},
 				{
-					"label": "Business details for search engines",
-					"note": "Structured data: name, phone, location and services, in the format Google reads.",
-					"before": "11 of 11",
-					"after": "11 of 11"
-				},
-				{
-					"label": "Headings in order",
-					"note": "One clear outline per page, which search engines and screen readers both follow.",
-					"before": "1 of 11",
-					"after": "10 of 11"
+					"label": "Pages with your business details for Google",
+					"why": "Kept as it is today: your name, phone and services stay readable to Google.",
+					"fine": "Structured data (JSON-LD) on the page.",
+					"before": "10 of 10",
+					"after": "10 of 10",
+					"bar": {
+						"before": 10,
+						"after": 10,
+						"max": 10
+					}
 				}
 			],
 			"ai": {
@@ -106,28 +180,52 @@
 				"checks": 216,
 				"rows": [
 					{
-						"label": "Facts in the structured data",
-						"note": "Business details written into each page for search engines and AI tools.",
+						"label": "Your facts AI assistants can read directly",
+						"why": "Assistants can quote your details instead of guessing them.",
+						"fine": "Structured data (JSON-LD). Share of 216 checks of 121 facts.",
 						"before": "under 1%",
-						"after": "38%"
+						"after": "38%",
+						"bar": {
+							"before": 0.46296296296296297,
+							"after": 37.5,
+							"max": 100
+						}
 					},
 					{
-						"label": "Facts in the page text without scripts",
-						"note": "How a crawler that does not run scripts reads the page.",
+						"label": "Your facts readable without running scripts",
+						"why": "Many AI tools do not run scripts; they now see what a visitor sees.",
+						"fine": "Page text with JavaScript off. Share of 216 checks of 121 facts.",
 						"before": "75%",
-						"after": "95%"
+						"after": "96%",
+						"bar": {
+							"before": 75.46296296296296,
+							"after": 95.83333333333333,
+							"max": 100
+						}
 					},
 					{
-						"label": "Facts in the llms.txt summary for AI tools",
-						"note": "A plain list of the site’s pages and what they say.",
+						"label": "Your facts in the summary written for AI tools",
+						"why": "AI tools get a clean list of your products, people and contact details.",
+						"fine": "llms.txt and markdown versions of each page. Share of 216 checks of 121 facts.",
 						"before": "34%",
-						"after": "99%"
+						"after": "99%",
+						"bar": {
+							"before": 34.25925925925926,
+							"after": 98.61111111111111,
+							"max": 100
+						}
 					},
 					{
-						"label": "geoctl agent readiness score",
-						"note": "An open-source audit, out of 100; the rebuild as it will run at launch.",
+						"label": "Independent AI readiness check, out of 100",
+						"why": "Confirms AI crawlers are let in and can find and read the site.",
+						"fine": "geoctl open-source audit; the rebuild as it will run at launch.",
 						"before": "48",
-						"after": "99.5"
+						"after": "88",
+						"bar": {
+							"before": 48,
+							"after": 88,
+							"max": 100
+						}
 					}
 				]
 			}
