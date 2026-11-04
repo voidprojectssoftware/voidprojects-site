@@ -7,6 +7,7 @@ export interface ContactSubmission {
 	email: string;
 	kind: ContactKind;
 	message: string;
+	offer?: { id: string; business: string }; // set only by /api/offer-question, from the Stripe Checkout Session
 }
 
 export interface ContactResponse {

@@ -7,7 +7,7 @@ import Module, { createRequire } from 'node:module';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const expected = ['mark', 'contact', 'offer-checkout'];
+const expected = ['mark', 'contact', 'offer-checkout', 'offer-question'];
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const bundle = resolve(process.argv[2] ?? join(root, 'build-api/index.js'));
