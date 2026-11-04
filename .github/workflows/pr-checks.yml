@@ -1,8 +1,8 @@
 # Fails a PR if the site or the /api bundle would not deploy. Mirrors the build half
 # of voidprojects-site-infra's deploy workflow (npm ci, build, build:api on Node 24),
-# adds svelte-check, then loads the API bundle on Node 22 (the --api-version the
-# deploy gives Static Web Apps) to prove every function still registers.
-# Lint is not gated yet: it fails on main today (#28).
+# adds svelte-check and lint (prettier --check, then eslint), then loads the API
+# bundle on Node 22 (the --api-version the deploy gives Static Web Apps) to prove
+# every function still registers.
 name: pr-checks
 
 on:
@@ -33,6 +33,8 @@ jobs:
       - run: npm ci
 
       - run: npm run check
+
+      - run: npm run lint
 
       - run: npm run build
 
