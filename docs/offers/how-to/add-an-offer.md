@@ -24,7 +24,7 @@ Check it after a build: `grep -rl <id> build build-api` should list only `build/
    - Amounts are whole cents (`2500` is 25.00). `annual` defaults to 10 times `monthly`; set `annual: false` to sell monthly only, or omit `monthly` to sell annually only.
    - `contact` stays server side; it never reaches the page.
 4. Run the SEO/AEO audit into the folder: `npm run audit:offer -- <their-site> <our-preview> --out offers/<id>/audit.json` (see [Run an offer audit](run-an-offer-audit.md)). The comparison block renders that file; without it the block says the measurements are on their way. Re-run it when the preview changes and commit the new file.
-5. Theme the page in `theme.css` and `page.svelte`. The shared blocks in `src/lib/offers/blocks/` read the `--offer-*` custom properties listed in their `index.ts`, so set those to the prospect's colors. Tailwind is available and scans only the offer's own folder.
+5. Theme the page in `theme.css` and `page.svelte`. The shared blocks in `src/lib/offers/blocks/` read the `--offer-*` custom properties listed in their `index.ts`, so set those to the prospect's colors. Tailwind is available and scans only the offer's own folder. The page title defaults to "Your new website, <prospect>"; a `<title>` in the page's `<svelte:head>` replaces it. Files in `offers/<id>/public/` are copied as they are into `build/o/<id>/`; reference them by a path built from `context.url` (for example `new URL('shots/home.webp', context.url).pathname`) so the id stays out of the page script.
 
 ## Build and preview
 

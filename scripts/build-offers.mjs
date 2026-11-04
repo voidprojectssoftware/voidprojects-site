@@ -15,6 +15,7 @@ import { svelte, vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 import tailwindcss from '@tailwindcss/vite';
 import QRCode from 'qrcode';
 import { build } from 'vite';
+import { brandPrimary } from './brand-primary.mjs';
 import { listOfferIds, offerFile, root } from './offers.mjs';
 
 const lib = join(root, 'src/lib');
@@ -59,9 +60,10 @@ function viteConfig(id, ssr) {
 		configFile: false,
 		root,
 		base: `/o/${id}/`,
-		publicDir: false,
+		publicDir: ssr ? false : offerFile(id, 'public'), // offers/<id>/public/ is copied as is into build/o/<id>/
 		logLevel: 'warn',
 		resolve: { alias: { $lib: lib } },
+		define: { __BRAND_PRIMARY__: JSON.stringify(brandPrimary()) }, // as vite.config.ts, for the orbit mark
 		plugins: [
 			entryPlugin(id, ssr),
 			svelte({ configFile: false, preprocess: vitePreprocess(), compilerOptions: { runes: true } }),
@@ -138,6 +140,10 @@ function page({ offer, html, assets, props, beacon }) {
 		.filter(Boolean)
 		.map((line) => `\t\t${line}`)
 		.join('\n');
+	// A page that sets its own <title> through <svelte:head> replaces the default.
+	const defaultTitle = /<title[\s>]/.test(html.head)
+		? ''
+		: `\t\t<title>${escapeHtml(`Your new website, ${offer.prospect}`)}</title>\n`;
 	return `<!doctype html>
 <html lang="en">
 	<head>
@@ -145,8 +151,7 @@ function page({ offer, html, assets, props, beacon }) {
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta name="robots" content="noindex, nofollow, noarchive" />
 		<meta name="referrer" content="no-referrer" />
-		<title>${escapeHtml(`Your new website, ${offer.prospect}`)}</title>
-		<link rel="icon" href="data:," />
+${defaultTitle}		<link rel="icon" href="data:," />
 ${head}
 	</head>
 	<body>

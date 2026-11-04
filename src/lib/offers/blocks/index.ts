@@ -7,6 +7,7 @@
 //   --offer-good, --offer-warn,        audit statuses: pass, warn and fail
 //     --offer-bad
 //   --offer-radius                     card corner radius
+//   --offer-callout                    highlighted text, e.g. a concern's impact (optional)
 export { default as ConcernsList } from './concerns-list.svelte';
 export { default as AuditComparison } from './audit-comparison.svelte';
 export { default as PlanPicker } from './plan-picker.svelte';

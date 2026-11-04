@@ -1,9 +1,11 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte';
 	import {
 		ANNUAL_MONTHS_CHARGED,
 		formatAmount,
 		priceFor,
 		type Interval,
+		type Plan,
 		type Price,
 		type PublicOffer
 	} from '../offer.js';
@@ -13,11 +15,15 @@
 		offer,
 		selection = $bindable(),
 		title = 'Choose your plan',
+		renewalNote = true,
+		details,
 		class: className = ''
 	}: {
 		offer: PublicOffer;
 		selection: Selection; // bind it and hand the same object to SignUpButton
 		title?: string;
+		renewalNote?: boolean; // the line under the toggle saying annual plans renew; Checkout states renewal too
+		details?: Snippet<[Plan, Interval]>; // extra content in each plan card, after the summary, for the chosen interval
 		class?: string;
 	} = $props();
 
@@ -76,7 +82,7 @@
 				</button>
 			{/each}
 		</div>
-		{#if selection.interval === 'year'}
+		{#if renewalNote && selection.interval === 'year'}
 			<p class="note">
 				Annual plans renew each year and can be cancelled any time; they run to the end of the paid
 				year.
@@ -96,9 +102,11 @@
 					value={plan.id}
 					disabled={!price}
 					checked={selection.planId === plan.id}
+					aria-labelledby="offer-plan-{plan.id}"
 					onchange={() => (selection = { ...selection, planId: plan.id })}
 				/>
-				<span class="head">
+				<!-- The radio is named by its label and price alone; the rest of the card stays readable content. -->
+				<span class="head" id="offer-plan-{plan.id}">
 					<span class="label">{plan.label}</span>
 					{#if price}
 						<span class="price"
@@ -111,6 +119,7 @@
 				</span>
 				{#if saved}<span class="saving">{saved}</span>{/if}
 				{#if plan.summary}<span class="summary">{plan.summary}</span>{/if}
+				{#if details}{@render details(plan, selection.interval)}{/if}
 				{#if plan.features.length}
 					<ul>
 						{#each plan.features as feature (feature)}<li>{feature}</li>{/each}
