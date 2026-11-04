@@ -102,7 +102,8 @@
 	const subtitleMeta = subtitleWM.meta;
 
 	// The shared Matter world. The glyph title and the project cards are actors on
-	// it, so the free-floating glyphs actually collide with the heavy cards.
+	// it, so the free-floating glyphs actually collide with the heavy cards. Matter
+	// itself loads after hydration (see `stage.init()` in onMount).
 	const stage = new PhysicsStage();
 	const glyphs = new GlyphField({ driftThreshold: DRIFT_THRESHOLD });
 	stage.add(glyphs);
@@ -363,11 +364,18 @@
 		// Suck the glyphs into the button first, open GitHub once they land. Reset the
 		// scroll at the same time so the page is back at the top (the hero is pinned, so
 		// this doesn't shift the restoring glyphs) when the user returns to this tab.
+		// A click that beats the physics load waits for it; if Matter never arrives,
+		// open the tab anyway rather than swallowing the click.
 		event.preventDefault();
-		glyphs.warp(githubRef, () => {
-			openGithubTab();
-			window.scrollTo(0, 0);
-		});
+		const target = githubRef;
+		stage.init().then(
+			() =>
+				glyphs.warp(target, () => {
+					openGithubTab();
+					window.scrollTo(0, 0);
+				}),
+			openGithubTab
+		);
 	}
 
 	// Jump the page to a timeline point's scroll position (a project's arrival).
@@ -396,6 +404,16 @@
 			return { y, progress: scrollable > 0 ? Math.max(0, Math.min(1, y / scrollable)) : 0 };
 		};
 
+		// Fetch Matter once the page is idle after hydration, or on the first scroll if
+		// that comes sooner. The stage holds any earlier scroll progress and replays it.
+		const startPhysics = () =>
+			void stage.init().catch((err) => console.warn('[drift] physics failed to load', err));
+		const idle = window.requestIdleCallback
+			? window.requestIdleCallback(startPhysics, { timeout: 1000 })
+			: window.setTimeout(startPhysics, 200);
+		const cancelIdle = () =>
+			window.cancelIdleCallback ? window.cancelIdleCallback(idle) : window.clearTimeout(idle);
+
 		let last = measure();
 		let autoReturning = false;
 
@@ -403,6 +421,7 @@
 			const { y, progress } = measure();
 			scrolled = y > 0;
 			scrollProgress = progress;
+			startPhysics();
 			stage.setScrollProgress(progress);
 			// Re-evaluate after setScrollProgress: a card's onStateChange (fired above)
 			// may have just changed cardsOnScreen, and sectionVisible already reflects
@@ -464,6 +483,7 @@
 
 		return () => {
 			window.removeEventListener('scroll', onScroll);
+			cancelIdle();
 			delete w.driftDebug;
 			delete w.driftState;
 			clearScene();

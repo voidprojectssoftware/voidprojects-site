@@ -1,7 +1,6 @@
-import Matter from 'matter-js';
+import type Matter from 'matter-js';
+import { loadMatter, matter } from './matter.js';
 import { COLLISION, type Actor, type StepCtx } from './actor.js';
-
-const { Engine, Bodies, Body, Composite, Render, Query } = Matter;
 
 /** Off-screen wall thickness that keeps bodies inside the viewport. */
 const WALL_THICKNESS = 200;
@@ -45,6 +44,10 @@ export type StageOptions = {
  * Frame order: every actor's `step()` (forces only) → one `Engine.update` →
  * every actor's `sync()` (transforms). The loop parks itself once no actor
  * reports busy; an actor calls {@link wake} when it next needs frames.
+ *
+ * Matter.js is fetched by {@link init}, not at construction, so it stays off the
+ * page's critical path. Until then the stage is inert and only remembers the latest
+ * scroll progress. Under reduced motion it never loads Matter at all.
  */
 export class PhysicsStage {
 	private readonly actors: Actor[] = [];
@@ -63,6 +66,10 @@ export class PhysicsStage {
 	private readonly bounds: HTMLElement | null;
 	private boundsObserver: ResizeObserver | null = null;
 	private paused = false;
+	private ready = false; // world built (or reduced motion, which never needs one)
+	private destroyed = false;
+	private initPromise: Promise<void> | null = null;
+	private pendingProgress: number | null = null; // latest scroll seen before ready
 
 	/** Every body added by an actor, with whether the cursor may grab it. */
 	private readonly grabbable = new Set<Matter.Body>();
@@ -104,7 +111,7 @@ export class PhysicsStage {
 		this.frame = this.step.bind(this);
 
 		if (typeof window !== 'undefined') {
-			this.buildWorld();
+			this.ready = this.reduceMotion;
 			window.addEventListener('pointermove', this.onPointerMove, { passive: true });
 			window.addEventListener('pointerdown', this.onPointerDown, { passive: true });
 			window.addEventListener('pointerup', this.onPointerUp, { passive: true });
@@ -155,7 +162,25 @@ export class PhysicsStage {
 		}
 	}
 
-	/** Register an actor and let it mount. Stage must already have a world (browser only). */
+	/**
+	 * Load Matter.js, build the world, and replay any scroll that arrived first.
+	 * Idempotent. Calls that build bodies outside a scroll (a glyph warp, a direct
+	 * glyph start) must wait for this.
+	 */
+	init(): Promise<void> {
+		if (this.ready || typeof window === 'undefined') return Promise.resolve();
+		this.initPromise ??= loadMatter().then(() => {
+			if (this.destroyed) return;
+			this.buildWorld();
+			this.ready = true;
+			const p = this.pendingProgress;
+			this.pendingProgress = null;
+			if (p !== null) this.setScrollProgress(p);
+		});
+		return this.initPromise;
+	}
+
+	/** Register an actor and let it mount. */
 	add(actor: Actor) {
 		this.actors.push(actor);
 		actor.mount(this);
@@ -169,7 +194,7 @@ export class PhysicsStage {
 	/** Add a body to the shared world. `grabbable` lets the cursor pick it up and throw it. */
 	addBody(body: Matter.Body, opts: { grabbable?: boolean } = {}) {
 		if (!this.engine) return;
-		Composite.add(this.engine.world, body);
+		matter().Composite.add(this.engine.world, body);
 		if (opts.grabbable) this.grabbable.add(body);
 	}
 
@@ -178,7 +203,7 @@ export class PhysicsStage {
 		if (this.pendingGrab === body) this.pendingGrab = null;
 		if (this.dragBody === body) this.clearGrab();
 		this.grabbable.delete(body);
-		if (this.engine) Composite.remove(this.engine.world, body);
+		if (this.engine) matter().Composite.remove(this.engine.world, body);
 	}
 
 	/**
@@ -188,16 +213,20 @@ export class PhysicsStage {
 	 * the pulling. Used by graph effects to link nodes together.
 	 */
 	addConstraint(constraint: Matter.Constraint) {
-		if (this.engine) Composite.add(this.engine.world, constraint);
+		if (this.engine) matter().Composite.add(this.engine.world, constraint);
 	}
 
 	/** Remove a constraint from the shared world. */
 	removeConstraint(constraint: Matter.Constraint) {
-		if (this.engine) Composite.remove(this.engine.world, constraint);
+		if (this.engine) matter().Composite.remove(this.engine.world, constraint);
 	}
 
 	/** Fan a new total-scroll progress (0-1) out to every actor, then run if needed. */
 	setScrollProgress(progress: number) {
+		if (!this.ready) {
+			this.pendingProgress = progress;
+			return;
+		}
 		for (const a of this.actors) a.onScroll(progress);
 		this.wake();
 	}
@@ -235,6 +264,7 @@ export class PhysicsStage {
 
 	/** Tear down the world, loop, and listeners. Call on unmount. */
 	destroy() {
+		this.destroyed = true;
 		if (this.rafId) cancelAnimationFrame(this.rafId);
 		this.rafId = 0;
 		this.disableDebug();
@@ -243,8 +273,8 @@ export class PhysicsStage {
 		this.actors.length = 0;
 		this.grabbable.clear();
 		if (this.engine) {
-			Composite.clear(this.engine.world, false);
-			Engine.clear(this.engine);
+			matter().Composite.clear(this.engine.world, false);
+			matter().Engine.clear(this.engine);
 		}
 		this.engine = null;
 		this.walls = [];
@@ -281,7 +311,7 @@ export class PhysicsStage {
 	}
 
 	private buildWorld() {
-		const engine = Engine.create();
+		const engine = matter().Engine.create();
 		engine.gravity.x = 0;
 		engine.gravity.y = 0; // zero-g space; actors apply their own forces
 		this.engine = engine;
@@ -291,21 +321,21 @@ export class PhysicsStage {
 
 	private buildWalls() {
 		if (!this.engine) return;
-		if (this.walls.length) Composite.remove(this.engine.world, this.walls);
+		if (this.walls.length) matter().Composite.remove(this.engine.world, this.walls);
 		const { width: W, height: H } = this.size();
 		const t = WALL_THICKNESS;
 		// Top/left/right are solid to everyone. The floor uses its own collision
 		// category so cards can pass through it while glyphs stay penned in.
 		this.walls = [
-			Bodies.rectangle(W / 2, -t / 2, W + 2 * t, t, { isStatic: true }), // top
-			Bodies.rectangle(-t / 2, H / 2, t, H + 2 * t, { isStatic: true }), // left
-			Bodies.rectangle(W + t / 2, H / 2, t, H + 2 * t, { isStatic: true }), // right
-			Bodies.rectangle(W / 2, H + t / 2, W + 2 * t, t, {
+			matter().Bodies.rectangle(W / 2, -t / 2, W + 2 * t, t, { isStatic: true }), // top
+			matter().Bodies.rectangle(-t / 2, H / 2, t, H + 2 * t, { isStatic: true }), // left
+			matter().Bodies.rectangle(W + t / 2, H / 2, t, H + 2 * t, { isStatic: true }), // right
+			matter().Bodies.rectangle(W / 2, H + t / 2, W + 2 * t, t, {
 				isStatic: true,
 				collisionFilter: { category: COLLISION.FLOOR }
 			}) // floor
 		];
-		Composite.add(this.engine.world, this.walls);
+		matter().Composite.add(this.engine.world, this.walls);
 	}
 
 	private size(): { width: number; height: number } {
@@ -358,7 +388,7 @@ export class PhysicsStage {
 		while (this.accumulator >= FIXED_DT && steps < MAX_SUBSTEPS) {
 			for (const a of this.actors) a.step(ctx); // forces only
 			this.applyDrag(); // held body chases the cursor, shoving its neighbours
-			if (this.engine) Engine.update(this.engine, FIXED_DT); // one fixed solver step
+			if (this.engine) matter().Engine.update(this.engine, FIXED_DT); // one fixed solver step
 			if (this.bounds) this.contain(width, height);
 			this.accumulator -= FIXED_DT;
 			steps++;
@@ -403,9 +433,9 @@ export class PhysicsStage {
 			const dx = min.x < -s ? -min.x : max.x > width + s ? width - max.x : 0;
 			const dy = min.y < -s ? -min.y : max.y > height + s ? height - max.y : 0;
 			if (dx === 0 && dy === 0) continue;
-			Body.translate(body, { x: dx, y: dy });
+			matter().Body.translate(body, { x: dx, y: dy });
 			const v = body.velocity;
-			Body.setVelocity(body, {
+			matter().Body.setVelocity(body, {
 				x: dx !== 0 && Math.sign(v.x) !== Math.sign(dx) ? -v.x * body.restitution : v.x,
 				y: dy !== 0 && Math.sign(v.y) !== Math.sign(dy) ? -v.y * body.restitution : v.y
 			});
@@ -431,7 +461,7 @@ export class PhysicsStage {
 		if (!this.dragBody) return;
 		const tx = this.pointer.x + this.dragOffset.x;
 		const ty = this.pointer.y + this.dragOffset.y;
-		Body.setVelocity(this.dragBody, {
+		matter().Body.setVelocity(this.dragBody, {
 			x: tx - this.dragBody.position.x,
 			y: ty - this.dragBody.position.y
 		});
@@ -444,7 +474,7 @@ export class PhysicsStage {
 			'position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:9999;opacity:0.75';
 		document.body.appendChild(canvas);
 		this.debugCanvas = canvas;
-		this.render = Render.create({
+		this.render = matter().Render.create({
 			canvas,
 			engine: this.engine,
 			options: {
@@ -457,12 +487,12 @@ export class PhysicsStage {
 				showIds: true
 			}
 		});
-		Render.run(this.render);
+		matter().Render.run(this.render);
 	}
 
 	private stopDebugRender() {
 		if (this.render) {
-			Render.stop(this.render);
+			matter().Render.stop(this.render);
 			this.render = null;
 		}
 		if (this.debugCanvas) {
@@ -506,7 +536,7 @@ export class PhysicsStage {
 		this.pointer.active = p.inside;
 		this.pointerInside = p.inside;
 		this.lastPointerMove = e.timeStamp;
-		const hit = Query.point([...this.grabbable], point)[0];
+		const hit = matter().Query.point([...this.grabbable], point)[0];
 		if (!hit) return;
 		// Defer the real grab until the pointer moves, so a plain click still reaches
 		// whatever is underneath (e.g. the GitHub button) instead of being swallowed.
@@ -520,7 +550,7 @@ export class PhysicsStage {
 		if (this.dragBody) {
 			const speed = Math.hypot(this.pointerVel.x, this.pointerVel.y);
 			const scale = speed > MAX_THROW_SPEED ? MAX_THROW_SPEED / speed : 1;
-			Body.setVelocity(this.dragBody, {
+			matter().Body.setVelocity(this.dragBody, {
 				x: this.pointerVel.x * scale,
 				y: this.pointerVel.y * scale
 			});

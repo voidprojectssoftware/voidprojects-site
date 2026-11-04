@@ -14,7 +14,8 @@
 		"lint": "prettier --check . && eslint .",
 		"format": "prettier --write .",
 		"gen:stars": "node scripts/gen-star-catalog.mjs",
-		"gen:trajectories": "node scripts/fetch-trajectories.mjs",
+		"gen:trajectories": "node scripts/fetch-trajectories.mjs && node scripts/gen-trajectory-bin.mjs",
+		"gen:trajectory-bin": "node scripts/gen-trajectory-bin.mjs",
 		"export:brand": "node scripts/export-brand.mjs"
 	},
 	"devDependencies": {
