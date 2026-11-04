@@ -56,12 +56,13 @@
 		<!-- Explicit lines + w-fit so the box ends where the text does, giving the
 		     splash a real corner to sit on. -->
 		<h1 class="relative w-fit text-4xl font-bold tracking-tight sm:text-6xl">
-			<span class="block">The website you</span>
-			<span class="block">need, without effort.</span>
+			<span class="block lg:inline">Website</span>
+			<span class="block lg:inline">Development</span>
+			<span class="block lg:inline">Services</span>
 			<Splash lines={SPLASHES} />
 		</h1>
-		<p class="pt-6 text-2xl font-semibold tracking-tight text-primary sm:text-3xl">
-			Free if we can. Fair if we can’t.
+		<p class="pt-6 text-2xl font-semibold tracking-tight text-balance text-primary sm:text-3xl">
+			Site-builder prices. Engineers doing the building.
 		</p>
 		<div class="flex flex-wrap justify-center gap-3 pt-10">
 			<a
@@ -130,12 +131,12 @@
 	</Section>
 
 	<Section wide class="pb-24">
-		<GlassCard class="grid gap-10 p-6 sm:p-10 lg:grid-cols-[1fr_1.4fr] lg:items-center lg:gap-16">
+		<GlassCard
+			id="pricing"
+			class="grid scroll-mt-24 gap-10 p-6 sm:p-10 lg:grid-cols-[1fr_1.4fr] lg:items-center lg:gap-16"
+		>
 			<div class="flex flex-col gap-4">
 				<h2 class="text-3xl font-bold tracking-tight">What it costs</h2>
-				<p class="text-2xl font-semibold tracking-tight text-primary">
-					Site-builder prices. We do the building.
-				</p>
 				<p class="leading-relaxed text-foreground/65">Most sites fit one of these three.</p>
 			</div>
 			<dl class="flex flex-col divide-y divide-foreground/10">
