@@ -15,7 +15,8 @@
 		"format": "prettier --write .",
 		"gen:stars": "node scripts/gen-star-catalog.mjs",
 		"gen:trajectories": "node scripts/fetch-trajectories.mjs",
-		"export:brand": "node scripts/export-brand.mjs"
+		"export:brand": "node scripts/export-brand.mjs",
+		"audit:offer": "node scripts/offer-audit.mjs"
 	},
 	"devDependencies": {
 		"@azure/communication-email": "^1.1.0",
@@ -44,6 +45,7 @@
 		"eslint-config-prettier": "^10.1.8",
 		"eslint-plugin-svelte": "^3.17.0",
 		"globals": "^17.4.0",
+		"lighthouse": "^13.6.0",
 		"mdsvex": "^0.12.7",
 		"playwright": "^1.61.1",
 		"prettier": "^3.8.1",
