@@ -89,7 +89,7 @@
 		before: string;
 		after: string;
 		bar: { before: number; after: number; max: number };
-		target?: { value: number; label: string; source: string }; // benchmark line, see figures.mjs
+		target?: { value: number; label: string; good: string; text: string; source: string }; // benchmark line, see figures.mjs
 	}
 
 	const width = (value: number, max: number) => `${Math.max(1.5, (100 * value) / max)}%`;
@@ -203,10 +203,22 @@
 							></span>{/if}</span
 					>
 					<span class="val next-val">{row.after}</span>
+					{#if row.target}
+						{@const end = row.target.value >= row.bar.max}
+						<span class="marks">
+							<span
+								class="mark-label"
+								class:toward-left={row.target.good === 'lower'}
+								class:at-end={end}
+								style:left={at(row.target.value, row.bar.max)}
+								aria-hidden="true"
+								>{#if row.target.good === 'lower'}&larr; {row.target.label}{:else if end}{row.target
+										.label} &uarr;{:else}{row.target.label} &rarr;{/if}</span
+							>
+							<span class="sr-only">{row.target.text}</span>
+						</span>
+					{/if}
 				</div>
-				{#if row.target}
-					<p class="target"><span class="tick" aria-hidden="true"></span>{row.target.label}</p>
-				{/if}
 				<p class="why">{row.why}</p>
 				<p class="fine">
 					{row.target ? `${row.fine} Line: ${row.target.source}` : row.fine}
@@ -216,8 +228,8 @@
 	</ul>
 {/snippet}
 
-<header class="band">
-	<div class="lockup mx-auto flex max-w-4xl items-center px-4 py-5 sm:px-8">
+<header class="px-4 pt-5 sm:px-8">
+	<div class="lockup mx-auto flex w-fit items-center">
 		<span class="void">
 			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 			<span class="mark" data-void-mark aria-hidden="true">{@html voidMark}</span>
@@ -230,7 +242,10 @@
 
 <main class="mx-auto grid max-w-4xl gap-14 px-4 py-12 sm:px-8 sm:py-16">
 	<OfferGate {offer} builtAt={context.builtAt}>
-		<section class="grid gap-4" aria-labelledby="offer-title">
+		<section class="hero relative isolate grid gap-4" aria-labelledby="offer-title">
+			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+			<span class="hero-mark" aria-hidden="true">{@html voidMark}</span>
+			<p class="eyebrow">Proposal</p>
 			<h1 id="offer-title" class="text-4xl leading-tight sm:text-5xl">
 				Hosting and maintenance proposal for your two websites
 			</h1>
@@ -257,7 +272,7 @@
 			{#each figures.sites as site (site.id)}
 				<article class="site grid gap-5" aria-labelledby="site-{site.id}">
 					<div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
-						<h3 id="site-{site.id}" class="serif text-2xl">{site.name}</h3>
+						<h3 id="site-{site.id}" class="text-2xl">{site.name}</h3>
 						<div class="flex flex-wrap gap-x-5 gap-y-1 text-sm font-semibold">
 							<a href={site.preview} rel="noreferrer">Open the rebuilt site</a>
 							<a href="{site.preview}site-comparison/" rel="noreferrer">Full comparison</a>
@@ -383,57 +398,221 @@
 </main>
 
 <style>
-	.band {
-		background: var(--ftps-grey);
-		border-bottom: 4px solid var(--ftps-lime);
-	}
 	.lockup {
-		gap: 0.75rem;
+		gap: 0.625rem;
+		padding: 0.5rem 1.125rem;
+		border-radius: 999px;
+		background: var(--void-night);
 		color: #fff;
+		box-shadow: 0 10px 30px -12px oklch(0.17 0.018 285 / 0.45);
 	}
 	.void {
 		display: flex;
 		align-items: center;
 		gap: 0.5rem;
-		font-family: 'Inter Variable', Inter, ui-sans-serif, system-ui, sans-serif;
-		font-size: 1.0625rem;
+		font-size: 1rem;
 		font-weight: 700;
+		letter-spacing: -0.01em;
 		white-space: nowrap;
 	}
 	.mark {
 		display: block;
-		width: 32px;
-		height: 32px;
+		width: 28px;
+		height: 28px;
 	}
-	.mark :global(svg) {
+	.mark :global(svg),
+	.hero-mark :global(svg) {
 		display: block;
 		width: 100%;
 		height: 100%;
 	}
 	.plus {
-		font-size: 1.5rem;
+		font-size: 1.25rem;
 		font-weight: 300;
 		line-height: 1;
-		opacity: 0.85;
+		opacity: 0.7;
 	}
 	.ftps {
 		display: block;
-		height: 40px;
+		height: 34px;
 		width: auto;
 	}
 	p {
 		margin: 0;
 	}
 	a {
-		color: var(--offer-accent);
-		text-underline-offset: 0.2em;
+		color: var(--void-primary-text);
+		font-weight: 600;
+		text-underline-offset: 0.25em;
 	}
 	a:hover {
 		text-decoration: underline;
 	}
+	.sr-only {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+		white-space: nowrap;
+	}
+
+	/* Hero: the site's own move, a faint oversized orbit mark behind the heading. */
+	.hero {
+		padding-top: 1rem;
+	}
+	.hero-mark {
+		position: absolute;
+		z-index: -1;
+		top: -2rem;
+		right: -3rem;
+		width: 18rem;
+		height: 18rem;
+		opacity: 0.07;
+		pointer-events: none;
+	}
+	.eyebrow {
+		font-size: 0.8125rem;
+		font-weight: 600;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		color: var(--void-primary-text);
+	}
 	.price {
 		font-size: 1.125rem;
+		color: var(--offer-muted);
 	}
+	.price strong {
+		font-size: 2rem;
+		letter-spacing: -0.02em;
+		color: var(--void-primary-text);
+	}
+
+	.legend {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem 1.5rem;
+		font-size: 0.875rem;
+		color: var(--offer-muted);
+	}
+	.legend > span {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+	}
+	.swatch {
+		display: inline-block;
+		width: 1.5rem;
+		height: 0.625rem;
+		border-radius: 999px;
+	}
+	.now {
+		background: var(--void-neutral);
+	}
+	.next {
+		background: var(--void-primary);
+	}
+
+	.site {
+		padding: 1.5rem;
+		border: 1px solid var(--offer-border);
+		border-radius: 1.5rem;
+		background: var(--offer-surface);
+		box-shadow: 0 20px 40px -28px oklch(0.4 0.1 300 / 0.35);
+	}
+	.tiles,
+	.choice ul,
+	.items {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+	.tiles {
+		display: grid;
+		gap: 0.75rem;
+	}
+	.tile {
+		display: grid;
+		gap: 0.5rem;
+		padding: 1rem 1.125rem;
+		border-radius: 1rem;
+		background: var(--offer-bg);
+	}
+	.bars {
+		display: grid;
+		grid-template-columns: 1fr auto;
+		align-items: center;
+		gap: 0.125rem 0.75rem;
+	}
+	.bars .who {
+		grid-column: 1 / -1;
+		margin-top: 0.25rem;
+	}
+	.who {
+		font-size: 0.75rem;
+		font-weight: 600;
+		color: var(--offer-muted);
+		white-space: nowrap;
+	}
+	.track {
+		position: relative;
+		display: block;
+		height: 0.75rem;
+		border-radius: 999px;
+		background: oklch(0.145 0 0 / 0.07);
+	}
+	.fill {
+		display: block;
+		height: 100%;
+		border-radius: 999px;
+	}
+	.line {
+		position: absolute;
+		top: -0.25rem;
+		bottom: -0.25rem;
+		width: 2px;
+		border-radius: 1px;
+		background: var(--offer-fg);
+	}
+	/* The benchmark's label sits under its line: starting at the line when good is to
+	   the right, ending at it when good is to the left or the line is the full bar. */
+	.marks {
+		position: relative;
+		grid-column: 1;
+		height: 1.25rem;
+	}
+	.mark-label {
+		position: absolute;
+		top: 0.125rem;
+		margin-left: -1px;
+		font-size: 0.75rem;
+		font-weight: 600;
+		white-space: nowrap;
+	}
+	.mark-label.toward-left,
+	.mark-label.at-end {
+		margin-left: 3px;
+		transform: translateX(-100%);
+	}
+	.val {
+		min-width: 4.5rem;
+		text-align: right;
+		font-weight: 700;
+		font-variant-numeric: tabular-nums;
+		white-space: nowrap;
+		color: var(--offer-muted);
+	}
+	.next-val {
+		color: var(--void-primary-text);
+	}
+	.why {
+		font-size: 0.9375rem;
+	}
+	.fine {
+		font-size: 0.75rem;
+		color: var(--offer-muted);
+	}
+
 	.breakdown {
 		display: grid;
 		gap: 0.5rem;
@@ -468,142 +647,27 @@
 		padding-top: 0.5rem;
 		border-top: 1px dashed var(--offer-border);
 	}
-	.price strong {
-		font-size: 1.5rem;
-		color: var(--offer-accent);
-	}
-	.legend {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.5rem 1.5rem;
-		font-size: 0.875rem;
-		color: var(--offer-muted);
-	}
-	.legend > span {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.5rem;
-	}
-	.swatch {
-		display: inline-block;
-		width: 1.5rem;
-		height: 0.625rem;
-		border-radius: 999px;
-	}
-	.now {
-		background: var(--today);
-	}
-	.next {
-		background: var(--offer-accent);
-	}
-	.site {
-		--today: #8c8d91;
-		padding: 1.5rem;
-		border: 1px solid var(--offer-border);
-		border-top: 4px solid var(--offer-accent);
-		border-radius: var(--offer-radius);
-		background: var(--offer-surface);
-	}
-	.legend .now {
-		background: #8c8d91;
-	}
-	.tiles,
-	.choice ul,
-	.items {
-		margin: 0;
-		padding: 0;
-		list-style: none;
-	}
-	.tiles {
-		display: grid;
-		gap: 0.75rem;
-	}
-	.tile {
-		display: grid;
-		gap: 0.5rem;
-		padding: 1rem;
-		border: 1px solid var(--offer-border);
-		border-radius: var(--offer-radius);
-	}
-	.bars {
-		display: grid;
-		grid-template-columns: 1fr auto;
-		align-items: center;
-		gap: 0.125rem 0.75rem;
-	}
-	.bars .who {
-		grid-column: 1 / -1;
-		margin-top: 0.25rem;
-	}
-	.who {
-		font-size: 0.75rem;
-		font-weight: 600;
-		color: var(--offer-muted);
-		white-space: nowrap;
-	}
-	.track {
-		position: relative;
-		display: block;
-		height: 0.75rem;
-		border-radius: 999px;
-		background: #ececec;
-	}
-	.line {
-		position: absolute;
-		top: -0.25rem;
-		bottom: -0.25rem;
-		width: 2px;
-		background: var(--offer-fg);
-	}
-	.target {
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-		font-size: 0.8125rem;
-		font-weight: 600;
-	}
-	.tick {
-		display: inline-block;
-		width: 2px;
-		height: 1rem;
-		background: var(--offer-fg);
-	}
-	.fill {
-		display: block;
-		height: 100%;
-		border-radius: 999px;
-	}
-	.val {
-		min-width: 4.5rem;
-		text-align: right;
-		font-weight: 700;
-		font-variant-numeric: tabular-nums;
-		white-space: nowrap;
-	}
-	.next-val {
-		color: var(--offer-accent);
-	}
-	.why {
-		font-size: 0.9375rem;
-	}
-	.fine {
-		font-size: 0.75rem;
-		color: var(--offer-muted);
-	}
+
 	.choice > div {
-		padding: 1.25rem;
-		border: 1px solid var(--offer-border);
-		border-radius: var(--offer-radius);
-		background: var(--offer-surface);
+		padding: 1.5rem;
+		border-radius: 1.5rem;
 	}
 	.choice .stay {
-		border-top: 4px solid #8c8d91;
+		border: 1px solid var(--offer-border);
+		background: var(--offer-surface);
 	}
+	/* The site's highlighted-card treatment (the causes card on /websites). */
 	.choice .move {
-		border-top: 4px solid var(--offer-accent);
+		border: 1px solid oklch(0.6534 0.1876 301.62 / 0.3);
+		background: linear-gradient(
+			to bottom right,
+			oklch(0.6534 0.1876 301.62 / 0.18),
+			oklch(0.6534 0.1876 301.62 / 0.06),
+			transparent
+		);
 	}
 	.choice h3 {
-		margin: 0 0 0.75rem;
+		margin: 0 0 0.875rem;
 		font-size: 1.25rem;
 	}
 	.choice ul,
@@ -625,11 +689,11 @@
 	.longer {
 		padding: 1rem 1.25rem;
 		border: 1px solid var(--offer-border);
-		border-radius: var(--offer-radius);
+		border-radius: 1rem;
 		background: var(--offer-surface);
 	}
 	.longer {
-		border-left: 4px solid var(--ftps-lime);
+		border-left: 3px solid var(--void-primary);
 	}
 	.icon {
 		flex: none;
@@ -643,32 +707,41 @@
 		stroke-linejoin: round;
 	}
 	.icon.yes circle {
-		fill: var(--offer-accent);
+		fill: var(--void-primary-strong);
 	}
 	.icon.no circle {
-		fill: #6b6c70;
+		fill: oklch(0.55 0.006 300);
 	}
 
 	@media (min-width: 40rem) {
 		.lockup {
-			gap: 1.25rem;
+			gap: 1rem;
+			padding: 0.625rem 1.5rem;
 		}
 		.void {
-			font-size: 1.5rem;
-			gap: 0.625rem;
+			font-size: 1.25rem;
 		}
 		.mark {
-			width: 40px;
-			height: 40px;
+			width: 36px;
+			height: 36px;
 		}
 		.plus {
-			font-size: 2rem;
+			font-size: 1.625rem;
 		}
 		.ftps {
-			height: 48px;
+			height: 42px;
+		}
+		.hero-mark {
+			width: 26rem;
+			height: 26rem;
+			top: -4rem;
+			right: -6rem;
 		}
 		.tiles {
 			grid-template-columns: 1fr 1fr;
+		}
+		.site {
+			padding: 2rem;
 		}
 	}
 </style>

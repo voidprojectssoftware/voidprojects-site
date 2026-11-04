@@ -8,7 +8,7 @@
 			"measured": "October 28, 2026",
 			"pages": 11,
 			"source": {
-				"commit": "093cc1c",
+				"commit": "93710e0",
 				"run": "docs/discovery/seo-audit/2026-10-28-after-88/result.json"
 			},
 			"rows": [
@@ -26,7 +26,9 @@
 					},
 					"target": {
 						"value": 2.5,
-						"label": "Good: 2.5 s or less",
+						"label": "Good",
+						"good": "lower",
+						"text": "Good is 2.5 seconds or less",
 						"source": "Google’s Core Web Vitals mark for a good page load (web.dev)."
 					}
 				},
@@ -43,7 +45,9 @@
 					},
 					"target": {
 						"value": 90,
-						"label": "Good: 90 or more",
+						"label": "Good",
+						"good": "higher",
+						"text": "Good is 90 or more",
 						"source": "The green “good” band of Google Lighthouse’s score (Chrome developer docs)."
 					}
 				},
@@ -60,7 +64,9 @@
 					},
 					"target": {
 						"value": 90,
-						"label": "Good: 90 or more",
+						"label": "Good",
+						"good": "higher",
+						"text": "Good is 90 or more",
 						"source": "The green “good” band of Google Lighthouse’s score (Chrome developer docs)."
 					}
 				},
@@ -77,7 +83,9 @@
 					},
 					"target": {
 						"value": 90,
-						"label": "Good: 90 or more",
+						"label": "Good",
+						"good": "higher",
+						"text": "Good is 90 or more",
 						"source": "The green “good” band of Google Lighthouse’s score (Chrome developer docs)."
 					}
 				},
@@ -94,7 +102,9 @@
 					},
 					"target": {
 						"value": 11,
-						"label": "Goal: all 11 pages",
+						"label": "Goal",
+						"good": "higher",
+						"text": "The goal is all 11 pages",
 						"source": "No published benchmark; every page is the natural goal."
 					}
 				},
@@ -111,7 +121,9 @@
 					},
 					"target": {
 						"value": 11,
-						"label": "Goal: all 11 pages",
+						"label": "Goal",
+						"good": "higher",
+						"text": "The goal is all 11 pages",
 						"source": "No published benchmark; every page is the natural goal."
 					}
 				}
@@ -126,7 +138,7 @@
 			"measured": "November 4, 2026",
 			"pages": 10,
 			"source": {
-				"commit": "9bc4509",
+				"commit": "00d233e",
 				"run": "docs/discovery/seo-audit/2026-11-04-production/result.json",
 				"aeo": "docs/discovery/aeo/2026-11-04-with-geoctl-every-page"
 			},
@@ -145,7 +157,9 @@
 					},
 					"target": {
 						"value": 2.5,
-						"label": "Good: 2.5 s or less",
+						"label": "Good",
+						"good": "lower",
+						"text": "Good is 2.5 seconds or less",
 						"source": "Google’s Core Web Vitals mark for a good page load (web.dev)."
 					}
 				},
@@ -162,7 +176,9 @@
 					},
 					"target": {
 						"value": 90,
-						"label": "Good: 90 or more",
+						"label": "Good",
+						"good": "higher",
+						"text": "Good is 90 or more",
 						"source": "The green “good” band of Google Lighthouse’s score (Chrome developer docs)."
 					}
 				},
@@ -179,7 +195,9 @@
 					},
 					"target": {
 						"value": 90,
-						"label": "Good: 90 or more",
+						"label": "Good",
+						"good": "higher",
+						"text": "Good is 90 or more",
 						"source": "The green “good” band of Google Lighthouse’s score (Chrome developer docs)."
 					}
 				},
@@ -196,7 +214,9 @@
 					},
 					"target": {
 						"value": 90,
-						"label": "Good: 90 or more",
+						"label": "Good",
+						"good": "higher",
+						"text": "Good is 90 or more",
 						"source": "The green “good” band of Google Lighthouse’s score (Chrome developer docs)."
 					}
 				},
@@ -213,7 +233,9 @@
 					},
 					"target": {
 						"value": 10,
-						"label": "Goal: all 10 pages",
+						"label": "Goal",
+						"good": "higher",
+						"text": "The goal is all 10 pages",
 						"source": "No published benchmark; every page is the natural goal."
 					}
 				},
@@ -230,7 +252,9 @@
 					},
 					"target": {
 						"value": 10,
-						"label": "Goal: all 10 pages",
+						"label": "Goal",
+						"good": "higher",
+						"text": "The goal is all 10 pages",
 						"source": "No published benchmark; every page is the natural goal."
 					}
 				}

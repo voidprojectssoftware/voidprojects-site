@@ -1,48 +1,54 @@
-/* First Touch's colors, as measured from their current site
-   (firsttouchpaymentsolutions-website, docs/discovery/atlas/brand.md): brand blue
-   #0069a7, lime #cfdb00, grey #646569, body text #333333, light grey #f5f5f5. */
+/* Void Projects' look, from src/routes/layout.css: the light lavender background,
+   brand violet (--color-primary) and its darker solid (--color-primary-strong,
+   4.66:1 under white text), near-black text and Inter. The site has no dark mode in
+   use (.dark is never set), so neither does this page. Inter is named but not
+   bundled: a bundled font file's URL would carry the offer id into the CSS, so
+   visitors without Inter get the system sans. */
 @import 'tailwindcss' source('.');
 @source not './figures.json';
 @source not './figures.mjs';
 
 :root {
-	--offer-bg: #f5f5f5;
-	--offer-fg: #333333;
-	--offer-muted: #595a5e;
-	--offer-surface: #ffffff;
-	--offer-border: #dcdcdc;
-	--offer-accent: #0069a7;
-	--offer-accent-fg: #ffffff;
-	--offer-good: #2f6b3a;
-	--offer-warn: #8a5d12;
-	--offer-bad: #b42318;
-	--offer-radius: 0.5rem;
-	--ftps-grey: #646569;
-	--ftps-lime: #cfdb00;
+	--void-primary: oklch(0.6534 0.1876 301.62);
+	--void-primary-strong: oklch(0.58 0.1876 301.62);
+	--void-night: oklch(0.17 0.018 285); /* the site's dark background, behind the header lockup */
+	--void-primary-text: oklch(0.55 0.1876 301.62); /* violet text: 5:1 on the background */
+	--void-neutral: oklch(0.64 0.006 300); /* "where you are" bars: 3.2:1 on the background */
+	--offer-bg: oklch(0.984 0.01 311.18);
+	--offer-fg: oklch(0.145 0 0);
+	--offer-muted: oklch(0.42 0.01 300);
+	--offer-surface: oklch(1 0 0);
+	--offer-border: oklch(0.145 0 0 / 0.1);
+	--offer-accent: var(--void-primary-strong);
+	--offer-accent-fg: #fff;
+	--offer-good: oklch(0.5 0.13 150);
+	--offer-warn: oklch(0.55 0.12 75);
+	--offer-bad: oklch(0.55 0.2 27);
+	--offer-radius: 1rem;
+}
+
+html,
+body {
+	overflow-x: clip; /* the hero's oversized mark bleeds past the edge */
 }
 
 body {
 	margin: 0;
 	background: var(--offer-bg);
 	color: var(--offer-fg);
-	font-family: Roboto, ui-sans-serif, system-ui, sans-serif;
+	font-family: 'Inter Variable', Inter, ui-sans-serif, system-ui, sans-serif;
 	line-height: 1.55;
 }
 
 h1,
 h2,
-.serif {
-	font-family: 'Droid Serif', Georgia, Cambria, 'Times New Roman', serif;
-	font-weight: 400;
-	letter-spacing: -0.005em;
+h3 {
+	font-weight: 700;
+	letter-spacing: -0.02em;
 }
 
 h2 {
-	margin-bottom: 1rem;
-	font-size: 1.75rem;
-	line-height: 1.25;
-}
-
-h3 {
-	font-weight: 700;
+	margin-bottom: 0.75rem;
+	font-size: 1.875rem;
+	line-height: 1.2;
 }

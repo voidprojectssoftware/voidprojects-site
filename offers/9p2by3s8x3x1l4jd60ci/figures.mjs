@@ -62,17 +62,23 @@ const row = (label, why, fine, before, after, bar, target) => ({
 // - AI fact shares and the geoctl score: no recognised published benchmark, so no line.
 const LCP_GOOD = {
 	value: 2.5,
-	label: 'Good: 2.5 s or less',
+	label: 'Good', // shown under the line, with an arrow toward the good side
+	good: 'lower', // which side of the line is good
+	text: 'Good is 2.5 seconds or less', // the value, for screen readers
 	source: 'Google’s Core Web Vitals mark for a good page load (web.dev).'
 };
 const LIGHTHOUSE_GOOD = {
 	value: 90,
-	label: 'Good: 90 or more',
+	label: 'Good',
+	good: 'higher',
+	text: 'Good is 90 or more',
 	source: 'The green “good” band of Google Lighthouse’s score (Chrome developer docs).'
 };
 const allPages = (n) => ({
 	value: n,
-	label: `Goal: all ${n} pages`,
+	label: 'Goal',
+	good: 'higher',
+	text: `The goal is all ${n} pages`,
 	source: 'No published benchmark; every page is the natural goal.'
 });
 const ofPages = (text) => Number(text.match(/^(\d+) of/)?.[1]);
