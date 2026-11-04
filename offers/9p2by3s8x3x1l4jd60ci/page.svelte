@@ -82,7 +82,16 @@
 		};
 	});
 
-	const bioLine = ENGINEER.bio[0].split('. ')[0] + '.';
+	// One voice on the card: the shared ENGINEER bio is first person (it is Blake's own
+	// card on /websites), so here a third-person line is drawn from his skills instead.
+	// The role already sits under his name, so the line names only what he works on.
+	const FOCUS: Record<string, string> = {
+		'Agentic Development': 'AI agents',
+		'.NET': '.NET',
+		'Web Dev': 'the web'
+	};
+	const focus = ENGINEER.skills.filter((s) => s in FOCUS).map((s) => FOCUS[s]);
+	const bioLine = `He works across ${focus.slice(0, -1).join(', ')} and ${focus.at(-1)}.`;
 
 	// Dark theme only: a sparse, dim, static star field as texture (the home page's
 	// live sky draws ~9k catalogue stars every frame, too heavy for this page). Seeded,
