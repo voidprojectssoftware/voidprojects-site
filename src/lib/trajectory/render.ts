@@ -7,11 +7,9 @@
 // log scale compresses the long straight cruise and blooms the inner spiral into
 // the recognizable logo shape.
 
-import { DATA, type TrajectoryCraft } from './data.js';
+import type { TrajectoryCraft, TrajectoryData } from './types.js';
 
 type Craft = TrajectoryCraft;
-
-// CRAFT_META / CRAFT_IDS are defined in ./data and re-exported via ./index (barrel).
 
 export type RadialScale = 'linear' | 'sqrt' | 'log';
 export type TrajectoryPalette = 'aurum' | 'brand' | 'mono' | 'spectral';
@@ -111,19 +109,19 @@ function pathData(pts: [number, number][], smoothing: number): string {
 	return d;
 }
 
-export function buildTrajectory(opts: TrajectoryOptions): BuiltTrajectory {
+export function buildTrajectory(data: TrajectoryData, opts: TrajectoryOptions): BuiltTrajectory {
 	const rot = (opts.rotation * Math.PI) / 180;
 	const cos = Math.cos(rot);
 	const sin = Math.sin(rot);
 	const w = 1.1 * opts.stroke;
-	const shown = DATA.craft.filter((c) => opts.craft.includes(c.id));
+	const shown = data.craft.filter((c) => opts.craft.includes(c.id));
 
 	let body = '';
 	let totalPoints = 0;
 
 	// Faint planet reference rings (drawn first, behind the paths).
 	if (opts.planetRings) {
-		for (const p of DATA.planets) {
+		for (const p of data.planets) {
 			if (p.a > opts.maxAU) continue;
 			const pr = scaleR(p.a, opts.maxAU, opts.scale);
 			body += `<circle cx="${CX}" cy="${CY}" r="${f(pr)}" fill="none" stroke="#ffffff" stroke-opacity="0.1" stroke-width="${f(w * 0.6)}"/>`;

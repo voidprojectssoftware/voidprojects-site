@@ -1,9 +1,8 @@
-import Matter from 'matter-js';
+import type Matter from 'matter-js';
+import { matter } from '../matter.js';
 import { COLLISION, type Actor, type StepCtx } from '../actor.js';
 import type { PhysicsStage } from '../stage.js';
 import { uprightTorque } from '../behaviors.js';
-
-const { Bodies, Body } = Matter;
 
 /** Tunable knobs for how a card "feels" as it joins the mess. */
 export type CardConfig = {
@@ -150,7 +149,7 @@ export class ProjectCard implements Actor {
 		} else if (this.state === 'ejecting') {
 			// Sustain a downward pull so frictionAir + zero-g can't strand the card
 			// mid-screen; it keeps accelerating until it clears the bottom and retires.
-			Body.setVelocity(this.body_, {
+			matter().Body.setVelocity(this.body_, {
 				x: this.body_.velocity.x,
 				y: this.body_.velocity.y + this.cfg.ejectGravity
 			});
@@ -188,7 +187,7 @@ export class ProjectCard implements Actor {
 		this.h = Math.max(2, rect.height);
 
 		const H = window.innerHeight;
-		const body = Bodies.rectangle(this.hx, H + this.h, this.w, this.h, {
+		const body = matter().Bodies.rectangle(this.hx, H + this.h, this.w, this.h, {
 			density: this.cfg.density,
 			restitution: this.cfg.restitution,
 			friction: 0,
@@ -198,7 +197,7 @@ export class ProjectCard implements Actor {
 			// the floor so the card can fly up from below and later drop back out.
 			collisionFilter: { category: COLLISION.CARD, mask: 0xffffffff & ~COLLISION.FLOOR }
 		});
-		Body.setVelocity(body, {
+		matter().Body.setVelocity(body, {
 			x: (Math.random() * 2 - 1) * this.cfg.launchSpread,
 			y: -this.cfg.launchSpeed // upward, into the hero
 		});
@@ -219,7 +218,7 @@ export class ProjectCard implements Actor {
 		// Pass through everything on the way out: as a sensor it still falls but stops
 		// colliding, so it can't get jammed by a glyph pinned between it and a wall.
 		this.body_.isSensor = true;
-		Body.setVelocity(this.body_, { x: this.body_.velocity.x, y: this.cfg.ejectSpeed });
+		matter().Body.setVelocity(this.body_, { x: this.body_.velocity.x, y: this.cfg.ejectSpeed });
 		this.stage.wake();
 	}
 
