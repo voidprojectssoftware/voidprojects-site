@@ -9,4 +9,5 @@ and **reference** (look something up). Pick the topic, then the mode that matche
 - **[Physics](physics/README.md)** - the homepage animation: glyphs and cards as Matter.js
   bodies in a shared world, plus the at-rest cursor spring.
 - **[Offers](offers/how-to/add-an-offer.md)** - private prospect offer pages at `/o/<id>/`: how
-  they stay out of the site build, and how to add one.
+  they stay out of the site build, and how to add one. Sign-up through Stripe:
+  [configure Stripe](offers/how-to/configure-stripe.md).

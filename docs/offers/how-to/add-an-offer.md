@@ -30,7 +30,7 @@ Check it after a build: `grep -rl <id> build build-api` should list only `build/
 
 ```sh
 npm run build              # site, then every offer; prints expired offers
-npm run preview:offers     # serves build/ on port 5281 with a working sign-up stub
+npm run preview:offers     # serves build/ on port 5281; sign-up needs STRIPE_SECRET_KEY (see configure-stripe.md)
 ```
 
 Open `http://localhost:5281/o/<id>/`. `npm run preview` does not show offers: it serves only SvelteKit's output.

@@ -1,6 +1,7 @@
-// The /api/offer-checkout contract. A stub until the Stripe checkout issue (#78):
-// it already prices the selection from server-side offer data, so #78 only has to
-// turn a valid selection into a Checkout Session and answer with its `url`.
+// The /api/offer-checkout contract: prices the selection from server-side offer
+// data (never from the request body), turns it into a Stripe Checkout Session and
+// answers with the session's `url`, which the sign-up button redirects to.
+import { SITE_ORIGIN } from '$lib/seo/site.js';
 import {
 	INTERVALS,
 	isExpired,
@@ -11,6 +12,7 @@ import {
 	type Plan,
 	type Price
 } from './offer.js';
+import { checkoutSessionParams, type CheckoutStripe } from './stripe.js';
 
 export const MAX_BODY_BYTES = 4 * 1024;
 
@@ -30,8 +32,7 @@ export interface CheckoutSelection {
 	total: number; // whole cents per interval
 }
 
-// What the page reads back. `url` is set once #78 creates a real session; until
-// then the page shows `message`.
+// What the page reads back: `url` on success, otherwise `message` to show.
 export interface CheckoutReply {
 	ok: boolean;
 	url?: string;
@@ -45,6 +46,17 @@ export interface CheckoutResponse {
 }
 
 export type FindOffer = (id: string) => Offer | undefined;
+
+export interface CheckoutDeps {
+	findOffer: FindOffer;
+	stripe: CheckoutStripe | undefined; // undefined when STRIPE_SECRET_KEY is not set: a valid selection gets 503
+	origin?: string; // base of the success and cancel URLs; defaults to SITE_ORIGIN
+	now?: Date;
+	log?: (line: string) => void; // Stripe failures only, never the request body
+}
+
+const UNAVAILABLE =
+	'Online sign-up is not available right now. Reply to the message that brought you here and we will set it up.';
 
 function json(status: number, payload: CheckoutReply): CheckoutResponse {
 	return {
@@ -114,12 +126,11 @@ export function selectCheckout(
 	};
 }
 
-export function checkoutResponse(
+export async function checkoutResponse(
 	contentType: string | null,
 	body: string,
-	findOffer: FindOffer,
-	now = new Date()
-): CheckoutResponse {
+	{ findOffer, stripe, origin = SITE_ORIGIN, now = new Date(), log = () => {} }: CheckoutDeps
+): Promise<CheckoutResponse> {
 	if (!contentType?.toLowerCase().startsWith('application/json')) {
 		return json(415, { ok: false, message: 'Send JSON.' });
 	}
@@ -134,11 +145,22 @@ export function checkoutResponse(
 	if (!request) return json(400, { ok: false, message: 'Missing or malformed fields.' });
 	const result = selectCheckout(request, findOffer, now);
 	if ('message' in result) return json(result.status, { ok: false, message: result.message });
+	if (!stripe) return json(503, { ok: false, message: UNAVAILABLE });
 
-	// Stub (#78 replaces this with a Stripe Checkout Session and returns its url).
-	return json(200, {
-		ok: true,
-		message:
-			'Online sign-up is not open yet. Reply to the message that brought you here and we will set it up.'
-	});
+	try {
+		const session = await stripe.checkout.sessions.create(
+			checkoutSessionParams(result.selection, origin)
+		);
+		if (!session.url) throw new Error('session has no url');
+		return json(200, { ok: true, url: session.url, message: 'Opening checkout...' });
+	} catch (err) {
+		log(
+			`[offer-checkout] Stripe session create failed: ${err instanceof Error ? err.message : String(err)}`
+		);
+		return json(502, {
+			ok: false,
+			message:
+				'Checkout could not be opened. Please try again, or reply to the message that brought you here.'
+		});
+	}
 }

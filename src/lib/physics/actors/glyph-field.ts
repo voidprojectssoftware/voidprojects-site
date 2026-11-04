@@ -1,9 +1,8 @@
-import Matter from 'matter-js';
+import type Matter from 'matter-js';
+import { matter } from '../matter.js';
 import type { Actor, StepCtx } from '../actor.js';
 import type { PhysicsStage } from '../stage.js';
 import { cursorPull, cursorPush, readableUprightTorque } from '../behaviors.js';
-
-const { Bodies, Body } = Matter;
 
 /** Tunable knobs for how the glyph drift "feels". All have sensible defaults. */
 export type GlyphConfig = {
@@ -378,7 +377,7 @@ export class GlyphField implements Actor {
 		if (target?.body) {
 			this.warpCenter.x = target.body.position.x;
 			this.warpCenter.y = target.body.bounds.min.y;
-			Body.setStatic(target.body, true);
+			matter().Body.setStatic(target.body, true);
 			target.body.isSensor = true;
 		} else {
 			const r = targetEl.getBoundingClientRect();
@@ -395,7 +394,7 @@ export class GlyphField implements Actor {
 			const ox = d.body.position.x - this.warpCenter.x;
 			const oy = d.body.position.y - this.warpCenter.y;
 			const dist = Math.hypot(ox, oy) || 1;
-			Body.setVelocity(d.body, {
+			matter().Body.setVelocity(d.body, {
 				x: (-oy / dist) * WARP_TANGENT, // tangent = perpendicular to the radius
 				y: (ox / dist) * WARP_TANGENT
 			});
@@ -482,7 +481,7 @@ export class GlyphField implements Actor {
 						vx *= scale;
 						vy *= scale;
 					}
-					Body.setVelocity(body, { x: vx, y: vy });
+					matter().Body.setVelocity(body, { x: vx, y: vy });
 				}
 			}
 		} else if (this.mode === 'warping' && this.warpPhase === 'pulling') {
@@ -495,7 +494,7 @@ export class GlyphField implements Actor {
 				const dx = cx - d.body.position.x;
 				const dy = cy - d.body.position.y;
 				const dist = Math.hypot(dx, dy) || 1;
-				Body.setVelocity(d.body, {
+				matter().Body.setVelocity(d.body, {
 					x: (d.body.velocity.x + (dx / dist) * WARP_PULL) * WARP_DAMP,
 					y: (d.body.velocity.y + (dy / dist) * WARP_PULL) * WARP_DAMP
 				});
@@ -522,10 +521,10 @@ export class GlyphField implements Actor {
 				setTransform(d.el, dx, dy, deg);
 				if (d.body) {
 					// keep the body glued to the tween so physics can resume cleanly
-					Body.setPosition(d.body, { x: d.hx + dx, y: d.hy + dy });
-					Body.setAngle(d.body, (deg * Math.PI) / 180);
-					Body.setVelocity(d.body, { x: 0, y: 0 });
-					Body.setAngularVelocity(d.body, 0);
+					matter().Body.setPosition(d.body, { x: d.hx + dx, y: d.hy + dy });
+					matter().Body.setAngle(d.body, (deg * Math.PI) / 180);
+					matter().Body.setVelocity(d.body, { x: 0, y: 0 });
+					matter().Body.setAngularVelocity(d.body, 0);
 				}
 			}
 			if (t >= 1) {
@@ -562,7 +561,7 @@ export class GlyphField implements Actor {
 			d.hy = rect.top - o.y + rect.height / 2;
 			d.w = Math.max(2, rect.width - 1); // tiny shrink avoids spawn overlap jitter
 			d.h = Math.max(2, rect.height - 1);
-			const body = Bodies.rectangle(d.hx, d.hy, d.w, d.h, {
+			const body = matter().Bodies.rectangle(d.hx, d.hy, d.w, d.h, {
 				restitution: this.cfg.restitution,
 				density: this.cfg.density, // mass = density × area → bigger glyphs carry more momentum
 				friction: 0,
@@ -604,8 +603,8 @@ export class GlyphField implements Actor {
 			}
 			const angle = Math.atan2(dirY, dirX) + (Math.random() * 2 - 1) * maxWobble;
 			const speed = this.cfg.baseSpeed + Math.random() * this.cfg.speedJitter;
-			Body.setVelocity(body, { x: Math.cos(angle) * speed, y: Math.sin(angle) * speed });
-			Body.setAngularVelocity(body, (Math.random() * 2 - 1) * this.cfg.spinRate);
+			matter().Body.setVelocity(body, { x: Math.cos(angle) * speed, y: Math.sin(angle) * speed });
+			matter().Body.setAngularVelocity(body, (Math.random() * 2 - 1) * this.cfg.spinRate);
 		}
 	}
 

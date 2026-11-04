@@ -12,6 +12,7 @@ bun.lockb
 /docs/blog/
 /src/lib/content/blog/
 
-# Generated data: rewritten by npm run gen:stars / gen:trajectories
+# Generated data: rewritten by npm run gen:stars / gen:trajectories / gen:trajectory-bin
 /src/lib/sky/star-catalog.json
 /src/lib/trajectory/trajectories.json
+/src/lib/trajectory/trajectory-meta.json

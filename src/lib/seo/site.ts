@@ -1,7 +1,7 @@
 // Absolute URLs, page meta and structured data for search engines and AI agents.
 // Everything here is assembled from the content modules so it cannot drift from
 // the page copy.
-import { CAUSES, CONTACT_EMAIL, PRICING } from '$lib/content/websites.js';
+import { CAUSES, CONTACT_EMAIL, PRICING, STATIC_SITE } from '$lib/content/websites.js';
 
 export const SITE_ORIGIN = 'https://voidprojects.ai';
 export const SITE_NAME = 'Void Projects';
@@ -10,14 +10,23 @@ export function absoluteUrl(path: string): string {
 	return new URL(path, SITE_ORIGIN).href;
 }
 
+export interface ShareImage {
+	path: string;
+	width: number;
+	height: number;
+	alt: string;
+}
+
 export interface PageMeta {
 	path: string;
 	title: string;
-	description: string;
+	description: string; // meta and share description; search results cut off past about 155 chars
+	summary?: string; // longer form for /llms.txt and JSON-LD, where length is not cut
+	image?: ShareImage; // og:image and twitter:image; without one the share card is text only
 }
 
 // Head copy for the public pages; each page's <svelte:head> renders its entry
-// through PageMeta, and /llms.txt reuses the descriptions.
+// through PageMeta, and /llms.txt reuses the descriptions (or the summary, where one is given).
 export const PAGES = {
 	home: {
 		path: '/',
@@ -26,9 +35,15 @@ export const PAGES = {
 	},
 	websites: {
 		path: '/websites',
-		title: 'Websites by Void Projects',
-		description:
-			'Custom websites from engineers with years of enterprise experience, sped up by our own AI tooling. You talk to a person and never touch the technical side. Static sites are $25 a month, and if you already pay for a site, we match it and take over hosting and upkeep.'
+		title: 'Custom websites for businesses and causes | Void Projects',
+		description: `Custom websites from engineers, sped up by our own AI tooling. You talk to a person, never the technical side. Static sites are ${STATIC_SITE.spoken}, no build fee.`,
+		summary: `Custom websites from engineers with years of enterprise experience, sped up by our own AI tooling. You talk to a person and never touch the technical side. Static sites are ${STATIC_SITE.spoken}, and if you already pay for a site, we match it and take over hosting and upkeep.`,
+		image: {
+			path: '/og/websites.png', // exported by npm run export:brand (og-websites), then copied to static/
+			width: 1200,
+			height: 630,
+			alt: 'Void Projects: Custom websites for businesses and causes. voidprojects.ai/websites'
+		}
 	},
 	causes: {
 		path: CAUSES.href,
@@ -49,11 +64,15 @@ export const PAGES = {
 	}
 } satisfies Record<string, PageMeta>;
 
-// "Free for causes, ... $25 a month ..." : the pricing section read as sentences.
-export const PRICING_SUMMARY = PRICING.map((p) => {
-	const lead = p.spoken ?? p.figure;
-	return `${lead.charAt(0).toUpperCase()}${lead.slice(1)} ${p.body}`;
-}).join(' ');
+type PricingRow = (typeof PRICING)[number];
+
+// "$25 a month for a static site: ...": one pricing row read as a sentence.
+function pricingSentence(row: PricingRow): string {
+	const lead = row.spoken ?? row.figure;
+	return `${lead.charAt(0).toUpperCase()}${lead.slice(1)} ${row.body}`;
+}
+
+export const PRICING_SUMMARY = PRICING.map(pricingSentence).join(' ');
 
 type JsonLd = Record<string, unknown>;
 
@@ -82,6 +101,31 @@ export function organizationJsonLd(): JsonLd {
 	return { '@context': CONTEXT, ...organization() };
 }
 
+// One Offer per row of the pricing section, priced only where the row names a price.
+function pricingOffer(row: PricingRow): JsonLd {
+	const { name, usd, monthly } = row.offer;
+	const offer: JsonLd = {
+		'@type': 'Offer',
+		name,
+		description: pricingSentence(row),
+		url: absoluteUrl(row.link?.href ?? `${PAGES.websites.path}#contact`)
+	};
+	if (usd === undefined) return offer;
+	offer.price = usd;
+	offer.priceCurrency = 'USD';
+	if (monthly) {
+		offer.priceSpecification = {
+			'@type': 'UnitPriceSpecification',
+			price: usd,
+			priceCurrency: 'USD',
+			unitCode: 'MON',
+			unitText: 'month',
+			referenceQuantity: { '@type': 'QuantitativeValue', value: 1, unitCode: 'MON' }
+		};
+	}
+	return offer;
+}
+
 export function websitesJsonLd(): JsonLd {
 	return {
 		'@context': CONTEXT,
@@ -92,13 +136,9 @@ export function websitesJsonLd(): JsonLd {
 				name: 'Websites',
 				serviceType: 'Custom websites',
 				url: absoluteUrl(PAGES.websites.path),
-				description: PAGES.websites.description,
+				description: PAGES.websites.summary,
 				provider: { '@id': ORGANIZATION_ID },
-				offers: {
-					'@type': 'Offer',
-					description: PRICING_SUMMARY,
-					url: absoluteUrl(`${PAGES.websites.path}#contact`)
-				}
+				offers: PRICING.map(pricingOffer)
 			}
 		]
 	};

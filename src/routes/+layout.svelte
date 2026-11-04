@@ -6,9 +6,10 @@
 
 	let { children } = $props();
 
-	// The favicon is a fresh generated orbit mark each load. We render no icon until
-	// it's ready — so no static fallback flashes first — and generate it during idle
+	// The favicon is a fresh generated orbit mark each load, generated during idle
 	// time (lazy-loaded) so the work never competes with the hero's opening frames.
+	// Until then the head carries the fixed /favicon.svg, which is also the one
+	// crawlers see in the prerendered HTML.
 	let faviconHref = $state<string | undefined>(undefined);
 	onMount(() => {
 		const roll = async () => {
@@ -16,7 +17,7 @@
 				import('$lib/brand/favicon.js'),
 				import('$lib/brand/visit-seed.js')
 			]);
-			faviconHref = generateFaviconDataUri(VISIT_SEED); // same mark as OrbitMark this visit
+			faviconHref = await generateFaviconDataUri(VISIT_SEED); // same mark as OrbitMark this visit
 		};
 		if ('requestIdleCallback' in window) {
 			window.requestIdleCallback(() => roll(), { timeout: 2000 });
@@ -37,7 +38,7 @@
 </script>
 
 <svelte:head>
-	{#if faviconHref}<link rel="icon" href={faviconHref} />{/if}
+	<link rel="icon" type="image/svg+xml" href={faviconHref ?? '/favicon.svg'} />
 </svelte:head>
 
 <!-- First in the DOM so it is the first Tab stop; every page's <main> carries the id. -->
