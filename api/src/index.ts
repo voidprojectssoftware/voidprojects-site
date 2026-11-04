@@ -2,3 +2,4 @@
 // Functions host, so the single bundle serves them all.
 import './mark.js';
 import './contact.js';
+import './offer-checkout.js';
