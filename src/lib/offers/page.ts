@@ -1,6 +1,7 @@
 // The props every offers/<id>/page.svelte receives. scripts/build-offers.mjs builds
 // them at build time, renders the page with them and serializes them into the
 // HTML for hydration, so they must stay JSON-safe.
+import type { PublicOfferAudit } from './audit.js';
 import type { PublicOffer } from './offer.js';
 
 export interface QrMatrix {
@@ -17,5 +18,6 @@ export interface OfferContext {
 
 export interface OfferPageProps {
 	offer: PublicOffer;
+	audit: PublicOfferAudit | null; // from offers/<id>/audit.json; null until the audit has been run
 	context: OfferContext;
 }

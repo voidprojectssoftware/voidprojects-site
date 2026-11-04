@@ -4,7 +4,8 @@
 //   --offer-fg, --offer-muted          text and secondary text
 //   --offer-surface, --offer-border    card background and its edge
 //   --offer-accent, --offer-accent-fg  selected states and the sign-up button
-//   --offer-good, --offer-bad          better and worse audit figures
+//   --offer-good, --offer-warn,        audit statuses: pass, warn and fail
+//     --offer-bad
 //   --offer-radius                     card corner radius
 export { default as ConcernsList } from './concerns-list.svelte';
 export { default as AuditComparison } from './audit-comparison.svelte';

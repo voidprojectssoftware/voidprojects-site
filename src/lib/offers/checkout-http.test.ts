@@ -9,7 +9,6 @@ const INPUT: OfferInput = {
 	sent: '2026-11-01',
 	previewUrl: 'https://test-bakery.example/',
 	concerns: [],
-	audit: null,
 	plans: [
 		{ id: 'static', label: 'Static site', summary: 'Hosted and kept up to date.', monthly: 2500 },
 		{ id: 'monthly-only', label: 'Monthly only', monthly: 4000, annual: false }

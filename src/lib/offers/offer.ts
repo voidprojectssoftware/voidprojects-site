@@ -39,22 +39,6 @@ export interface Concern {
 	detail: string;
 }
 
-// Placeholder shape until the audit script (#79) settles the real format; the
-// comparison block reads only this, so #79 changes the type and the block together.
-export interface AuditMetric {
-	label: string;
-	current: number;
-	preview: number;
-	unit?: string; // appended to both values, for example 's' or '/100'
-	better: 'higher' | 'lower';
-}
-
-export interface AuditResults {
-	measuredOn: string; // ISO date the two sites were measured
-	source: string; // how the numbers were produced, shown under the table
-	metrics: AuditMetric[];
-}
-
 export interface OfferContact {
 	name: string;
 	email?: string;
@@ -69,7 +53,6 @@ export interface OfferInput {
 	previewUrl: string; // the site we built for them
 	currency?: string; // ISO 4217, lowercase as Stripe expects; defaults to 'usd'
 	concerns: Concern[];
-	audit: AuditResults | null; // null renders the block's "measurements pending" state
 	plans: PlanInput[];
 	addOns?: AddOnInput[];
 	contact: OfferContact; // who to follow up with; server side only, never sent to the page
@@ -103,7 +86,6 @@ export interface Offer {
 	previewUrl: string;
 	currency: string;
 	concerns: Concern[];
-	audit: AuditResults | null;
 	plans: Plan[];
 	addOns: AddOn[];
 	intervals: Interval[]; // every interval at least one plan is sold on, in INTERVALS order
@@ -188,7 +170,6 @@ export function resolveOffer(id: string, input: OfferInput): Offer {
 		previewUrl: input.previewUrl,
 		currency: input.currency ?? 'usd',
 		concerns: input.concerns,
-		audit: input.audit,
 		plans,
 		addOns,
 		intervals: INTERVALS.filter((i) => sold.has(i)),
