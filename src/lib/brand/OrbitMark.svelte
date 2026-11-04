@@ -13,7 +13,7 @@
 			import('./favicon.js'),
 			import('./visit-seed.js')
 		]);
-		svg = generateFaviconSvg(VISIT_SEED);
+		svg = await generateFaviconSvg(VISIT_SEED);
 	});
 </script>
 

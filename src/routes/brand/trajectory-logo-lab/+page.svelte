@@ -17,6 +17,7 @@
 		X
 	} from '@lucide/svelte';
 	import { CRAFT_META } from '$lib/trajectory';
+	import { TRAJECTORIES } from '$lib/trajectory/source.js';
 	import {
 		deriveSpec,
 		renderSpec,
@@ -51,7 +52,11 @@
 	let overrides = $state<(TLSpec | null)[]>(new Array(N).fill(null));
 
 	const globals = $derived<TLGlobals>({ stroke, palette, frameMode, symmetry, pool });
-	const tiles = $derived(seeds.map((s, i) => renderSpec(overrides[i] ?? deriveSpec(s, globals))));
+	const tiles = $derived(
+		seeds.map((s, i) =>
+			renderSpec(TRAJECTORIES, overrides[i] ?? deriveSpec(TRAJECTORIES, s, globals))
+		)
+	);
 
 	const palettes: { id: TLPalette; label: string; swatch: string }[] = [
 		{ id: 'brand', label: 'Brand', swatch: '#b79cf5' },
@@ -105,10 +110,11 @@
 	};
 	// Materialize an editable spec on open so the editor's bindings have a target.
 	function openTile(i: number) {
-		if (!overrides[i]) overrides = overrides.with(i, deriveSpec(seeds[i], globals));
+		if (!overrides[i]) overrides = overrides.with(i, deriveSpec(TRAJECTORIES, seeds[i], globals));
 		lbIndex = i;
 	}
-	const resetTile = (i: number) => (overrides = overrides.with(i, deriveSpec(seeds[i], globals)));
+	const resetTile = (i: number) =>
+		(overrides = overrides.with(i, deriveSpec(TRAJECTORIES, seeds[i], globals)));
 	const toggleLock = (i: number) => (locked = locked.with(i, !locked[i]));
 	function togglePool(id: string) {
 		const next = pool.includes(id) ? pool.filter((p) => p !== id) : [...pool, id];

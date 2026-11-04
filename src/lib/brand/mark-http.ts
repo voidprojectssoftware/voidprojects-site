@@ -1,6 +1,7 @@
 // The /api/mark.svg contract, shared by the Azure Function (api/) and the Vite
 // dev middleware so local dev serves exactly what production does.
 import { generateMarkSvg, randomSeed } from './mark.js';
+import { TRAJECTORIES } from '$lib/trajectory/source.js';
 
 export interface MarkResponse {
 	status: number;
@@ -30,6 +31,6 @@ export function markResponse(params: URLSearchParams, ink: string): MarkResponse
 			'X-Content-Type-Options': 'nosniff',
 			'Access-Control-Allow-Origin': '*'
 		},
-		body: generateMarkSvg(seed, ink)
+		body: generateMarkSvg(TRAJECTORIES, seed, ink)
 	};
 }
