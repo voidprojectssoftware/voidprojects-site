@@ -4,7 +4,8 @@
 	import { NudgeChain } from '$lib/nudge/index.js';
 	import { brandViolet } from '$lib/physics/colors.js';
 
-	type NavLink = { href: string; label: string; children?: NavLink[] };
+	// `short` is the visible label below 360px, where the full one overflows the header; the full label stays the accessible name.
+	type NavLink = { href: string; label: string; short?: string; children?: NavLink[] };
 
 	const LINKS: NavLink[] = [
 		{
@@ -13,7 +14,7 @@
 			children: [{ href: '/websites/causes', label: 'Causes' }]
 		},
 		{ href: '/blog', label: 'Blog' },
-		{ href: '/about/brand', label: 'Our Brand' }
+		{ href: '/about/brand', label: 'Our Brand', short: 'Brand' }
 	];
 
 	// The compact nav that fades in once the hero has scrolled past, showing the
@@ -56,6 +57,13 @@
 	});
 	$effect(() => () => chain.destroy());
 
+	// Below 360px the nav has no gap, so neighbouring plain links' 24px boxes would touch (and the
+	// float drift then overlaps them). Trade 2px of padding on each facing side for a 4px margin:
+	// the glyphs stay where they were and the boxes no longer meet.
+	const plain = (i: number) => !!LINKS[i] && !LINKS[i].children;
+	const narrowSpacing = (i: number) =>
+		`${plain(i - 1) ? 'max-[360px]:ml-1 max-[360px]:pl-0.5' : ''} ${plain(i + 1) ? 'max-[360px]:pr-0.5' : ''}`;
+
 	const isCurrent = (href: string) => path === href;
 	const inSection = (link: NavLink) =>
 		isCurrent(link.href) || (link.children ?? []).some((c) => isCurrent(c.href));
@@ -89,7 +97,7 @@
 			>
 		</div>
 		<nav class="flex items-center gap-0 text-xs sm:gap-3 sm:text-sm">
-			{#each LINKS as link (link.href)}
+			{#each LINKS as link, i (link.href)}
 				{#if link.children}
 					<div
 						class="group relative flex items-center"
@@ -170,8 +178,12 @@
 					<a
 						href={link.href}
 						aria-current={isCurrent(link.href) ? 'page' : undefined}
-						class={linkClass(isCurrent(link.href))}
-						use:float={link.href}>{link.label}</a
+						aria-label={link.short ? link.label : undefined}
+						class="{linkClass(isCurrent(link.href))} {narrowSpacing(i)}"
+						use:float={link.href}
+						>{#if link.short}<span class="max-[360px]:hidden">{link.label}</span><span
+								class="hidden max-[360px]:inline">{link.short}</span
+							>{:else}{link.label}{/if}</a
 					>
 				{/if}
 			{/each}
