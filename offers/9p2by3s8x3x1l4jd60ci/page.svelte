@@ -93,6 +93,10 @@
 	];
 </script>
 
+<svelte:head>
+	<title>Hosting proposal for {offer.prospect} | Void Projects</title>
+</svelte:head>
+
 {#snippet icon(kind: 'yes' | 'no')}
 	<svg class="icon {kind}" viewBox="0 0 20 20" width="20" height="20" aria-hidden="true">
 		<circle cx="10" cy="10" r="10" />
@@ -143,10 +147,6 @@
 <main class="mx-auto grid max-w-4xl gap-14 px-4 py-12 sm:px-8 sm:py-16">
 	<OfferGate {offer} builtAt={context.builtAt}>
 		<section class="grid gap-4" aria-labelledby="offer-title">
-			<p class="text-sm font-semibold tracking-wide text-(--offer-accent) uppercase">
-				Prepared for Larry Thornton, Founder, President and CEO of First Touch Payment Solutions and
-				Software Earnings
-			</p>
 			<h1 id="offer-title" class="text-4xl leading-tight sm:text-5xl">
 				Hosting and maintenance proposal for your two websites
 			</h1>

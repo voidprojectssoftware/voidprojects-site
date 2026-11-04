@@ -140,6 +140,10 @@ function page({ offer, html, assets, props, beacon }) {
 		.filter(Boolean)
 		.map((line) => `\t\t${line}`)
 		.join('\n');
+	// A page that sets its own <title> through <svelte:head> replaces the default.
+	const defaultTitle = /<title[\s>]/.test(html.head)
+		? ''
+		: `\t\t<title>${escapeHtml(`Your new website, ${offer.prospect}`)}</title>\n`;
 	return `<!doctype html>
 <html lang="en">
 	<head>
@@ -147,8 +151,7 @@ function page({ offer, html, assets, props, beacon }) {
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta name="robots" content="noindex, nofollow, noarchive" />
 		<meta name="referrer" content="no-referrer" />
-		<title>${escapeHtml(`Your new website, ${offer.prospect}`)}</title>
-		<link rel="icon" href="data:," />
+${defaultTitle}		<link rel="icon" href="data:," />
 ${head}
 	</head>
 	<body>
