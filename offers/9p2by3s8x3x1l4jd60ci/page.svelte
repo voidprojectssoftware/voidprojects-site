@@ -13,7 +13,13 @@
 		SignUpButton,
 		initialSelection
 	} from '$lib/offers/blocks/index.js';
-	import { formatAmount, formatDate, priceFor } from '$lib/offers/offer.js';
+	import {
+		formatAmount,
+		formatDate,
+		priceFor,
+		type Interval,
+		type Plan
+	} from '$lib/offers/offer.js';
 	import type { OfferPageProps } from '$lib/offers/page.js';
 
 	let { offer, context }: OfferPageProps = $props();
@@ -26,6 +32,43 @@
 	let yearly = $derived(priceFor(plan, 'year')?.amount ?? 0);
 	const money = (cents: number) => formatAmount(cents, offer.currency);
 
+	// Display-only breakdown of the one plan; checkout still prices the plan from offer.ts.
+	// The parts are monthly cents; each interval's part is scaled by that interval's plan
+	// price, and the render throws (failing the build) unless the parts add up exactly.
+	const PARTS = [
+		{
+			site: 'First Touch Payment Solutions',
+			detail:
+				'The agents that keep it secure, current and competitive, content edits of any size, and hosting.',
+			monthly: 20000
+		},
+		{
+			site: 'Software Earnings',
+			detail:
+				'Only the added cost of running the same agents on a second site, since everything is already set up.',
+			monthly: 7500
+		}
+	];
+	function breakdown(p: Plan, interval: Interval) {
+		const base = PARTS.reduce((sum, part) => sum + part.monthly, 0);
+		const price = priceFor(p, interval)?.amount ?? 0;
+		const parts = PARTS.map((part) => ({ ...part, amount: (part.monthly * price) / base }));
+		if (
+			priceFor(p, 'month')?.amount !== base ||
+			parts.some((part) => !Number.isInteger(part.amount)) ||
+			parts.reduce((sum, part) => sum + part.amount, 0) !== price
+		) {
+			throw new Error(
+				`offer ${offer.id}: the plan breakdown does not add up to the ${interval} price`
+			);
+		}
+		return { parts, price };
+	}
+	// Checked for both intervals at render, so a price change in offer.ts that the parts
+	// no longer match stops the build rather than showing a wrong sum.
+	// svelte-ignore state_referenced_locally
+	for (const p of offer.plans) for (const i of offer.intervals) breakdown(p, i);
+
 	// The site's orbit mark with the favicon's fixed seed (src/routes/favicon.svg), drawn
 	// on the server only so the trajectory table never ships in the page script. The
 	// client reads the server's markup back before hydrating, so {@html} matches.
@@ -33,6 +76,8 @@
 	const voidMark = import.meta.env.SSR
 		? generateMarkSvg(TRAJECTORIES, FAVICON_SEED, __BRAND_PRIMARY__)
 		: (document.querySelector('[data-void-mark]')?.innerHTML ?? '');
+
+	const PER: Record<Interval, string> = { month: '/month', year: '/year' };
 
 	const NOW = 'Where you are';
 	const NEXT = 'Where you can be';
@@ -44,9 +89,11 @@
 		before: string;
 		after: string;
 		bar: { before: number; after: number; max: number };
+		target?: { value: number; label: string; source: string }; // benchmark line, see figures.mjs
 	}
 
 	const width = (value: number, max: number) => `${Math.max(1.5, (100 * value) / max)}%`;
+	const at = (value: number, max: number) => `min(${(100 * value) / max}%, 100% - 2px)`;
 
 	// "About 5 seconds" and "under 2 seconds": figures.json wait rows, 4.9 s and 5.1 s
 	// today, 1.8 s and 0.8 s rebuilt. The rest restates the concerns in offer.ts.
@@ -69,7 +116,11 @@
 		{ title: 'Security updates', detail: 'Fixes applied as soon as they come out.' },
 		{ title: 'Hosting for both sites', detail: 'Fast pages on both of your domains.' },
 		{ title: 'Watching both sites', detail: 'If something breaks, we notice and deal with it.' },
-		{ title: 'Small content edits', detail: 'Text, photos, hours and prices, within reason.' },
+		{
+			title: 'Content edits',
+			detail:
+				'Text, photos, hours and prices, whenever you need them. New features we price with you first.'
+		},
 		{
 			title: 'Search and AI upkeep',
 			detail: 'Re-measured as search engines and AI tools change.'
@@ -97,6 +148,26 @@
 	<title>Hosting proposal for {offer.prospect} | Void Projects</title>
 </svelte:head>
 
+{#snippet planDetails(p: Plan, interval: Interval)}
+	{@const b = breakdown(p, interval)}
+	<span class="breakdown">
+		<span class="agents"
+			>We use AI agents to watch, update and improve your sites continuously; that is where most of
+			the cost goes.</span
+		>
+		{#each b.parts as part (part.site)}
+			<span class="part">
+				<span><strong>{part.site}</strong><small>{part.detail}</small></span>
+				<span class="amount">{money(part.amount)}<small>{PER[interval]}</small></span>
+			</span>
+		{/each}
+		<span class="part sum">
+			<strong>Total for both sites</strong>
+			<span class="amount">{money(b.price)}<small>{PER[interval]}</small></span>
+		</span>
+	</span>
+{/snippet}
+
 {#snippet icon(kind: 'yes' | 'no')}
 	<svg class="icon {kind}" viewBox="0 0 20 20" width="20" height="20" aria-hidden="true">
 		<circle cx="10" cy="10" r="10" />
@@ -116,17 +187,30 @@
 				<div class="bars">
 					<span class="who">{NOW}</span>
 					<span class="track"
-						><span class="fill now" style:width={width(row.bar.before, row.bar.max)}></span></span
+						><span class="fill now" style:width={width(row.bar.before, row.bar.max)}
+						></span>{#if row.target}<span
+								class="line"
+								style:left={at(row.target.value, row.bar.max)}
+							></span>{/if}</span
 					>
 					<span class="val">{row.before}</span>
 					<span class="who">{NEXT}</span>
 					<span class="track"
-						><span class="fill next" style:width={width(row.bar.after, row.bar.max)}></span></span
+						><span class="fill next" style:width={width(row.bar.after, row.bar.max)}
+						></span>{#if row.target}<span
+								class="line"
+								style:left={at(row.target.value, row.bar.max)}
+							></span>{/if}</span
 					>
 					<span class="val next-val">{row.after}</span>
 				</div>
+				{#if row.target}
+					<p class="target"><span class="tick" aria-hidden="true"></span>{row.target.label}</p>
+				{/if}
 				<p class="why">{row.why}</p>
-				<p class="fine">{row.fine}</p>
+				<p class="fine">
+					{row.target ? `${row.fine} Line: ${row.target.source}` : row.fine}
+				</p>
 			</li>
 		{/each}
 	</ul>
@@ -257,7 +341,13 @@
 		</section>
 
 		<section class="grid gap-8" aria-label="Sign up">
-			<PlanPicker {offer} bind:selection title="Monthly or a year ahead" />
+			<PlanPicker
+				{offer}
+				bind:selection
+				title="Monthly or a year ahead"
+				renewalNote={false}
+				details={planDetails}
+			/>
 			<div class="longer">
 				<p class="font-semibold">Want to pay further ahead?</p>
 				<p class="text-(--offer-muted)">
@@ -344,6 +434,40 @@
 	.price {
 		font-size: 1.125rem;
 	}
+	.breakdown {
+		display: grid;
+		gap: 0.5rem;
+		margin: 0.25rem 0;
+		padding: 0.75rem 0;
+		border-block: 1px solid var(--offer-border);
+		font-size: 0.875rem;
+	}
+	.agents {
+		color: var(--offer-muted);
+	}
+	.part {
+		display: flex;
+		justify-content: space-between;
+		align-items: baseline;
+		gap: 1rem;
+	}
+	.part small {
+		display: block;
+		color: var(--offer-muted);
+	}
+	.part .amount {
+		font-weight: 700;
+		white-space: nowrap;
+		font-variant-numeric: tabular-nums;
+	}
+	.part .amount small {
+		display: inline;
+		font-weight: 500;
+	}
+	.sum {
+		padding-top: 0.5rem;
+		border-top: 1px dashed var(--offer-border);
+	}
 	.price strong {
 		font-size: 1.5rem;
 		color: var(--offer-accent);
@@ -418,11 +542,31 @@
 		white-space: nowrap;
 	}
 	.track {
+		position: relative;
 		display: block;
 		height: 0.75rem;
 		border-radius: 999px;
 		background: #ececec;
-		overflow: hidden;
+	}
+	.line {
+		position: absolute;
+		top: -0.25rem;
+		bottom: -0.25rem;
+		width: 2px;
+		background: var(--offer-fg);
+	}
+	.target {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		font-size: 0.8125rem;
+		font-weight: 600;
+	}
+	.tick {
+		display: inline-block;
+		width: 2px;
+		height: 1rem;
+		background: var(--offer-fg);
 	}
 	.fill {
 		display: block;

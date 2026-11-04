@@ -43,13 +43,21 @@ export default defineOffer({
 			id: 'both-sites',
 			label: 'Both sites, hosted and looked after',
 			summary:
-				'First Touch Payment Solutions and Software Earnings, the two rebuilt sites, kept running, up to date and easy to find.',
+				'Hosting, security and upkeep for First Touch Payment Solutions and Software Earnings.', // also Stripe Checkout's line description
+			// Each from the terms draft (drafts/terms/terms-draft.md): 7 "You can take your site
+			// with you", 8 "After you leave", 7 "Your domain is yours", 5 "Cancelling and
+			// refunds" (three lines), 4 "Billing" and 6 "Late or failed payments", 7 "Showing our work".
+			// The services themselves (hosting, security updates, edits) are listed in the
+			// page's covers section, not repeated here.
 			features: [
-				'Security updates, applied as fixes come out',
-				'Hosting for both sites',
-				'We watch that both sites stay up',
-				'Small content edits: text, photos, hours, prices',
-				'Ongoing search engine and AI assistant upkeep'
+				'Your site files are yours to take, free, if you ever leave, to host anywhere',
+				'Files kept for a year after the service ends, so you can still ask',
+				'Your domains stay in your name, transferable any time',
+				'Monthly: cancel any time, no cancellation fee',
+				'Annual: full refund within 15 days of the first payment, less any domain registration fee',
+				'If we ever end the service, unused time is refunded',
+				'No late fees, and a reminder before each annual renewal',
+				'In our portfolio only if you say yes'
 			],
 			monthly: 27500 // annual defaults to 10 x monthly: 275000
 		}

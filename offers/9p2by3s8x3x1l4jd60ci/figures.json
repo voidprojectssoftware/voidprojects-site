@@ -15,7 +15,7 @@
 				{
 					"label": "Wait before the page shows on a phone",
 					"why": "Visitors see your page in 1.8 s instead of 4.9 s. People leave slow pages before they find your number.",
-					"fine": "Largest Contentful Paint, mean of 11 pages; Google counts 2.5 s or less as good (0 of 11 pages today, 11 of 11 rebuilt).",
+					"fine": "Largest Contentful Paint, mean of 11 pages; 0 of 11 pages within 2.5 s today, 11 of 11 rebuilt.",
 					"before": "4.9 s",
 					"after": "1.8 s",
 					"bar": {
@@ -23,6 +23,11 @@
 						"after": 1.7968751454545455,
 						"max": 5,
 						"lowerIsBetter": true
+					},
+					"target": {
+						"value": 2.5,
+						"label": "Good: 2.5 s or less",
+						"source": "Google’s Core Web Vitals mark for a good page load (web.dev)."
 					}
 				},
 				{
@@ -35,6 +40,11 @@
 						"before": 63,
 						"after": 99,
 						"max": 100
+					},
+					"target": {
+						"value": 90,
+						"label": "Good: 90 or more",
+						"source": "The green “good” band of Google Lighthouse’s score (Chrome developer docs)."
 					}
 				},
 				{
@@ -47,6 +57,11 @@
 						"before": 98,
 						"after": 100,
 						"max": 100
+					},
+					"target": {
+						"value": 90,
+						"label": "Good: 90 or more",
+						"source": "The green “good” band of Google Lighthouse’s score (Chrome developer docs)."
 					}
 				},
 				{
@@ -59,6 +74,11 @@
 						"before": 97,
 						"after": 100,
 						"max": 100
+					},
+					"target": {
+						"value": 90,
+						"label": "Good: 90 or more",
+						"source": "The green “good” band of Google Lighthouse’s score (Chrome developer docs)."
 					}
 				},
 				{
@@ -71,6 +91,11 @@
 						"before": 1,
 						"after": 11,
 						"max": 11
+					},
+					"target": {
+						"value": 11,
+						"label": "Goal: all 11 pages",
+						"source": "No published benchmark; every page is the natural goal."
 					}
 				},
 				{
@@ -83,6 +108,11 @@
 						"before": 11,
 						"after": 11,
 						"max": 11
+					},
+					"target": {
+						"value": 11,
+						"label": "Goal: all 11 pages",
+						"source": "No published benchmark; every page is the natural goal."
 					}
 				}
 			],
@@ -96,7 +126,7 @@
 			"measured": "November 4, 2026",
 			"pages": 10,
 			"source": {
-				"commit": "b947762",
+				"commit": "9bc4509",
 				"run": "docs/discovery/seo-audit/2026-11-04-production/result.json",
 				"aeo": "docs/discovery/aeo/2026-11-04-with-geoctl-every-page"
 			},
@@ -104,7 +134,7 @@
 				{
 					"label": "Wait before the page shows on a phone",
 					"why": "Visitors see your page in 0.8 s instead of 5.1 s. People leave slow pages before they find your number.",
-					"fine": "Largest Contentful Paint, mean of 10 pages; Google counts 2.5 s or less as good (0 of 10 pages today, 10 of 10 rebuilt).",
+					"fine": "Largest Contentful Paint, mean of 10 pages; 0 of 10 pages within 2.5 s today, 10 of 10 rebuilt.",
 					"before": "5.1 s",
 					"after": "0.8 s",
 					"bar": {
@@ -112,6 +142,11 @@
 						"after": 0.7519790999999999,
 						"max": 6,
 						"lowerIsBetter": true
+					},
+					"target": {
+						"value": 2.5,
+						"label": "Good: 2.5 s or less",
+						"source": "Google’s Core Web Vitals mark for a good page load (web.dev)."
 					}
 				},
 				{
@@ -124,6 +159,11 @@
 						"before": 71,
 						"after": 100,
 						"max": 100
+					},
+					"target": {
+						"value": 90,
+						"label": "Good: 90 or more",
+						"source": "The green “good” band of Google Lighthouse’s score (Chrome developer docs)."
 					}
 				},
 				{
@@ -136,6 +176,11 @@
 						"before": 92,
 						"after": 100,
 						"max": 100
+					},
+					"target": {
+						"value": 90,
+						"label": "Good: 90 or more",
+						"source": "The green “good” band of Google Lighthouse’s score (Chrome developer docs)."
 					}
 				},
 				{
@@ -148,6 +193,11 @@
 						"before": 98,
 						"after": 100,
 						"max": 100
+					},
+					"target": {
+						"value": 90,
+						"label": "Good: 90 or more",
+						"source": "The green “good” band of Google Lighthouse’s score (Chrome developer docs)."
 					}
 				},
 				{
@@ -160,6 +210,11 @@
 						"before": 1,
 						"after": 10,
 						"max": 10
+					},
+					"target": {
+						"value": 10,
+						"label": "Goal: all 10 pages",
+						"source": "No published benchmark; every page is the natural goal."
 					}
 				},
 				{
@@ -172,6 +227,11 @@
 						"before": 10,
 						"after": 10,
 						"max": 10
+					},
+					"target": {
+						"value": 10,
+						"label": "Goal: all 10 pages",
+						"source": "No published benchmark; every page is the natural goal."
 					}
 				}
 			],

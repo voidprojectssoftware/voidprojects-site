@@ -40,7 +40,41 @@ function check(comparison, name) {
 
 // A row: plain label, why it matters to the business, the technical source in small
 // print, the two values as shown, and the numbers the bars are drawn from.
-const row = (label, why, fine, before, after, bar) => ({ label, why, fine, before, after, bar });
+const row = (label, why, fine, before, after, bar, target) => ({
+	label,
+	why,
+	fine,
+	before,
+	after,
+	bar,
+	...(target ? { target } : {})
+});
+
+// Reference lines drawn across the bars. Only published benchmarks, checked 2026-11-04:
+// - LCP: "sites should strive to have Largest Contentful Paint of 2.5 seconds or less"
+//   (https://web.dev/articles/lcp), the same 2,500 ms as GOOD_LCP_MS in both repos.
+// - Lighthouse scores: "90 to 100 (green): Good"
+//   (https://developer.chrome.com/docs/lighthouse/performance/performance-scoring); the
+//   report colours every category's gauge the same way (PASS_THRESHOLD = 0.9 in
+//   Lighthouse's shared/util.js), so it applies to the SEO and accessibility scores too.
+// - Page counts (clear outline, business details): no published benchmark, so the line
+//   is the natural goal, every page.
+// - AI fact shares and the geoctl score: no recognised published benchmark, so no line.
+const LCP_GOOD = {
+	value: 2.5,
+	label: 'Good: 2.5 s or less',
+	source: 'Google’s Core Web Vitals mark for a good page load (web.dev).'
+};
+const LIGHTHOUSE_GOOD = {
+	value: 90,
+	label: 'Good: 90 or more',
+	source: 'The green “good” band of Google Lighthouse’s score (Chrome developer docs).'
+};
+const allPages = (n) => ({
+	value: n,
+	label: `Goal: all ${n} pages`,
+	source: 'No published benchmark; every page is the natural goal.'
+});
 const ofPages = (text) => Number(text.match(/^(\d+) of/)?.[1]);
 
 // The headline rows both sites share, from compareSites().
@@ -54,7 +88,7 @@ function headline(comparison) {
 		row(
 			'Wait before the page shows on a phone',
 			`Visitors see your page in ${seconds(h.lcpSeconds.after)} instead of ${seconds(h.lcpSeconds.before)}. People leave slow pages before they find your number.`,
-			`Largest Contentful Paint, mean of ${n} pages; Google counts 2.5 s or less as good (${h.lcpGood.before} of ${n} pages today, ${h.lcpGood.after} of ${n} rebuilt).`,
+			`Largest Contentful Paint, mean of ${n} pages; ${h.lcpGood.before} of ${n} pages within 2.5 s today, ${h.lcpGood.after} of ${n} rebuilt.`,
 			seconds(h.lcpSeconds.before),
 			seconds(h.lcpSeconds.after),
 			{
@@ -62,7 +96,8 @@ function headline(comparison) {
 				after: h.lcpSeconds.after,
 				max: Math.ceil(Math.max(h.lcpSeconds.before, h.lcpSeconds.after)),
 				lowerIsBetter: true
-			}
+			},
+			LCP_GOOD
 		),
 		row(
 			'Speed on a phone, out of 100',
@@ -70,7 +105,8 @@ function headline(comparison) {
 			`Google Lighthouse performance score, mean of ${n} pages.`,
 			String(h.performance.before),
 			String(h.performance.after),
-			{ before: h.performance.before, after: h.performance.after, max: 100 }
+			{ before: h.performance.before, after: h.performance.after, max: 100 },
+			LIGHTHOUSE_GOOD
 		),
 		row(
 			'Ready for Google, out of 100',
@@ -78,7 +114,8 @@ function headline(comparison) {
 			`Google Lighthouse SEO score on phones, mean of ${n} pages; 100 on ${h.seoPerfectPages.before} of ${n} today, ${h.seoPerfectPages.after} of ${n} rebuilt.`,
 			String(h.seo.before),
 			String(h.seo.after),
-			{ before: h.seo.before, after: h.seo.after, max: 100 }
+			{ before: h.seo.before, after: h.seo.after, max: 100 },
+			LIGHTHOUSE_GOOD
 		),
 		row(
 			'Usable by every visitor, out of 100',
@@ -86,7 +123,8 @@ function headline(comparison) {
 			`Google Lighthouse accessibility score on phones, mean of ${n} pages.`,
 			String(h.accessibilityScore.before),
 			String(h.accessibilityScore.after),
-			{ before: h.accessibilityScore.before, after: h.accessibilityScore.after, max: 100 }
+			{ before: h.accessibilityScore.before, after: h.accessibilityScore.after, max: 100 },
+			LIGHTHOUSE_GOOD
 		),
 		row(
 			'Pages with a clear outline',
@@ -94,7 +132,8 @@ function headline(comparison) {
 			'Headings in order, no skipped levels.',
 			of(headings.before),
 			of(headings.after),
-			{ before: ofPages(headings.before), after: ofPages(headings.after), max: n }
+			{ before: ofPages(headings.before), after: ofPages(headings.after), max: n },
+			allPages(n)
 		),
 		row(
 			'Pages with your business details for Google',
@@ -102,7 +141,8 @@ function headline(comparison) {
 			'Structured data (JSON-LD) on the page.',
 			of(structured.before),
 			of(structured.after),
-			{ before: ofPages(structured.before), after: ofPages(structured.after), max: n }
+			{ before: ofPages(structured.before), after: ofPages(structured.after), max: n },
+			allPages(n)
 		)
 	];
 }
