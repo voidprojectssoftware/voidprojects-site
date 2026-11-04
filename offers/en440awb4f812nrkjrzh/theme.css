@@ -1,6 +1,7 @@
 /* This offer's own look. Tailwind scans only this folder, so the page carries no
    Void site styles and no other offer's classes. */
 @import 'tailwindcss' source('.');
+@source not './audit.json';
 
 :root {
 	--offer-bg: #f6efe6;
@@ -11,6 +12,7 @@
 	--offer-accent: #a3482a;
 	--offer-accent-fg: #fff;
 	--offer-good: #2f6b3a;
+	--offer-warn: #8a5d12;
 	--offer-bad: #a3482a;
 	--offer-radius: 1rem;
 }

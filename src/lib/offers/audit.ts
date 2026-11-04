@@ -81,3 +81,73 @@ export interface OfferAudit {
 	current: SiteAudit; // the prospect's site today
 	preview: SiteAudit; // the site we built for them
 }
+
+// What an offer page receives: each check's status and explanation, without the raw
+// values or the `error` notes, which are for us.
+export type PublicAuditCheck = Pick<
+	AuditCheck,
+	'id' | 'group' | 'label' | 'status' | 'explanation'
+>;
+
+export interface PublicSiteAudit {
+	checks: PublicAuditCheck[];
+	counts: Record<AuditStatus, number>;
+}
+
+export interface PublicOfferAudit {
+	generatedAt: string;
+	current: PublicSiteAudit;
+	preview: PublicSiteAudit;
+}
+
+const STATUSES: readonly AuditStatus[] = ['pass', 'warn', 'fail'];
+const GROUPS: readonly AuditGroup[] = ['lighthouse', 'search', 'ai'];
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+	return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function text(value: unknown, where: string): string {
+	if (typeof value !== 'string' || !value.trim())
+		throw new Error(`${where} must be a non-empty string`);
+	return value;
+}
+
+function publicSite(value: unknown, where: string): PublicSiteAudit {
+	if (!isRecord(value) || !Array.isArray(value.checks) || !value.checks.length) {
+		throw new Error(`${where} needs a non-empty checks list`);
+	}
+	const counts: Record<AuditStatus, number> = { pass: 0, warn: 0, fail: 0 };
+	const checks = value.checks.map((check: unknown, i): PublicAuditCheck => {
+		const at = `${where}.checks[${i}]`;
+		if (!isRecord(check)) throw new Error(`${at} must be an object`);
+		const status = check.status as AuditStatus;
+		const group = check.group as AuditGroup;
+		if (!STATUSES.includes(status)) throw new Error(`${at}.status must be pass, warn or fail`);
+		if (!GROUPS.includes(group)) throw new Error(`${at}.group must be ${GROUPS.join(', ')}`);
+		counts[status]++;
+		return {
+			id: text(check.id, `${at}.id`) as AuditCheckId,
+			group,
+			label: text(check.label, `${at}.label`),
+			status,
+			explanation: text(check.explanation, `${at}.explanation`)
+		};
+	});
+	return { checks, counts };
+}
+
+/** Validates a parsed audit file and trims it to {@link PublicOfferAudit}; throws with `where` on a bad file. */
+export function publicAudit(value: unknown, where: string): PublicOfferAudit {
+	if (!isRecord(value) || value.schemaVersion !== 1) {
+		throw new Error(`${where}: expected an OfferAudit with schemaVersion 1`);
+	}
+	const generatedAt = text(value.generatedAt, `${where}: generatedAt`);
+	if (Number.isNaN(Date.parse(generatedAt)))
+		throw new Error(`${where}: generatedAt must be ISO 8601`);
+	return {
+		generatedAt,
+		current: publicSite(value.current, `${where}: current`),
+		preview: publicSite(value.preview, `${where}: preview`)
+	};
+}

@@ -10,7 +10,11 @@ An offer page shows a measured SEO/AEO comparison between the prospect's current
 npm run audit:offer -- https://prospect.example/ https://preview.example/
 ```
 
-The first URL is the prospect's site today, the second is our preview. The script writes one file, `offer-audits/<prospect-host>-<timestamp>.json`, and prints a pass/warn/fail table. Pass `--out <dir>` to write somewhere else.
+The first URL is the prospect's site today, the second is our preview. The script writes one file, `offer-audits/<prospect-host>-<timestamp>.json`, and prints a pass/warn/fail table. Pass `--out <dir>` to write the timestamped file somewhere else, or `--out <file>.json` to write exactly that file. For an offer, write it into the offer folder:
+
+```sh
+npm run audit:offer -- https://prospect.example/ https://preview.example/ --out offers/<id>/audit.json
+```
 
 It needs Chrome: installed Google Chrome if present, otherwise Playwright's bundled Chromium (`npx playwright install chromium`). A run takes about 30 seconds and makes one Lighthouse load, two page loads and a few plain GETs per site. It never clicks or submits anything.
 
@@ -37,4 +41,6 @@ The HTML checks read the page with JavaScript off, because most AI crawlers and 
 
 ## Use the result
 
-The JSON shape is the `OfferAudit` type in `src/lib/offers/audit.ts`. Import the file into the offer and render `current.checks` beside `preview.checks`: both lists hold every check in the same order. A sample lives in `scripts/samples/`.
+The JSON shape is the `OfferAudit` type in `src/lib/offers/audit.ts`. `npm run build` reads `offers/<id>/audit.json` if it exists, checks its shape (a malformed file fails the build with the offer id), and passes the offer page only each check's label, status and explanation: the raw values and any `error` notes stay out of the page. The `AuditComparison` block shows both sites' checks side by side, grouped into speed and quality, search engines and AI assistants, with the statuses worded as "Good", "Could be better" and "Needs fixing".
+
+The sample offer `offers/en440awb4f812nrkjrzh/` has a real `audit.json` (arizmendibakery.com against voidprojects.ai, since the offer itself is made up). An older sample run lives in `scripts/samples/`.

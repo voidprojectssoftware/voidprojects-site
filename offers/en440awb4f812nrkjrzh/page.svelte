@@ -12,7 +12,7 @@
 	import { formatDate } from '$lib/offers/offer.js';
 	import type { OfferPageProps } from '$lib/offers/page.js';
 
-	let { offer, context }: OfferPageProps = $props();
+	let { offer, audit, context }: OfferPageProps = $props();
 
 	// svelte-ignore state_referenced_locally
 	let selection = $state(initialSelection(offer));
@@ -37,7 +37,7 @@
 		</header>
 
 		<ConcernsList concerns={offer.concerns} />
-		<AuditComparison audit={offer.audit} />
+		<AuditComparison {audit} />
 
 		<section class="grid gap-8" aria-label="Sign up">
 			<PlanPicker {offer} bind:selection />

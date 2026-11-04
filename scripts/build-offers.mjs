@@ -7,6 +7,7 @@
 // Per offer: a server build renders the page to HTML (so it reads without
 // JavaScript), a client build hydrates it, and this script writes index.html
 // around both. It then lists expired offers, the clean-up reminder.
+import { existsSync } from 'node:fs';
 import { rm, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -32,9 +33,10 @@ function entryPlugin(id, ssr) {
 				`import Page from ${page};`,
 				`import input from ${JSON.stringify(offerFile(id, 'offer.ts'))};`,
 				`import * as offers from ${JSON.stringify(join(lib, 'offers/offer.ts'))};`,
+				`import { publicAudit } from ${JSON.stringify(join(lib, 'offers/audit.ts'))};`,
 				`import { SITE_ORIGIN } from ${JSON.stringify(join(lib, 'seo/site.ts'))};`,
 				`export const offer = offers.resolveOffer(${JSON.stringify(id)}, input);`,
-				`export { offers, SITE_ORIGIN };`,
+				`export { offers, publicAudit, SITE_ORIGIN };`,
 				`export const renderPage = (props) => render(Page, { props });`
 			].join('\n')
 		: [
@@ -154,6 +156,14 @@ ${head}
 `;
 }
 
+// offers/<id>/audit.json, written by `npm run audit:offer`. Optional: without it the
+// comparison block says the measurements are on their way.
+async function readAudit(id, publicAudit) {
+	const file = offerFile(id, 'audit.json');
+	if (!existsSync(file)) return null;
+	return publicAudit(JSON.parse(await readFile(file, 'utf8')), `offer ${id} audit.json`);
+}
+
 async function buildOffer(id, builtAt) {
 	await build(viteConfig(id, true));
 	const ssr = await import(
@@ -163,6 +173,7 @@ async function buildOffer(id, builtAt) {
 	const url = new URL(offers.offerPath(id), SITE_ORIGIN).href;
 	const props = {
 		offer: offers.publicOffer(offer),
+		audit: await readAudit(id, ssr.publicAudit),
 		context: { url, qr: qrMatrix(url), builtAt, checkoutEndpoint: CHECKOUT_ENDPOINT }
 	};
 

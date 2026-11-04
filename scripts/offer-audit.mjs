@@ -1,8 +1,8 @@
 // Measured SEO/AEO comparison for an offer page (#79).
 //
 // Runs the same checks on a prospect's current site and on our preview, then
-// writes one timestamped JSON file (shape: src/lib/offers/audit.ts) that the
-// offer page renders. Dev-time only: nothing here runs on visitors' requests.
+// writes one JSON file (shape: src/lib/offers/audit.ts) that the offer page
+// renders from offers/<id>/audit.json. Dev-time only: nothing here runs on visitors' requests.
 //
 // Per site: one Lighthouse run (mobile), one page load with JavaScript off (what
 // most AI crawlers and link previews read), one with JavaScript on (what a visitor
@@ -10,7 +10,7 @@
 // forms, no clicks. Every check fails soft, so a missing robots.txt is a "fail"
 // row, not a crash.
 //
-// Usage: npm run audit:offer -- <current-url> <preview-url> [--out <dir>]
+// Usage: npm run audit:offer -- <current-url> <preview-url> [--out <dir or .json file>]
 
 import { Command } from 'commander';
 import lighthouse from 'lighthouse';
@@ -18,7 +18,7 @@ import { chromium } from 'playwright';
 import * as prettier from 'prettier';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { createServer } from 'node:net';
-import { dirname, join, relative } from 'node:path';
+import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -52,7 +52,11 @@ const program = new Command()
 	.description('Compare a prospect site with our preview and write the offer audit JSON')
 	.argument('<current-url>', "the prospect's site today")
 	.argument('<preview-url>', 'the preview we built for them')
-	.option('--out <dir>', 'folder for the JSON file', DEFAULT_OUT)
+	.option(
+		'--out <path>',
+		'folder for a timestamped JSON file, or a .json file to write',
+		DEFAULT_OUT
+	)
 	.parse();
 
 // ---- helpers ----
@@ -784,8 +788,8 @@ async function main() {
 
 	const host = new URL(currentUrl).hostname.replace(/^www\./, '').replace(/[^a-z0-9.-]/gi, '-');
 	const stamp = generatedAt.replace(/\.\d+Z$/, 'Z').replace(/:/g, '-');
-	const file = join(out, `${host}-${stamp}.json`);
-	await mkdir(out, { recursive: true });
+	const file = out.endsWith('.json') ? resolve(out) : join(out, `${host}-${stamp}.json`);
+	await mkdir(dirname(file), { recursive: true });
 	// Format as prettier would, so `npm run lint` passes on committed results.
 	const config = (await prettier.resolveConfig(file)) ?? {};
 	const json = await prettier.format(JSON.stringify(audit), {

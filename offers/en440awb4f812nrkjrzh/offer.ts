@@ -1,5 +1,7 @@
-// SAMPLE OFFER. Fernhollow Pottery is a made-up business and every figure below is
-// invented, so the framework has something to build and test against.
+// SAMPLE OFFER. Fernhollow Pottery is a made-up business and everything below is
+// invented, so the framework has something to build and test against. Its
+// audit.json is a real run of npm run audit:offer, but of two unrelated public
+// sites: arizmendibakery.com as "current" and voidprojects.ai as "preview".
 import { defineOffer } from '$lib/offers/offer.js';
 
 export default defineOffer({
@@ -21,16 +23,6 @@ export default defineOffer({
 			detail: 'Every booking is a phone call during studio hours.'
 		}
 	],
-	audit: {
-		measuredOn: '2026-11-03',
-		source: 'Sample figures for the framework; the audit script (#79) will produce real ones.',
-		metrics: [
-			{ label: 'Mobile performance', current: 38, preview: 97, unit: '/100', better: 'higher' },
-			{ label: 'Largest content shown', current: 6.4, preview: 1.1, unit: 's', better: 'lower' },
-			{ label: 'Pages AI assistants can read', current: 2, preview: 9, better: 'higher' },
-			{ label: 'Structured data types', current: 0, preview: 4, better: 'higher' }
-		]
-	},
 	plans: [
 		{
 			id: 'static',
