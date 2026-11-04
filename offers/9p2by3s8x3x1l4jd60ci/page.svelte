@@ -48,6 +48,8 @@
 
 	const width = (value: number, max: number) => `${Math.max(1.5, (100 * value) / max)}%`;
 
+	// "About 5 seconds" and "under 2 seconds": figures.json wait rows, 4.9 s and 5.1 s
+	// today, 1.8 s and 0.8 s rebuilt. The rest restates the concerns in offer.ts.
 	const STAY = [
 		'Pages take about 5 seconds to show on a phone',
 		'An insurance advert where your own words should be',
