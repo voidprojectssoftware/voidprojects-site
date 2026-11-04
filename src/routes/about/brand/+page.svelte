@@ -59,9 +59,14 @@
 	onMount(() => {
 		let disposed = false;
 		let teardown: (() => void) | undefined;
-		import('$lib/physics/index.js').then(({ PhysicsStage, GlyphField }) => {
+		import('$lib/physics/index.js').then(async ({ PhysicsStage, GlyphField }) => {
 			if (disposed || !demoBounds) return;
 			const stage = new PhysicsStage({ bounds: demoBounds });
+			await stage.init();
+			if (disposed) {
+				stage.destroy();
+				return;
+			}
 			const glyphs = new GlyphField({
 				frictionAir: 0.012,
 				baseSpeed: 0.9,

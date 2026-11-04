@@ -1,9 +1,8 @@
-import Matter from 'matter-js';
+import type Matter from 'matter-js';
+import { matter } from './matter.js';
 import type { Actor, StepCtx } from './actor.js';
 import type { PhysicsStage } from './stage.js';
 import { readableUprightTorque } from './behaviors.js';
-
-const { Constraint, Body } = Matter;
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
@@ -476,7 +475,7 @@ export class RelationGraph implements Actor {
 			const k = this.cfg.hubAnchorStiffness;
 			const d = this.cfg.hubAnchorDamping;
 			// Damped spring: add the pull, then bleed momentum so it settles, no bounce.
-			Body.setVelocity(this.hubBody, {
+			matter().Body.setVelocity(this.hubBody, {
 				x: (this.hubBody.velocity.x + (a.x - this.hubBody.position.x) * k) * d,
 				y: (this.hubBody.velocity.y + (a.y - this.hubBody.position.y) * k) * d
 			});
@@ -514,7 +513,7 @@ export class RelationGraph implements Actor {
 				const d = Math.hypot(body.position.x - ox, body.position.y - oy);
 				const push = d >= range ? 0 : this.cfg.flowStrength * (1 - d / range);
 				if (push <= 0) continue;
-				Body.setVelocity(body, {
+				matter().Body.setVelocity(body, {
 					x: body.velocity.x + dirx * push,
 					y: body.velocity.y + diry * push
 				});
@@ -529,7 +528,7 @@ export class RelationGraph implements Actor {
 			const cy = target ? target.y : ctx.height / 2;
 			for (const body of this.damped.keys()) {
 				if (body === ctx.draggedBody) continue;
-				Body.setVelocity(body, {
+				matter().Body.setVelocity(body, {
 					x: body.velocity.x + (cx - body.position.x) * this.cfg.centerPull,
 					y: body.velocity.y + (cy - body.position.y) * this.cfg.centerPull
 				});
@@ -568,12 +567,12 @@ export class RelationGraph implements Actor {
 				const sa = b.mass / mt;
 				const sb = a.mass / mt;
 				if (a !== ctx.draggedBody)
-					Body.setVelocity(a, {
+					matter().Body.setVelocity(a, {
 						x: a.velocity.x - ux * push * sa,
 						y: a.velocity.y - uy * push * sa
 					});
 				if (b !== ctx.draggedBody)
-					Body.setVelocity(b, {
+					matter().Body.setVelocity(b, {
 						x: b.velocity.x + ux * push * sb,
 						y: b.velocity.y + uy * push * sb
 					});
@@ -666,7 +665,7 @@ export class RelationGraph implements Actor {
 			const dist = Math.hypot(dx, dy);
 			if (dist >= R || dist < 0.001) continue;
 			const push = this.cfg.pulseForce * (1 - dist / R);
-			Body.setVelocity(body, {
+			matter().Body.setVelocity(body, {
 				x: body.velocity.x + (dx / dist) * push,
 				y: body.velocity.y + (dy / dist) * push
 			});
@@ -750,7 +749,7 @@ export class RelationGraph implements Actor {
 			clip?: 'a' | 'b';
 		}
 	) {
-		const constraint = Constraint.create({
+		const constraint = matter().Constraint.create({
 			bodyA: a,
 			bodyB: b,
 			length: opts.length,
