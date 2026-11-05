@@ -61,6 +61,18 @@ export const PAGES = {
 		path: '/blog',
 		title: 'From The Void',
 		description: 'Engineering write-ups from the Void Projects collective.'
+	},
+	terms: {
+		path: '/terms',
+		title: 'Terms of Service | Void Projects',
+		description:
+			'The plain-English agreement for a Void Projects website subscription: what you get, billing, cancelling and refunds, who owns what, and what happens when you leave.'
+	},
+	privacy: {
+		path: '/privacy',
+		title: 'Privacy Policy | Void Projects',
+		description:
+			'What personal information Void Projects collects through voidprojects.ai and our services, who we share it with, how long we keep it, and your choices.'
 	}
 } satisfies Record<string, PageMeta>;
 

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import './layout.css';
 	import { SpaceBackground } from '$lib/components/space-background/index.js';
+	import { SiteFooter } from '$lib/components/site-footer/index.js';
 	import { afterNavigate } from '$app/navigation';
 	import { onMount } from 'svelte';
 
@@ -53,3 +54,5 @@
 <div class="flex flex-col">
 	{@render children()}
 </div>
+
+<SiteFooter />
