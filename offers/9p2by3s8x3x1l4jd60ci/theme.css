@@ -1,8 +1,9 @@
 /* Void Projects' look, from src/routes/layout.css: the light lavender background,
    brand violet (--color-primary) and its darker solid (--color-primary-strong,
    4.66:1 under white text), near-black text and Inter. The site has no dark mode in
-   use (.dark is never set); this page adds a switchable dark theme from the site's
-   .dark tokens, chosen on [data-theme='dark'] by the header toggle. Inter is named but not
+   use (.dark is never set); this page opens in a dark theme from the site's .dark
+   tokens ([data-theme='dark'], set before paint) and the header toggle switches to
+   light. Inter is named but not
    bundled: a bundled font file's URL would carry the offer id into the CSS, so
    visitors without Inter get the system sans. */
 @import 'tailwindcss' source('.');

@@ -39,19 +39,21 @@
 		se: { light: asset('logos/se.png'), dark: asset('logos/se-white.png') }
 	};
 
-	// Dark theme: off by default, remembered in localStorage when turned on. THEME_SCRIPT
-	// runs in the head before first paint, so a returning visitor sees no flash.
+	// Dark theme by default; light is remembered in localStorage when the visitor picks it.
+	// THEME_SCRIPT runs in the head before first paint, so nobody sees a flash of the
+	// other theme. An older stored 'dark' still reads as dark. Without JavaScript the
+	// page shows the light tokens, since the build writes <html> without a theme.
 	const THEME_KEY = 'offer-theme';
 	const THEME_SCRIPT =
-		`<script>try{if(localStorage.getItem('${THEME_KEY}')==='dark')document.documentElement.dataset.theme='dark'}catch(e){}</` +
+		`<script>try{document.documentElement.dataset.theme=localStorage.getItem('${THEME_KEY}')==='light'?'light':'dark'}catch(e){document.documentElement.dataset.theme='dark'}</` +
 		'script>';
-	let dark = $state(false);
+	let dark = $state(true);
 	function toggleTheme() {
 		dark = !dark;
 		document.documentElement.dataset.theme = dark ? 'dark' : 'light';
 		try {
-			if (dark) localStorage.setItem(THEME_KEY, 'dark');
-			else localStorage.removeItem(THEME_KEY);
+			if (dark) localStorage.removeItem(THEME_KEY);
+			else localStorage.setItem(THEME_KEY, 'light');
 		} catch {
 			// storage blocked: the choice lasts for this visit only
 		}
