@@ -332,6 +332,52 @@
 	{/if}
 {/snippet}
 
+{#snippet devices(id: string, name: string, preview: string, building: boolean)}
+	<!-- A finished rebuild links out; a design still in progress is shown, not linked. -->
+	<svelte:element
+		this={building ? 'div' : 'a'}
+		class="preview"
+		class:building-preview={building}
+		href={building ? undefined : preview}
+		rel={building ? undefined : 'noreferrer'}
+	>
+		{#if building}<span class="ribbon">Under construction</span>{/if}
+		<span class="frame">
+			<span class="chrome" aria-hidden="true">
+				<span class="dots"><span></span><span></span><span></span></span>
+				<span class="host">{new URL(preview).host}</span>
+				<span class="spacer"></span>
+			</span>
+			<img
+				src={asset(`shots/${id}-desktop-1280.webp`)}
+				srcset="{asset(`shots/${id}-desktop-640.webp`)} 640w, {asset(
+					`shots/${id}-desktop-1280.webp`
+				)} 1280w"
+				sizes="(min-width: 56rem) 760px, calc(100vw - 5rem)"
+				alt={building
+					? `In-progress preview of the new ${name} site on a computer; the design will change`
+					: `The rebuilt ${name} home page on a computer`}
+				width="1280"
+				height="800"
+				loading="lazy"
+				decoding="async"
+			/>
+		</span>
+		<span class="phone">
+			<img
+				src={asset(`shots/${id}-phone.webp`)}
+				alt={building
+					? `In-progress preview of the new ${name} site on a phone`
+					: `The rebuilt ${name} home page on a phone`}
+				width="300"
+				height="503"
+				loading="lazy"
+				decoding="async"
+			/>
+		</span>
+	</svelte:element>
+{/snippet}
+
 {#snippet underConstruction()}
 	<div class="building">
 		<span class="building-mark" aria-hidden="true">
@@ -353,11 +399,6 @@
 				It gets the same speed, search and accessibility work you can see on the Software Earnings
 				rebuild below.
 			</p>
-			<ol class="steps" aria-label="Progress">
-				<li class="done">Every fact on your current site recorded</li>
-				<li class="current">Original design in progress</li>
-				<li>Launch, with your approval</li>
-			</ol>
 		</div>
 	</div>
 {/snippet}
@@ -572,42 +613,13 @@
 
 					{#if site.currentOnly}
 						{@render underConstruction()}
+						{@render devices(site.id, site.name, site.preview, true)}
 						<h3 class="today">Your current site today</h3>
 						<p class="legend">
 							<span><span class="swatch now"></span>{NOW}: your current site</span>
 						</p>
 					{:else}
-						<a class="preview" href={site.preview} rel="noreferrer">
-							<span class="frame">
-								<span class="chrome" aria-hidden="true">
-									<span class="dots"><span></span><span></span><span></span></span>
-									<span class="host">{new URL(site.preview).host}</span>
-									<span class="spacer"></span>
-								</span>
-								<img
-									src={asset(`shots/${site.id}-desktop-1280.webp`)}
-									srcset="{asset(`shots/${site.id}-desktop-640.webp`)} 640w, {asset(
-										`shots/${site.id}-desktop-1280.webp`
-									)} 1280w"
-									sizes="(min-width: 56rem) 760px, calc(100vw - 5rem)"
-									alt="The rebuilt {site.name} home page on a computer"
-									width="1280"
-									height="800"
-									loading="lazy"
-									decoding="async"
-								/>
-							</span>
-							<span class="phone">
-								<img
-									src={asset(`shots/${site.id}-phone.webp`)}
-									alt="The rebuilt {site.name} home page on a phone"
-									width="300"
-									height="503"
-									loading="lazy"
-									decoding="async"
-								/>
-							</span>
-						</a>
+						{@render devices(site.id, site.name, site.preview, false)}
 
 						<p class="legend">
 							<span><span class="swatch now"></span>{NOW}: your current site</span>
@@ -1325,46 +1337,36 @@
 		width: 100%;
 		height: 100%;
 	}
-	.steps {
-		display: grid;
-		gap: 0.5rem;
-		margin: 0.25rem 0 0;
-		padding: 0;
-		list-style: none;
-		font-size: 0.9375rem;
-	}
-	.steps li {
-		display: flex;
-		align-items: center;
-		gap: 0.625rem;
-		color: var(--offer-muted);
-	}
-	.steps li::before {
-		content: '';
-		flex: none;
-		width: 0.875rem;
-		height: 0.875rem;
-		border: 2px solid var(--void-neutral);
-		border-radius: 999px;
-	}
-	.steps .done::before {
-		border-color: var(--void-primary-strong);
-		background: var(--void-primary-strong);
-	}
-	.steps .current {
-		color: var(--offer-fg);
-		font-weight: 600;
-	}
-	.steps .current::before {
-		border-color: var(--void-primary-strong);
-		background: radial-gradient(var(--void-primary-strong) 40%, transparent 45%);
-	}
 	@media (max-width: 29.99rem) {
 		.building {
 			flex-direction: column;
 			gap: 0.75rem;
 			padding: 1.25rem;
 		}
+	}
+	/* In-progress preview: a solid label on top so it never reads as a finished site. */
+	.building-preview .frame img,
+	.building-preview .phone img {
+		opacity: 0.85;
+	}
+	.ribbon {
+		position: absolute;
+		z-index: 1;
+		top: 3.25rem; /* under the browser chrome */
+		left: 50%;
+		transform: translateX(-50%);
+		padding: 0.375rem 1rem;
+		border-radius: 999px;
+		background: var(--void-night);
+		color: #fff;
+		font-size: 0.875rem;
+		font-weight: 700;
+		letter-spacing: 0.04em;
+		white-space: nowrap;
+	}
+	:global([data-theme='dark']) .ribbon {
+		background: #fff;
+		color: var(--void-night);
 	}
 	.today {
 		margin: 0.5rem 0 0;
