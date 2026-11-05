@@ -5,8 +5,17 @@
 		qr,
 		url,
 		title = 'Sign up on your phone',
+		fg = '#000',
+		bg = '#fff',
 		class: className = ''
-	}: { qr: QrMatrix; url: string; title?: string; class?: string } = $props();
+	}: {
+		qr: QrMatrix;
+		url: string;
+		title?: string;
+		fg?: string; // module colour: keep it dark, on a light `bg`, or phones will not read it
+		bg?: string;
+		class?: string;
+	} = $props();
 
 	const QUIET = 4; // modules of light margin the QR spec asks for around the code
 	let side = $derived(qr.size + QUIET * 2);
@@ -19,8 +28,8 @@
 		aria-label="QR code for {url}"
 		shape-rendering="crispEdges"
 	>
-		<rect x={-QUIET} y={-QUIET} width={side} height={side} fill="#fff" />
-		<path d={qr.path} fill="#000" />
+		<rect x={-QUIET} y={-QUIET} width={side} height={side} fill={bg} />
+		<path d={qr.path} fill={fg} />
 	</svg>
 	<figcaption>
 		<strong>{title}</strong>
@@ -29,7 +38,7 @@
 </figure>
 
 <style>
-	/* The code stays black on white whatever the theme: scanners need the contrast. */
+	/* The code stays dark on light whatever the theme: scanners need the contrast. */
 	figure {
 		display: flex;
 		align-items: center;
