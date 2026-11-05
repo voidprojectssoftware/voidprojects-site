@@ -43,4 +43,4 @@ The HTML checks read the page with JavaScript off, because most AI crawlers and 
 
 The JSON shape is the `OfferAudit` type in `src/lib/offers/audit.ts`. `npm run build` reads `offers/<id>/audit.json` if it exists, checks its shape (a malformed file fails the build with the offer id), and passes the offer page only each check's label, status and explanation: the raw values and any `error` notes stay out of the page. The `AuditComparison` block shows both sites' checks side by side, grouped into speed and quality, search engines and AI assistants, with the statuses worded as "Good", "Could be better" and "Needs fixing".
 
-The sample offer `offers/en440awb4f812nrkjrzh/` has a real `audit.json` (arizmendibakery.com against voidprojects.ai, since the offer itself is made up). An older sample run lives in `scripts/samples/`.
+No offer carries an `audit.json` today: the First Touch offer shows figures computed from its rebuild repositories' own audit runs instead (`offers/9p2by3s8x3x1l4jd60ci/figures.mjs`). A sample run of the script lives in `scripts/samples/` (arizmendibakery.com against voidprojects.ai).
