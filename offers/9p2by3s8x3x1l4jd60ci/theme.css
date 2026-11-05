@@ -14,7 +14,9 @@
 	--void-primary: oklch(0.6534 0.1876 301.62);
 	--void-primary-strong: oklch(0.58 0.1876 301.62);
 	--void-night: oklch(0.17 0.018 285); /* the site's dark background, behind the header lockup */
-	--void-primary-text: oklch(0.55 0.1876 301.62); /* violet text: 5:1 on the background */
+	--void-primary-text: oklch(
+		0.52 0.1876 301.62
+	); /* violet text: 5.6:1 on the background, 5:1 on violet tints */
 	--void-neutral: oklch(0.64 0.006 300); /* "where you are" bars: 3.2:1 on the background */
 	--offer-bg: oklch(0.984 0.01 311.18);
 	--offer-fg: oklch(0.145 0 0);
@@ -95,4 +97,9 @@ h2 {
 :root[data-theme='dark'] .plans .plan:has(input:checked) {
 	border-color: var(--offer-accent);
 	box-shadow: none;
+}
+
+/* 44px tap targets for the plan picker's Monthly / Annual toggle on this page. */
+:root .toggle button[role='radio'] {
+	min-height: 2.75rem;
 }

@@ -30,7 +30,7 @@ export default defineOffer({
 		{
 			title: 'Code you do not control on every page',
 			detail:
-				'Dozens of scripts from outside services, including an accessibility overlay that papers over problems instead of fixing them.',
+				'Dozens of outside scripts load on every page. One is an overlay that hides accessibility problems instead of fixing them.',
 			impact: 'Each one is code you depend on and do not control.'
 		}
 	],

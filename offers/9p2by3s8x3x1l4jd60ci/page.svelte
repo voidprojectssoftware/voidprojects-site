@@ -190,9 +190,9 @@
 	// on the server only so the trajectory table never ships in the page script. The
 	// client reads the server's markup back before hydrating, so {@html} matches.
 	const FAVICON_SEED = 42;
-	// After mount the marks switch to a fresh one from the site's /api/mark.svg endpoint
-	// (the footer badge's), one random seed per page load shared by both, as the site
-	// header rolls a new mark each visit. The fixed-seed mark stays for no-JS visitors.
+	// After mount the header mark switches to a fresh one from the site's /api/mark.svg
+	// endpoint (the footer badge's), a random seed per page load, as the site header rolls
+	// a new mark each visit. The fixed-seed mark stays for no-JS visitors.
 	let markSrc = $state('');
 	const voidMark = import.meta.env.SSR
 		? generateMarkSvg(TRAJECTORIES, FAVICON_SEED, __BRAND_PRIMARY__)
@@ -208,8 +208,8 @@
 		why: string;
 		fine: string;
 		before: string;
-		after: string;
-		bar: { before: number; after: number; max: number };
+		after: string | null; // null where only the current site is shown (First Touch)
+		bar: { before: number; after: number | null; max: number };
 		impact?: string; // the consequence, shown as a callout after `why`
 		target?: { value: number; label: string; good: string; text: string; source: string }; // benchmark line, see figures.mjs
 	}
@@ -227,7 +227,7 @@
 		'Dozens of outside scripts on every page'
 	];
 	const MOVE = [
-		'Pages show in under 2 seconds on a phone', // the one callout in this list
+		'Pages that show in under 2 seconds on a phone, as Software Earnings’ rebuild does', // the one callout in this list
 		'Your own words on every screen',
 		'Contact details every search engine and assistant can read',
 		'Clean pages, and someone checking they stay that way',
@@ -332,6 +332,36 @@
 	{/if}
 {/snippet}
 
+{#snippet underConstruction()}
+	<div class="building">
+		<span class="building-mark" aria-hidden="true">
+			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+			{@html voidMark}
+		</span>
+		<div class="grid gap-3">
+			<p class="eyebrow">Under construction</p>
+			<h3>A new First Touch site, designed from scratch</h3>
+			<p>
+				Hibu, your current host, designed the template your site is built on. Its design and wording
+				may not be yours to carry over, so we are building First Touch an original design. <strong
+					class="callout"
+					>It keeps every fact your site states today: your products, people, phone numbers and
+					address.</strong
+				>
+			</p>
+			<p>
+				It gets the same speed, search and accessibility work you can see on the Software Earnings
+				rebuild below.
+			</p>
+			<ol class="steps" aria-label="Progress">
+				<li class="done">Every fact on your current site recorded</li>
+				<li class="current">Original design in progress</li>
+				<li>Launch, with your approval</li>
+			</ol>
+		</div>
+	</div>
+{/snippet}
+
 {#snippet info(text: string, name: string)}
 	<details class="info">
 		<summary>
@@ -364,15 +394,17 @@
 							></span>{/if}</span
 					>
 					<span class="val">{row.before}</span>
-					<span class="who">{NEXT}</span>
-					<span class="track"
-						><span class="fill next" style:width={width(row.bar.after, row.bar.max)}
-						></span>{#if row.target}<span
-								class="line"
-								style:left={at(row.target.value, row.bar.max)}
-							></span>{/if}</span
-					>
-					<span class="val next-val">{row.after}</span>
+					{#if row.after !== null && row.bar.after !== null}
+						<span class="who">{NEXT}</span>
+						<span class="track"
+							><span class="fill next" style:width={width(row.bar.after, row.bar.max)}
+							></span>{#if row.target}<span
+									class="line"
+									style:left={at(row.target.value, row.bar.max)}
+								></span>{/if}</span
+						>
+						<span class="val next-val">{row.after}</span>
+					{/if}
 					{#if row.target}
 						{@const end = row.target.value >= row.bar.max}
 						<span class="marks">
@@ -403,7 +435,7 @@
 	{#each STARS as star, i (i)}<circle cx={star.x} cy={star.y} r={star.r} opacity={star.o} />{/each}
 </svg>
 
-<header class="top px-4 pt-5 sm:px-8">
+<header class="top px-4 pt-3 sm:px-8 sm:pt-5">
 	<div class="lockup">
 		<span class="void">
 			<span class="mark" data-void-mark aria-hidden="true">
@@ -458,26 +490,25 @@
 	</button>
 </header>
 
-<main class="mx-auto grid max-w-4xl grid-cols-1 gap-14 px-4 py-12 sm:px-8 sm:py-16">
+<main class="mx-auto grid max-w-4xl grid-cols-1 gap-14 px-4 pt-6 pb-12 sm:px-8 sm:py-16">
 	<OfferGate {offer} builtAt={context.builtAt}>
 		<section class="hero relative isolate grid gap-4" aria-labelledby="offer-title">
+			<!-- The faint hero mark stays the build-time one: swapping it for the live endpoint
+			     made it the page's largest paint, late (Lighthouse mobile LCP 1.4 s to 3.5 s). -->
 			<span class="hero-mark" aria-hidden="true">
-				{#if markSrc}
-					<img src={markSrc} alt="" width="416" height="416" />
-				{:else}
-					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-					{@html voidMark}
-				{/if}
+				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+				{@html voidMark}
 			</span>
 			<p class="eyebrow">Proposal</p>
-			<h1 id="offer-title" class="text-4xl leading-tight sm:text-5xl">
+			<h1 id="offer-title" class="text-[2rem] leading-tight min-[30rem]:text-4xl sm:text-5xl">
 				Hosting and maintenance proposal for your two websites
 			</h1>
-			<p class="max-w-2xl text-lg text-(--offer-muted)">
-				Larry, we propose to host, secure and maintain both websites we rebuilt for you, First Touch
-				Payment Solutions and Software Earnings, and keep them fast and easy for search engines and
-				AI assistants to read. Below is where your sites are today and where they can be; accept the
-				offer when you are ready, or reply with any questions.
+			<p class="lead max-w-2xl text-lg text-(--offer-muted)">
+				Larry, we propose to host, secure and maintain both of your websites. We have rebuilt
+				Software Earnings, and we are building a new design for First Touch Payment Solutions. We
+				keep both fast and easy for search engines and AI assistants to read. Below is where your
+				sites are today and where they can be. Accept the offer when you are ready, or reply with
+				any questions.
 			</p>
 			<p class="price">
 				<strong>{money(monthly)}</strong> a month for both sites, or {money(yearly)} a year
@@ -504,16 +535,16 @@
 				</h2>
 				<p>
 					<strong class="callout"
-						>{ENGINEER.name.split(' ')[0]} built both of your new sites and is your contact for anything
-						you need.</strong
+						>{ENGINEER.name.split(' ')[0]} built your new Software Earnings site, is building the new
+						First Touch site, and is your contact for anything you need.</strong
 					>
 				</p>
 				<p class="promise">
 					<span class="badge">Always a human, never a bot</span>
-					When you write to us, {ENGINEER.name.split(' ')[0]} answers. AI agents do the upkeep behind
-					the scenes; every conversation is with a person.
+					When you write to us, {ENGINEER.name.split(' ')[0]} answers. AI agents do the upkeep in the
+					background. Every conversation is with a person.
 				</p>
-				<p class="flex flex-wrap gap-x-5 gap-y-1 text-sm">
+				<p class="links flex flex-wrap gap-x-5 text-sm">
 					<a href="mailto:{ENGINEER.email}">{ENGINEER.email}</a>
 					<a href={ENGINEER.linkedin} rel="noreferrer">LinkedIn</a>
 				</p>
@@ -524,53 +555,65 @@
 			{#each figures.sites as site (site.id)}
 				<section class="site grid grid-cols-1 gap-6" aria-labelledby="site-{site.id}">
 					{@render info(
-						`Measured ${site.measured} on ${site.pages} pages of both versions, as a phone loads them.`,
+						site.currentOnly
+							? `Measured ${site.measured} on ${site.pages} pages of your current site, as a phone loads them.`
+							: `Measured ${site.measured} on ${site.pages} pages of both versions, as a phone loads them.`,
 						'When and how these were measured'
 					)}
 					<div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2 pr-8">
 						<h2 id="site-{site.id}" class="site-name">{site.name}</h2>
-						<div class="flex flex-wrap items-center gap-x-5 gap-y-1 text-sm font-semibold">
-							<a href={site.preview} rel="noreferrer">Open the rebuilt site</a>
-							<a href="{site.preview}site-comparison/" rel="noreferrer">Full comparison</a>
-						</div>
+						{#if !site.currentOnly}
+							<div class="links flex flex-wrap items-center gap-x-5 text-sm font-semibold">
+								<a href={site.preview} rel="noreferrer">Open the rebuilt site</a>
+								<a href="{site.preview}site-comparison/" rel="noreferrer">Full comparison</a>
+							</div>
+						{/if}
 					</div>
 
-					<a class="preview" href={site.preview} rel="noreferrer">
-						<span class="frame">
-							<span class="chrome" aria-hidden="true">
-								<span class="dots"><span></span><span></span><span></span></span>
-								<span class="host">{new URL(site.preview).host}</span>
-								<span class="spacer"></span>
+					{#if site.currentOnly}
+						{@render underConstruction()}
+						<h3 class="today">Your current site today</h3>
+						<p class="legend">
+							<span><span class="swatch now"></span>{NOW}: your current site</span>
+						</p>
+					{:else}
+						<a class="preview" href={site.preview} rel="noreferrer">
+							<span class="frame">
+								<span class="chrome" aria-hidden="true">
+									<span class="dots"><span></span><span></span><span></span></span>
+									<span class="host">{new URL(site.preview).host}</span>
+									<span class="spacer"></span>
+								</span>
+								<img
+									src={asset(`shots/${site.id}-desktop-1280.webp`)}
+									srcset="{asset(`shots/${site.id}-desktop-640.webp`)} 640w, {asset(
+										`shots/${site.id}-desktop-1280.webp`
+									)} 1280w"
+									sizes="(min-width: 56rem) 760px, calc(100vw - 5rem)"
+									alt="The rebuilt {site.name} home page on a computer"
+									width="1280"
+									height="800"
+									loading="lazy"
+									decoding="async"
+								/>
 							</span>
-							<img
-								src={asset(`shots/${site.id}-desktop-1280.webp`)}
-								srcset="{asset(`shots/${site.id}-desktop-640.webp`)} 640w, {asset(
-									`shots/${site.id}-desktop-1280.webp`
-								)} 1280w"
-								sizes="(min-width: 56rem) 760px, calc(100vw - 5rem)"
-								alt="The rebuilt {site.name} home page on a computer"
-								width="1280"
-								height="800"
-								loading="lazy"
-								decoding="async"
-							/>
-						</span>
-						<span class="phone">
-							<img
-								src={asset(`shots/${site.id}-phone.webp`)}
-								alt="The rebuilt {site.name} home page on a phone"
-								width="300"
-								height="503"
-								loading="lazy"
-								decoding="async"
-							/>
-						</span>
-					</a>
+							<span class="phone">
+								<img
+									src={asset(`shots/${site.id}-phone.webp`)}
+									alt="The rebuilt {site.name} home page on a phone"
+									width="300"
+									height="503"
+									loading="lazy"
+									decoding="async"
+								/>
+							</span>
+						</a>
 
-					<p class="legend">
-						<span><span class="swatch now"></span>{NOW}: your current site</span>
-						<span><span class="swatch next"></span>{NEXT}: the site we rebuilt</span>
-					</p>
+						<p class="legend">
+							<span><span class="swatch now"></span>{NOW}: your current site</span>
+							<span><span class="swatch next"></span>{NEXT}: the site we rebuilt</span>
+						</p>
+					{/if}
 					{@render tiles(site.rows)}
 
 					{#if site.ai}
@@ -578,11 +621,6 @@
 							<h3 class="text-lg font-semibold">What AI assistants can read about you</h3>
 							{@render tiles(site.ai.rows)}
 						</div>
-					{:else}
-						<p class="fine">
-							AI assistant checks have not been run on this site yet; running them is part of the
-							upkeep.
-						</p>
 					{/if}
 				</section>
 			{/each}
@@ -635,9 +673,9 @@
 		<section class="grid gap-4" aria-labelledby="offer-security">
 			<h2 id="offer-security">Security in the age of AI</h2>
 			<p class="max-w-2xl text-(--offer-muted)">
-				AI makes attacks cheaper: bots scan for outdated software, copy a business's site for
-				phishing and collect published contact details. No one can promise a site is never attacked;
-				we keep the risk low.
+				AI makes attacks cheaper. Bots scan for outdated software, copy a business’s site for
+				phishing and collect contact details. No one can promise a site is never attacked; we keep
+				the risk low.
 			</p>
 			<ul class="items">
 				{#each SECURITY as item (item.title)}
@@ -684,8 +722,8 @@
 			</div>
 			<p class="renewal">
 				Your plan renews automatically each month, or each year on the annual plan, until you
-				cancel. You can cancel any time from your billing page; your sites stay up to the end of the
-				period you have paid for, and we email a reminder before each annual renewal.
+				cancel. Cancel any time from your billing page. Your sites stay up until the end of the
+				period you paid for, and we email you a reminder before each annual renewal.
 			</p>
 		</section>
 	</OfferGate>
@@ -733,11 +771,14 @@
 	:global([data-theme='dark']) .stars {
 		display: block;
 	}
+	/* Phones: the lockup takes the full width (its logos wrap to two rows below 40rem)
+	   and the theme toggle sits on its own row under it; side by side from 40rem. */
 	.top {
 		display: flex;
+		flex-direction: column;
 		align-items: center;
 		justify-content: space-between;
-		gap: 0.5rem;
+		gap: 0.75rem;
 		max-width: 56rem;
 		margin: 0 auto;
 	}
@@ -745,8 +786,8 @@
 		display: grid;
 		place-items: center;
 		flex: none;
-		width: 2.5rem;
-		height: 2.5rem;
+		width: 2.75rem;
+		height: 2.75rem;
 		border: 1px solid var(--offer-border);
 		border-radius: 999px;
 		background: var(--offer-surface);
@@ -767,6 +808,7 @@
 		stroke-linejoin: round;
 	}
 	.lockup {
+		align-self: stretch;
 		display: flex;
 		flex-wrap: wrap;
 		align-items: center;
@@ -806,8 +848,7 @@
 	}
 	.mark :global(svg),
 	.hero-mark :global(svg),
-	.mark img,
-	.hero-mark img {
+	.mark img {
 		display: block;
 		width: 100%;
 		height: 100%;
@@ -845,6 +886,13 @@
 		border-radius: 1.5rem;
 		background: var(--offer-surface);
 	}
+	@media (max-width: 29.99rem) {
+		.engineer {
+			flex-direction: column;
+			gap: 0.75rem;
+			padding: 1.25rem;
+		}
+	}
 	.face {
 		flex: none;
 		width: 4.5rem;
@@ -854,7 +902,7 @@
 		box-shadow: 0 0 0 1px var(--offer-border);
 	}
 	.promise {
-		font-size: 0.9375rem;
+		font-size: 1rem;
 		color: var(--offer-muted);
 	}
 	.badge {
@@ -942,7 +990,7 @@
 		right: 0;
 		bottom: 0;
 		width: 22%;
-		min-width: 5.5rem;
+		min-width: 6.5rem;
 		padding: 0.3rem;
 		border-radius: 1.1rem;
 		background: oklch(0.21 0.015 285);
@@ -962,19 +1010,19 @@
 	}
 	.tile > .info {
 		position: absolute;
-		top: 0.75rem;
-		right: 0.75rem;
+		top: 0.25rem;
+		right: 0.25rem;
 	}
 	.site > .info {
 		position: absolute;
-		top: 2.75rem;
-		right: 0;
+		top: 2.25rem;
+		right: -0.5rem;
 	}
 	.info summary {
 		display: grid;
 		place-items: center;
-		width: 1.75rem;
-		height: 1.75rem;
+		width: 2.75rem;
+		height: 2.75rem;
 		border-radius: 999px;
 		color: var(--offer-muted);
 		cursor: pointer;
@@ -1004,7 +1052,7 @@
 	.info-panel {
 		position: absolute;
 		z-index: 2;
-		top: 2rem;
+		top: 2.75rem;
 		right: 0;
 		width: min(17rem, calc(100vw - 4rem));
 		padding: 0.75rem 0.875rem;
@@ -1012,13 +1060,13 @@
 		border-radius: 0.75rem;
 		background: var(--offer-surface);
 		color: var(--offer-muted);
-		font-size: 0.8125rem;
+		font-size: 0.875rem;
 		font-weight: 400;
 		line-height: 1.45;
 		box-shadow: 0 16px 32px -16px oklch(0 0 0 / 0.35);
 	}
 	.tile-label {
-		padding-right: 2rem;
+		padding-right: 2.25rem;
 	}
 
 	/* Dark theme surfaces: the main site's glass (GlassCard: bg-background/8 with
@@ -1049,7 +1097,7 @@
 		display: grid;
 		gap: 0.25rem;
 		width: 9rem;
-		font-size: 0.75rem;
+		font-size: 0.875rem;
 		font-weight: 600;
 		color: var(--offer-muted);
 	}
@@ -1069,7 +1117,7 @@
 	}
 	.evidence-note {
 		flex-basis: 100%;
-		font-size: 0.75rem;
+		font-size: 0.875rem;
 		color: var(--offer-muted);
 	}
 	/* Centered in the viewport and never taller than it, so the page never scrolls. */
@@ -1165,6 +1213,34 @@
 		font-size: 1.125rem;
 		color: var(--offer-muted);
 	}
+	/* Phones: price and the call to action come straight after the heading, so the
+	   first screen says what this is, what it costs and how to accept. */
+	@media (max-width: 39.99rem) {
+		.hero .price {
+			order: 1;
+		}
+		.hero .cta {
+			order: 2;
+		}
+		.hero .lead {
+			order: 3;
+			font-size: 1rem;
+		}
+		.hero {
+			padding-top: 0;
+		}
+		.price strong {
+			font-size: 1.75rem;
+		}
+	}
+	/* Standalone links get a 44px tap height; links inside sentences stay inline. */
+	.cta a,
+	.links a,
+	footer > a {
+		display: inline-flex;
+		align-items: center;
+		min-height: 2.75rem;
+	}
 	.cta {
 		display: flex;
 		flex-wrap: wrap;
@@ -1226,6 +1302,74 @@
 
 	/* Each site is its own section on the page background: a rule and space above,
 	   not a card around the tiles. */
+	.building {
+		display: flex;
+		align-items: flex-start;
+		gap: 1.25rem;
+		padding: 1.5rem;
+		border: 1px dashed oklch(0.6534 0.1876 301.62 / 0.45);
+		border-radius: 1.5rem;
+		background: linear-gradient(to bottom right, oklch(0.6534 0.1876 301.62 / 0.1), transparent);
+	}
+	.building h3 {
+		margin: 0;
+		font-size: 1.375rem;
+	}
+	.building-mark {
+		flex: none;
+		width: 3rem;
+		height: 3rem;
+	}
+	.building-mark :global(svg) {
+		display: block;
+		width: 100%;
+		height: 100%;
+	}
+	.steps {
+		display: grid;
+		gap: 0.5rem;
+		margin: 0.25rem 0 0;
+		padding: 0;
+		list-style: none;
+		font-size: 0.9375rem;
+	}
+	.steps li {
+		display: flex;
+		align-items: center;
+		gap: 0.625rem;
+		color: var(--offer-muted);
+	}
+	.steps li::before {
+		content: '';
+		flex: none;
+		width: 0.875rem;
+		height: 0.875rem;
+		border: 2px solid var(--void-neutral);
+		border-radius: 999px;
+	}
+	.steps .done::before {
+		border-color: var(--void-primary-strong);
+		background: var(--void-primary-strong);
+	}
+	.steps .current {
+		color: var(--offer-fg);
+		font-weight: 600;
+	}
+	.steps .current::before {
+		border-color: var(--void-primary-strong);
+		background: radial-gradient(var(--void-primary-strong) 40%, transparent 45%);
+	}
+	@media (max-width: 29.99rem) {
+		.building {
+			flex-direction: column;
+			gap: 0.75rem;
+			padding: 1.25rem;
+		}
+	}
+	.today {
+		margin: 0.5rem 0 0;
+		font-size: 1.25rem;
+	}
 	.site-name {
 		margin: 0;
 		font-size: 1.75rem;
@@ -1266,7 +1410,7 @@
 		margin-top: 0.25rem;
 	}
 	.who {
-		font-size: 0.75rem;
+		font-size: 0.8125rem;
 		font-weight: 600;
 		color: var(--offer-muted);
 		white-space: nowrap;
@@ -1302,7 +1446,7 @@
 		position: absolute;
 		top: 0.125rem;
 		margin-left: -1px;
-		font-size: 0.75rem;
+		font-size: 0.8125rem;
 		font-weight: 600;
 		white-space: nowrap;
 	}
@@ -1323,10 +1467,10 @@
 		color: var(--void-primary-text);
 	}
 	.why {
-		font-size: 0.9375rem;
+		font-size: 1rem;
 	}
 	.fine {
-		font-size: 0.75rem;
+		font-size: 0.875rem;
 		color: var(--offer-muted);
 	}
 
@@ -1336,7 +1480,7 @@
 		margin: 0.25rem 0;
 		padding: 0.75rem 0;
 		border-block: 1px solid var(--offer-border);
-		font-size: 0.875rem;
+		font-size: 0.9375rem;
 	}
 	.agents {
 		color: var(--offer-muted);
@@ -1349,6 +1493,7 @@
 	}
 	.part small {
 		display: block;
+		font-size: 0.875rem;
 		color: var(--offer-muted);
 	}
 	.part .amount {
@@ -1457,8 +1602,13 @@
 			height: 40px;
 		}
 		.lockup {
+			align-self: auto;
 			flex-wrap: nowrap;
 			border-radius: 999px;
+		}
+		.top {
+			flex-direction: row;
+			gap: 0.5rem;
 		}
 		.preview {
 			padding: 0 2.5rem 2.5rem 0;

@@ -8,22 +8,21 @@
 			"measured": "October 28, 2026",
 			"pages": 11,
 			"source": {
-				"commit": "e42c19b",
+				"commit": "cd97ed3",
 				"run": "docs/discovery/seo-audit/2026-10-28-after-88/result.json"
 			},
 			"rows": [
 				{
 					"label": "Wait before the page shows on a phone",
-					"why": "Visitors see your page in 1.8 s instead of 4.9 s.",
+					"why": "Your pages take 4.9 s to show on a phone; 0 of 11 are within Google's 2.5 s.",
 					"impact": "People leave slow pages before they find your number.",
-					"fine": "Largest Contentful Paint, mean of 11 pages; 0 of 11 pages within 2.5 s today, 11 of 11 rebuilt.",
+					"fine": "Largest Contentful Paint, mean of 11 pages.",
 					"before": "4.9 s",
-					"after": "1.8 s",
+					"after": null,
 					"bar": {
 						"before": 4.855921597272726,
-						"after": 1.7968751454545455,
-						"max": 5,
-						"lowerIsBetter": true
+						"after": null,
+						"max": 5
 					},
 					"target": {
 						"value": 2.5,
@@ -39,10 +38,10 @@
 					"impact": "This is their first impression of you.",
 					"fine": "Google Lighthouse performance score, mean of 11 pages.",
 					"before": "63",
-					"after": "99",
+					"after": null,
 					"bar": {
 						"before": 63,
-						"after": 99,
+						"after": null,
 						"max": 100
 					},
 					"target": {
@@ -55,13 +54,13 @@
 				},
 				{
 					"label": "Ready for Google, out of 100",
-					"why": "Nothing basic is missing when Google decides how to list you.",
-					"fine": "Google Lighthouse SEO score on phones, mean of 11 pages; 100 on 8 of 11 today, 11 of 11 rebuilt.",
+					"why": "3 of 11 pages miss some of the basic checks Google makes before it lists a page.",
+					"fine": "Google Lighthouse SEO score on phones, mean of 11 pages; 100 on 8 of 11.",
 					"before": "98",
-					"after": "100",
+					"after": null,
 					"bar": {
 						"before": 98,
-						"after": 100,
+						"after": null,
 						"max": 100
 					},
 					"target": {
@@ -74,13 +73,13 @@
 				},
 				{
 					"label": "Usable by every visitor, out of 100",
-					"why": "Customers using a screen reader or large text can read and use every page.",
-					"fine": "Google Lighthouse accessibility score on phones, mean of 11 pages.",
+					"why": "Close, but a scanner found 39 problems, such as links a screen reader cannot name.",
+					"fine": "Google Lighthouse accessibility score on phones, mean of 11 pages; axe-core WCAG 2.2 A and AA failures on desktop, all pages.",
 					"before": "97",
-					"after": "100",
+					"after": null,
 					"bar": {
 						"before": 97,
-						"after": 100,
+						"after": null,
 						"max": 100
 					},
 					"target": {
@@ -93,13 +92,14 @@
 				},
 				{
 					"label": "Pages with a clear outline",
-					"why": "Search engines and AI assistants can tell what each page is about.",
+					"why": "1 of 11 pages has its headings in order.",
+					"impact": "Search engines and AI assistants get a muddled picture of the rest.",
 					"fine": "Headings in order, no skipped levels.",
 					"before": "1 of 11",
-					"after": "11 of 11",
+					"after": null,
 					"bar": {
 						"before": 1,
-						"after": 11,
+						"after": null,
 						"max": 11
 					},
 					"target": {
@@ -112,13 +112,13 @@
 				},
 				{
 					"label": "Pages with your business details for Google",
-					"why": "Kept as it is today: your name, phone and services stay readable to Google.",
+					"why": "Your pages already carry this; the new site keeps it.",
 					"fine": "Structured data (JSON-LD) on the page.",
 					"before": "11 of 11",
-					"after": "11 of 11",
+					"after": null,
 					"bar": {
 						"before": 11,
-						"after": 11,
+						"after": null,
 						"max": 11
 					},
 					"target": {
@@ -130,6 +130,7 @@
 					}
 				}
 			],
+			"currentOnly": true,
 			"ai": null
 		},
 		{
