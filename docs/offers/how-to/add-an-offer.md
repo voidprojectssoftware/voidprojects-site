@@ -2,7 +2,7 @@
 
 # Add a prospect offer page
 
-An offer is a private, unlisted page at `voidprojects.ai/o/<id>/`. Each one is a folder under `offers/`, built into `build/o/<id>/` by `scripts/build-offers.mjs` when `npm run build` runs. The sample `offers/en440awb4f812nrkjrzh/` (a made-up pottery studio) shows every block.
+An offer is a private, unlisted page at `voidprojects.ai/o/<id>/`. Each one is a folder under `offers/`, built into `build/o/<id>/` by `scripts/build-offers.mjs` when `npm run build` runs. `offers/9p2by3s8x3x1l4jd60ci/` (First Touch Payment Solutions) is a working example. It uses `ConcernsList`, `PlanPicker`, `SignUpButton`, `QrCode` and `OfferGate`, but not `AuditComparison` or add-ons; every block and the custom properties it reads are listed in `src/lib/offers/blocks/index.ts`.
 
 ## Why offers are not SvelteKit routes
 
@@ -18,7 +18,7 @@ Check it after a build: `grep -rl <id> build build-api` should list only `build/
    node -e "const c='abcdefghijklmnopqrstuvwxyz0123456789';console.log([...crypto.getRandomValues(new Uint8Array(20))].map(x=>c[x%36]).join(''))"
    ```
 
-2. Copy the sample folder to `offers/<id>/`. A folder whose name starts with `_` is skipped, which suits a draft.
+2. Create `offers/<id>/` with `offer.ts`, `page.svelte` and `theme.css`. The First Touch folder shows how they fit together; take its structure, not its content, which is that prospect's. A folder whose name starts with `_` is skipped, which suits a draft.
 3. Edit `offer.ts`. The type is `OfferInput` in `src/lib/offers/offer.ts`:
    - `sent`: the date you send the link. `expires` defaults to 30 days later; set it to override.
    - Amounts are whole cents (`2500` is 25.00). `annual` defaults to 10 times `monthly`; set `annual: false` to sell monthly only, or omit `monthly` to sell annually only.
