@@ -1,6 +1,5 @@
-import Matter from 'matter-js';
-
-const { Body } = Matter;
+import type Matter from 'matter-js';
+import { matter } from './matter.js';
 
 /**
  * Reusable per-step forces shared across actors. Each one nudges a body's
@@ -15,7 +14,7 @@ const { Body } = Matter;
  */
 export function uprightTorque(body: Matter.Body, stiffness: number, damping: number) {
 	const av = body.angularVelocity * damping - body.angle * stiffness;
-	Body.setAngularVelocity(body, av);
+	matter().Body.setAngularVelocity(body, av);
 }
 
 /**
@@ -57,7 +56,7 @@ export function readableUprightTorque(
 		readableDeg > 0 && Math.abs(err) <= (readableDeg * Math.PI) / 180
 			? 0
 			: Math.sin(body.angle) * stiffness;
-	Body.setAngularVelocity(body, body.angularVelocity * friction - pull);
+	matter().Body.setAngularVelocity(body, body.angularVelocity * friction - pull);
 }
 
 /**
@@ -78,7 +77,7 @@ export function cursorPull(
 	if (dist === 0 || dist > radius) return;
 	const falloff = (1 - dist / radius) ** 2; // full at the cursor, nothing at the edge
 	const pull = strength * falloff;
-	Body.setVelocity(body, {
+	matter().Body.setVelocity(body, {
 		x: body.velocity.x + (dx / dist) * pull,
 		y: body.velocity.y + (dy / dist) * pull
 	});
@@ -114,7 +113,7 @@ export function cursorPush(
 	}
 	const falloff = (1 - dist / radius) ** 2; // full at the finger, nothing at the edge
 	const push = strength * falloff * speed;
-	Body.setVelocity(body, {
+	matter().Body.setVelocity(body, {
 		x: body.velocity.x + nx * push,
 		y: body.velocity.y + ny * push
 	});

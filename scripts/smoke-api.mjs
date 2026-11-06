@@ -7,7 +7,7 @@ import Module, { createRequire } from 'node:module';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const expected = ['mark', 'contact'];
+const expected = ['mark', 'contact', 'offer-checkout', 'offer-question'];
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const bundle = resolve(process.argv[2] ?? join(root, 'build-api/index.js'));
@@ -62,5 +62,5 @@ if (!programmingModelSet || missing.length > 0) {
 }
 
 for (const [name, type] of registered) console.log(`smoke-api: registered ${name} (${type})`);
-console.log(`smoke-api: OK, ${expected.join(' and ')} registered from ${bundle}`);
+console.log(`smoke-api: OK, ${expected.join(', ')} registered from ${bundle}`);
 process.exit(0);

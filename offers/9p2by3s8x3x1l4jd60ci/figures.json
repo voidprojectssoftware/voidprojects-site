@@ -1,0 +1,324 @@
+{
+	"sites": [
+		{
+			"id": "ftps",
+			"name": "First Touch Payment Solutions",
+			"current": "https://www.firsttouchpaymentsolutions.com/",
+			"preview": "https://firsttouchpaymentsolutions-website.pages.dev/",
+			"measured": "October 28, 2026",
+			"pages": 11,
+			"source": {
+				"commit": "cd97ed3",
+				"run": "docs/discovery/seo-audit/2026-10-28-after-88/result.json"
+			},
+			"rows": [
+				{
+					"label": "Wait before the page shows on a phone",
+					"why": "Your pages take 4.9 s to show on a phone; 0 of 11 are within Google's 2.5 s.",
+					"impact": "People leave slow pages before they find your number.",
+					"fine": "Largest Contentful Paint, mean of 11 pages.",
+					"before": "4.9 s",
+					"after": null,
+					"bar": {
+						"before": 4.855921597272726,
+						"after": null,
+						"max": 5
+					},
+					"target": {
+						"value": 2.5,
+						"label": "Good",
+						"good": "lower",
+						"text": "Good is 2.5 seconds or less",
+						"source": "Google’s Core Web Vitals mark for a good page load (web.dev)."
+					}
+				},
+				{
+					"label": "Speed on a phone, out of 100",
+					"why": "Most people check out a business on a phone first.",
+					"impact": "This is their first impression of you.",
+					"fine": "Google Lighthouse performance score, mean of 11 pages.",
+					"before": "63",
+					"after": null,
+					"bar": {
+						"before": 63,
+						"after": null,
+						"max": 100
+					},
+					"target": {
+						"value": 90,
+						"label": "Good",
+						"good": "higher",
+						"text": "Good is 90 or more",
+						"source": "The green “good” band of Google Lighthouse’s score (Chrome developer docs)."
+					}
+				},
+				{
+					"label": "Ready for Google, out of 100",
+					"why": "3 of 11 pages miss some of the basic checks Google makes before it lists a page.",
+					"fine": "Google Lighthouse SEO score on phones, mean of 11 pages; 100 on 8 of 11.",
+					"before": "98",
+					"after": null,
+					"bar": {
+						"before": 98,
+						"after": null,
+						"max": 100
+					},
+					"target": {
+						"value": 90,
+						"label": "Good",
+						"good": "higher",
+						"text": "Good is 90 or more",
+						"source": "The green “good” band of Google Lighthouse’s score (Chrome developer docs)."
+					}
+				},
+				{
+					"label": "Usable by every visitor, out of 100",
+					"why": "Close, but a scanner found 39 problems, such as links a screen reader cannot name.",
+					"fine": "Google Lighthouse accessibility score on phones, mean of 11 pages; axe-core WCAG 2.2 A and AA failures on desktop, all pages.",
+					"before": "97",
+					"after": null,
+					"bar": {
+						"before": 97,
+						"after": null,
+						"max": 100
+					},
+					"target": {
+						"value": 90,
+						"label": "Good",
+						"good": "higher",
+						"text": "Good is 90 or more",
+						"source": "The green “good” band of Google Lighthouse’s score (Chrome developer docs)."
+					}
+				},
+				{
+					"label": "Pages with a clear outline",
+					"why": "1 of 11 pages has its headings in order.",
+					"impact": "Search engines and AI assistants get a muddled picture of the rest.",
+					"fine": "Headings in order, no skipped levels.",
+					"before": "1 of 11",
+					"after": null,
+					"bar": {
+						"before": 1,
+						"after": null,
+						"max": 11
+					},
+					"target": {
+						"value": 11,
+						"label": "Goal",
+						"good": "higher",
+						"text": "The goal is all 11 pages",
+						"source": "No published benchmark; every page is the natural goal."
+					}
+				},
+				{
+					"label": "Pages with your business details for Google",
+					"why": "Your pages already carry this; the new site keeps it.",
+					"fine": "Structured data (JSON-LD) on the page.",
+					"before": "11 of 11",
+					"after": null,
+					"bar": {
+						"before": 11,
+						"after": null,
+						"max": 11
+					},
+					"target": {
+						"value": 11,
+						"label": "Goal",
+						"good": "higher",
+						"text": "The goal is all 11 pages",
+						"source": "No published benchmark; every page is the natural goal."
+					}
+				}
+			],
+			"currentOnly": true,
+			"ai": null
+		},
+		{
+			"id": "se",
+			"name": "Software Earnings",
+			"current": "https://www.softwareearnings.com/",
+			"preview": "https://softwareearnings-website.pages.dev/",
+			"measured": "November 4, 2026",
+			"pages": 10,
+			"source": {
+				"commit": "00d233e",
+				"run": "docs/discovery/seo-audit/2026-11-04-production/result.json",
+				"aeo": "docs/discovery/aeo/2026-11-04-with-geoctl-every-page"
+			},
+			"rows": [
+				{
+					"label": "Wait before the page shows on a phone",
+					"why": "Visitors see your page in 0.8 s instead of 5.1 s.",
+					"impact": "People leave slow pages before they find your number.",
+					"fine": "Largest Contentful Paint, mean of 10 pages; 0 of 10 pages within 2.5 s today, 10 of 10 rebuilt.",
+					"before": "5.1 s",
+					"after": "0.8 s",
+					"bar": {
+						"before": 5.1386271115,
+						"after": 0.7519790999999999,
+						"max": 6,
+						"lowerIsBetter": true
+					},
+					"target": {
+						"value": 2.5,
+						"label": "Good",
+						"good": "lower",
+						"text": "Good is 2.5 seconds or less",
+						"source": "Google’s Core Web Vitals mark for a good page load (web.dev)."
+					}
+				},
+				{
+					"label": "Speed on a phone, out of 100",
+					"why": "Most people check out a business on a phone first.",
+					"impact": "This is their first impression of you.",
+					"fine": "Google Lighthouse performance score, mean of 10 pages.",
+					"before": "71",
+					"after": "100",
+					"bar": {
+						"before": 71,
+						"after": 100,
+						"max": 100
+					},
+					"target": {
+						"value": 90,
+						"label": "Good",
+						"good": "higher",
+						"text": "Good is 90 or more",
+						"source": "The green “good” band of Google Lighthouse’s score (Chrome developer docs)."
+					}
+				},
+				{
+					"label": "Ready for Google, out of 100",
+					"why": "Nothing basic is missing when Google decides how to list you.",
+					"fine": "Google Lighthouse SEO score on phones, mean of 10 pages; 100 on 0 of 10 today, 10 of 10 rebuilt.",
+					"before": "92",
+					"after": "100",
+					"bar": {
+						"before": 92,
+						"after": 100,
+						"max": 100
+					},
+					"target": {
+						"value": 90,
+						"label": "Good",
+						"good": "higher",
+						"text": "Good is 90 or more",
+						"source": "The green “good” band of Google Lighthouse’s score (Chrome developer docs)."
+					}
+				},
+				{
+					"label": "Usable by every visitor, out of 100",
+					"why": "Customers using a screen reader or large text can read and use every page.",
+					"fine": "Google Lighthouse accessibility score on phones, mean of 10 pages.",
+					"before": "98",
+					"after": "100",
+					"bar": {
+						"before": 98,
+						"after": 100,
+						"max": 100
+					},
+					"target": {
+						"value": 90,
+						"label": "Good",
+						"good": "higher",
+						"text": "Good is 90 or more",
+						"source": "The green “good” band of Google Lighthouse’s score (Chrome developer docs)."
+					}
+				},
+				{
+					"label": "Pages with a clear outline",
+					"why": "Search engines and AI assistants can tell what each page is about.",
+					"fine": "Headings in order, no skipped levels.",
+					"before": "1 of 10",
+					"after": "10 of 10",
+					"bar": {
+						"before": 1,
+						"after": 10,
+						"max": 10
+					},
+					"target": {
+						"value": 10,
+						"label": "Goal",
+						"good": "higher",
+						"text": "The goal is all 10 pages",
+						"source": "No published benchmark; every page is the natural goal."
+					}
+				},
+				{
+					"label": "Pages with your business details for Google",
+					"why": "Kept as it is today: your name, phone and services stay readable to Google.",
+					"fine": "Structured data (JSON-LD) on the page.",
+					"before": "10 of 10",
+					"after": "10 of 10",
+					"bar": {
+						"before": 10,
+						"after": 10,
+						"max": 10
+					},
+					"target": {
+						"value": 10,
+						"label": "Goal",
+						"good": "higher",
+						"text": "The goal is all 10 pages",
+						"source": "No published benchmark; every page is the natural goal."
+					}
+				}
+			],
+			"ai": {
+				"facts": 121,
+				"checks": 216,
+				"rows": [
+					{
+						"label": "Your facts AI assistants can read directly",
+						"why": "AI assistants answer questions about businesses like yours.",
+						"impact": "They can quote your details instead of guessing them.",
+						"fine": "Structured data (JSON-LD). Share of 216 checks of 121 facts.",
+						"before": "under 1%",
+						"after": "38%",
+						"bar": {
+							"before": 0.46296296296296297,
+							"after": 37.5,
+							"max": 100
+						}
+					},
+					{
+						"label": "Your facts readable without running scripts",
+						"why": "Many AI tools do not run scripts; they now see what a visitor sees.",
+						"fine": "Page text with JavaScript off. Share of 216 checks of 121 facts.",
+						"before": "75%",
+						"after": "96%",
+						"bar": {
+							"before": 75.46296296296296,
+							"after": 95.83333333333333,
+							"max": 100
+						}
+					},
+					{
+						"label": "Your facts in the summary written for AI tools",
+						"why": "AI tools get a clean list of your products, people and contact details.",
+						"fine": "llms.txt and markdown versions of each page. Share of 216 checks of 121 facts.",
+						"before": "34%",
+						"after": "99%",
+						"bar": {
+							"before": 34.25925925925926,
+							"after": 98.61111111111111,
+							"max": 100
+						}
+					},
+					{
+						"label": "Independent AI readiness check, out of 100",
+						"why": "Confirms AI crawlers are let in and can find and read the site.",
+						"fine": "geoctl open-source audit; the rebuild as it will run at launch.",
+						"before": "48",
+						"after": "88",
+						"bar": {
+							"before": 48,
+							"after": 88,
+							"max": 100
+						}
+					}
+				]
+			}
+		}
+	]
+}

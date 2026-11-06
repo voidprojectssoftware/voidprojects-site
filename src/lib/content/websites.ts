@@ -99,23 +99,30 @@ export const PRICING: {
 	spoken?: string; // the figure as prose, for PRICING_SUMMARY, when the display form is shorthand
 	body: string;
 	link?: { href: string; label: string };
+	offer: { name: string; usd?: number; monthly?: boolean }; // the JSON-LD Offer; no usd means quoted
 }[] = [
 	{
 		figure: 'Free',
 		body: 'for causes, whenever we can manage it.',
-		link: { href: '/websites/causes', label: 'Building for a cause?' }
+		link: { href: '/websites/causes', label: 'Building for a cause?' },
+		offer: { name: 'Website for a cause', usd: 0 }
 	},
 	{
 		figure: '$25/m',
 		spoken: '$25 a month',
-		body: 'for a static site: business or personal pages that don’t change, with your domain at cost. Already paying for a site? We’ll match what you pay now and take over hosting and upkeep.'
+		body: 'for a static site: business or personal pages that don’t change, with your domain at cost. Already paying for a site? We’ll match what you pay now and take over hosting and upkeep. No build fee. No contract. Cancel any time.',
+		offer: { name: 'Static website', usd: 25, monthly: true }
 	},
 	{
 		figure: 'Quote',
 		body: 'for anything dynamic, like live data, accounts, or bookings, or anything that needs higher reliability or extra care. We price it from what hosting and maintaining it costs us.',
-		link: { href: '/websites?preset=quote#contact', label: 'Ask for a quote' }
+		link: { href: '/websites?preset=quote#contact', label: 'Ask for a quote' },
+		offer: { name: 'Dynamic website' }
 	}
 ];
+
+// The $25/m row, quoted in the /websites head copy.
+export const STATIC_SITE = PRICING.find((p) => p.offer.monthly)!;
 
 // Contact form starters, picked by a link's ?preset= key so the URL stays short and
 // shareable. The form only fills an empty message, and the visitor can edit or clear it.
@@ -209,6 +216,77 @@ export const CAUSES = {
 		'You get the same engineers and the same process as every other site we build.',
 		'If your site needs something that goes above what we can cover in cost, we will tell you up front and talk it through. Never a surprise.'
 	]
+};
+
+// Upkeep and security, included in the price. Every figure and CVE below is cited;
+// the yearly counts are CVEs published per calendar year by the NVD CVE API
+// (pubStartDate/pubEndDate windows, noRejected), queried 2026-11-01.
+export const MAINTENANCE = {
+	title: 'Updates and security are included.',
+	body: [
+		'New security holes are found in software every day, and more each year. Our agents continuously watch security news, the National Vulnerability Database (NVD), and GitHub security advisories.',
+		'When a fix comes out for something your site depends on, we update your site as soon as it is available. An engineer reviews every fix before it goes live. It is part of the price, not an extra.'
+	],
+	counts: {
+		title: 'Reported security flaws (CVEs) per year',
+		source: { label: 'NVD', href: 'https://nvd.nist.gov/developers/vulnerabilities' },
+		note: '48,151 in 2025, more than seven times as many as in 2016.',
+		years: [
+			{ year: 2016, count: 6449 },
+			{ year: 2017, count: 14642 },
+			{ year: 2018, count: 16510 },
+			{ year: 2019, count: 17305 },
+			{ year: 2020, count: 18322 },
+			{ year: 2021, count: 20149 },
+			{ year: 2022, count: 25073 },
+			{ year: 2023, count: 28816 },
+			{ year: 2024, count: 39953 },
+			{ year: 2025, count: 48151 }
+		]
+	},
+	exposures: {
+		title: 'What a self-managed WordPress site faced in 2026',
+		intro: 'A few of the year’s real, published flaws. Each one needed an update to close.',
+		items: [
+			{
+				when: 'April 2026',
+				what: 'cPanel & WHM',
+				body: 'A login bypass let attackers into this hosting control panel without a password. CISA lists it as exploited, with known ransomware use.',
+				links: [
+					{ label: 'CVE-2026-41940', href: 'https://nvd.nist.gov/vuln/detail/CVE-2026-41940' }
+				]
+			},
+			{
+				when: 'July 2026',
+				what: 'WordPress itself',
+				body: 'Two flaws chained together let an attacker with no login run code on default installs of WordPress 6.9 and newer. CISA lists both as exploited.',
+				links: [
+					{ label: 'CVE-2026-63030', href: 'https://nvd.nist.gov/vuln/detail/CVE-2026-63030' },
+					{ label: 'CVE-2026-60137', href: 'https://nvd.nist.gov/vuln/detail/CVE-2026-60137' },
+					{
+						label: 'WordPress 7.0.2',
+						href: 'https://wordpress.org/news/2026/07/wordpress-7-0-2-release/'
+					}
+				]
+			},
+			{
+				when: 'September 2026',
+				what: 'WordPress itself',
+				body: 'A page-template flaw, open to anyone, could lead to running code on some common server and theme setups. The fix went back to every version since 4.7. CISA listed it as exploited three days after it was published.',
+				links: [
+					{ label: 'CVE-2026-87902', href: 'https://nvd.nist.gov/vuln/detail/CVE-2026-87902' },
+					{
+						label: 'WordPress advisory',
+						href: 'https://github.com/WordPress/wordpress-develop/security/advisories/GHSA-7hp8-65ch-5whp'
+					}
+				]
+			}
+		],
+		source: {
+			label: 'CISA Known Exploited Vulnerabilities',
+			href: 'https://www.cisa.gov/known-exploited-vulnerabilities-catalog'
+		}
+	}
 };
 
 // The "how is this possible?" answer.

@@ -38,7 +38,9 @@ const config = {
 			// checkout, fails on that checkout's tsconfig (#35). Each `../x` gains an `x`
 			// twin: Oxc reads the twin from the root; TypeScript resolves it under
 			// .svelte-kit/, where it matches nothing.
+			// offers/ is type-checked and linted with the site but never built by it.
 			config: (tsconfig) => {
+				tsconfig.include.push('../offers/**/*.ts', '../offers/**/*.svelte');
 				const twins = tsconfig.include
 					.filter((pattern) => pattern.startsWith('../'))
 					.map((pattern) => pattern.slice(3));

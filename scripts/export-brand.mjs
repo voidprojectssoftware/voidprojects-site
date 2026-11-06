@@ -27,7 +27,14 @@ function startDevServer() {
 	const child = spawn(
 		'npm',
 		['run', 'dev', '--', '--port', String(PORT), '--strictPort', '--host', 'localhost'],
-		{ cwd: root, shell: true, stdio: ['ignore', 'pipe', 'pipe'] }
+		// Detached so its own process group can be killed whole: npm and the shell sit
+		// between us and Vite, and killing only the top pid leaves Vite running.
+		{
+			cwd: root,
+			shell: true,
+			detached: process.platform !== 'win32',
+			stdio: ['ignore', 'pipe', 'pipe']
+		}
 	);
 	child.stdout.on('data', () => {});
 	child.stderr.on('data', (d) => process.stderr.write(d));
@@ -39,7 +46,7 @@ function killTree(child) {
 	if (process.platform === 'win32') {
 		spawn('taskkill', ['/pid', String(child.pid), '/T', '/F'], { shell: true });
 	} else {
-		child.kill('SIGTERM');
+		process.kill(-child.pid, 'SIGTERM');
 	}
 }
 
@@ -83,6 +90,10 @@ async function main() {
 
 				const el = page.locator('[data-brand-asset]');
 				await el.waitFor({ state: 'visible' });
+				// The dev-only Agentation toolbar is position:fixed and would land in the shot.
+				await page.addStyleTag({
+					content: '#agentation-root, agentation-toolbar { display: none !important; }'
+				});
 				await page.evaluate(() => document.fonts.ready);
 				await page.waitForTimeout(350); // let the starfield paint its single frame
 

@@ -42,22 +42,32 @@ export function composeContactEmail(
 	to: string
 ): EmailMessage {
 	const name = oneLine(submission.name);
+	const offer = submission.offer && {
+		id: submission.offer.id,
+		business: oneLine(submission.offer.business)
+	};
 	return {
 		senderAddress: from,
 		recipients: { to: [{ address: to }] },
 		replyTo: [{ address: submission.email }],
 		content: {
-			subject: `Website request from ${name} (${submission.kind})`,
+			subject: offer
+				? `Offer question from ${name}, ${offer.business} (offer ${offer.id})`
+				: `Website request from ${name} (${submission.kind})`,
 			plainText: [
 				`Name: ${name}`,
 				`Email: ${submission.email}`,
-				`Kind: ${submission.kind}`,
+				...(offer
+					? [`Business: ${offer.business}`, `Offer: ${offer.id}`]
+					: [`Kind: ${submission.kind}`]),
 				'',
 				'Message:',
 				submission.message,
 				'',
 				'--',
-				'Sent by the voidprojects.ai /websites contact form. Reply to answer the visitor directly.'
+				offer
+					? 'Sent from the voidprojects.ai thank-you page after Stripe Checkout; name, email and business come from the Checkout Session. Reply to answer the customer directly.'
+					: 'Sent by the voidprojects.ai /websites contact form. Reply to answer the visitor directly.'
 			].join('\n')
 		}
 	};

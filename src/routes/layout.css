@@ -3,6 +3,9 @@
 @import 'shadcn-svelte/tailwind.css';
 @import '@fontsource-variable/inter';
 
+/* Offer pages build separately (scripts/build-offers.mjs); keep their classes out of the site CSS. */
+@source not '../../offers';
+
 @custom-variant dark (&:is(.dark *));
 @plugin '@tailwindcss/forms';
 @plugin '@tailwindcss/typography';
