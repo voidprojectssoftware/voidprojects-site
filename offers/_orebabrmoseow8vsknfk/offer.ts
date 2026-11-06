@@ -1,0 +1,92 @@
+// Howard's Tinting (Atoka, TN): hosting and upkeep for the rebuilt site at
+// howards-tinting-website.pages.dev. A draft: the leading "_" on this folder keeps it
+// out of the build until the owner sets the price and `sent` (howards-tinting-website
+// issue #8). Facts are from that repo at commit 1b6e233: docs/discovery/ and its
+// 2026-11-06 baseline runs, cited per concern below.
+import { defineOffer } from '$lib/offers/offer.js';
+
+export default defineOffer({
+	prospect: 'Howard’s Tinting', // the storefront sign's name, src/config/site.ts `site.name`
+	// OWNER: set on the day the link is sent. `sent` is a required ISO date in OfferInput
+	// (src/lib/offers/offer.ts), so this is a placeholder (the day the draft was written),
+	// not a send date. Expiry (sent + 30 days) and the 90-day purge count from it.
+	sent: '2026-11-06',
+	previewUrl: 'https://howards-tinting-website.pages.dev',
+	concerns: [
+		{
+			// docs/discovery/web-presence.md, "The old website: howardstinting.com (dead)": HTTP
+			// 409 "error code: 1001", last working Wayback capture 2025-04-24, and Google,
+			// Instagram, BBB, Birdeye and both Nextdoor pages still link to it.
+			// docs/discovery/seo-audit/2026-11-06-baseline/notes.md, "What a visitor and a
+			// crawler get": every address answers Cloudflare's "DNS resolution error" or fails TLS.
+			title: 'Your website no longer opens',
+			detail:
+				'howardstinting.com shows an error page instead of your shop, and has since some time after April 24, 2025, the last day an archive recorded it working. Google, Instagram, BBB, Birdeye and Nextdoor all still send people there.',
+			impact: 'Someone who taps “Website” on your Google listing finds an error, not your shop.'
+		},
+		{
+			// docs/discovery/business-profile.md, "Hours (list every version, pick none)", and
+			// open-questions.md item 6: seven versions (Google, Birdeye, eTrailer, two Nextdoor
+			// pages, GrayTV Local, the old site's last footer). Saturday is closed (eTrailer,
+			// Nextdoor 2, old site 2024 to 2025), 8 to 1 (Nextdoor 1, GrayTV) or 8 to 5 (Birdeye).
+			title: 'Your hours say different things in different places',
+			detail:
+				'Seven places list your hours, your old website among them, and they do not agree. Saturday shows as closed, 8 to 1, or 8 to 5, depending on where someone looks.',
+			impact: 'A customer cannot tell whether you are open on a Saturday.'
+		},
+		{
+			// docs/discovery/aeo/2026-11-06-baseline/assistants/summary.md, "search-sonnet":
+			// hours.saturday runs 1 to 3 each answer "Closed per the official site" (or
+			// "Official site: closed"), citing https://www.howardstinting.com/.
+			title: 'AI assistants repeat your old website’s hours',
+			detail:
+				'Asked about your shop, an assistant that searches the web gave Saturday as closed “per the official site” all three times, quoting the website that no longer opens.',
+			impact: 'Whatever your old site last said is what people are told, right or wrong.'
+		},
+		{
+			// docs/discovery/web-presence.md (DNS: nameservers at GoDaddy, www still pointing
+			// at Net Driven) with open-questions.md item 2: "email for the domain is live on
+			// Microsoft 365 behind Proofpoint, so any DNS change must keep the MX and TXT
+			// records"; business-profile.md, "Email host".
+			title: 'Your email depends on the same domain',
+			detail:
+				'Your howardstinting.com email is still live. It runs on the same domain settings as the website, so pointing the domain at a new site carelessly would stop your email.',
+			impact: 'Mail sent to you could stop arriving.'
+		}
+	],
+	plans: [
+		{
+			id: 'website',
+			label: 'Your new website, hosted and looked after',
+			summary: 'Hosting, security and upkeep for the new Howard’s Tinting website.', // also Stripe Checkout's line description
+			// Each from the published terms, src/routes/terms/+page.svelte (/terms), by section
+			// anchor: #what-you-get (first three lines), #who-owns-what (domain, files,
+			// portfolio), #cancelling-and-refunds (two lines), #late-or-failed-payments and
+			// #billing (late fees, renewal reminder).
+			features: [
+				'No build fee and no minimum term',
+				'Hosting, security updates and routine upkeep for as long as you subscribe',
+				'Small changes (text, photos, hours, prices) at no extra charge, within reason',
+				'Your domain stays yours, and you can move it away from us any time',
+				'Monthly: cancel any time, no cancellation fee',
+				'Annual: full refund within 15 days of the first payment, less the domain’s registration fee',
+				'Your site’s files are yours to take, free, for a year after you leave, to host anywhere',
+				'No late fees, and a reminder about 14 days before each annual renewal',
+				'In our portfolio only if you say yes'
+			],
+			// PLACEHOLDER pending the owner's price (howards-tinting-website issue #8): the
+			// published static plan, src/lib/content/websites.ts PRICING "$25/m", "with your
+			// domain at cost ... No build fee. No contract." Annual defaults to 10 x monthly: 25000.
+			monthly: 2500
+		}
+	],
+	// FIGURES (part 2 of issue #8): figures.mjs and figures.json, computed from
+	// howards-tinting-website's committed audit runs once its /site-comparison/ PR (#6)
+	// merges; page.svelte marks where they render.
+	contact: {
+		name: 'Chris Howard',
+		email: 'chris@howardstinting.com', // howards-tinting-website src/config/site.ts `site.email`, labelled Supplied
+		phone: '(901) 406-8259', // src/config/site.ts `site.phone.display`, confirmed
+		note: 'Chris Howard is the name on Instagram, the old site and the email address; BBB names Phillip Howard as owner. Who approves the site is open question 3 in docs/discovery/open-questions.md. The email is from the old site (2014 to 2025) and Nextdoor; no 2025-or-later first-party source shows it (open question 7), so confirm the best address on first contact.'
+	}
+});
