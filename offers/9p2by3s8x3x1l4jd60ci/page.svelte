@@ -6,6 +6,8 @@
 	import { onMount } from 'svelte';
 	import { ENGINEER } from '$lib/content/websites.js';
 	import {
+		AcceptedPlan,
+		AcceptedState,
 		ConcernsList,
 		OfferGate,
 		PlanPicker,
@@ -14,6 +16,7 @@
 		initialSelection
 	} from '$lib/offers/blocks/index.js';
 	import {
+		acceptedPlan,
 		formatAmount,
 		formatDate,
 		priceFor,
@@ -146,6 +149,11 @@
 	// svelte-ignore state_referenced_locally
 	let selection = $state(initialSelection(offer));
 
+	// Once accepted (offer.ts `accepted`), the sign-up parts give way to the accepted
+	// plan and a billing link; the rest stays as the record of what was proposed.
+	let accepted = $derived(acceptedPlan(offer));
+	let firstName = ENGINEER.name.split(' ')[0];
+
 	let plan = $derived(offer.plans[0]);
 	let monthly = $derived(priceFor(plan, 'month')?.amount ?? 0);
 	let yearly = $derived(priceFor(plan, 'year')?.amount ?? 0);
@@ -271,7 +279,7 @@
 <svelte:head>
 	<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 	{@html THEME_SCRIPT}
-	<title>Hosting proposal for {offer.prospect} | Void Projects</title>
+	<title>Hosting {accepted ? 'plan' : 'proposal'} for {offer.prospect} | Void Projects</title>
 </svelte:head>
 
 {#snippet planDetails(p: Plan, interval: Interval)}
@@ -503,24 +511,44 @@
 				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 				{@html voidMark}
 			</span>
-			<p class="eyebrow">Proposal</p>
+			<p class="eyebrow">{accepted ? 'Your hosting plan' : 'Proposal'}</p>
 			<h1 id="offer-title" class="text-[2rem] leading-tight min-[30rem]:text-4xl sm:text-5xl">
-				Hosting and maintenance proposal for your two websites
+				{accepted
+					? 'Hosting and maintenance for your two websites'
+					: 'Hosting and maintenance proposal for your two websites'}
 			</h1>
-			<p class="lead max-w-2xl text-lg text-(--offer-muted)">
-				Larry, we propose to host, secure and maintain both of your websites. We have rebuilt
-				Software Earnings and designed a new site for First Touch Payment Solutions. We keep both
-				fast and easy for search engines and AI assistants to read. Below is where your sites are
-				today and where they can be. Accept the offer when you are ready, or reply with any
-				questions.
-			</p>
-			<p class="price">
-				<strong>{money(monthly)}</strong> a month for both sites, or {money(yearly)} a year
-			</p>
-			<p class="cta">
-				<a class="accept" href="#offer-plans" onclick={toPlans}>Accept offer</a>
-				<a href="mailto:{ENGINEER.email}">Questions? Email {ENGINEER.name.split(' ')[0]}</a>
-			</p>
+			{#if accepted}
+				<p class="lead max-w-2xl text-lg text-(--offer-muted)">
+					Larry, thank you for choosing Void Projects. We have rebuilt Software Earnings and
+					designed a new site for First Touch Payment Solutions, and we will host, secure and
+					maintain both. Below is the proposal you accepted, kept for your records.
+				</p>
+				<AcceptedState
+					class="status"
+					{offer}
+					portalUrl={context.billingPortalUrl}
+					planLabel="Both sites"
+				>
+					{#snippet actions()}
+						<a class="ask" href="mailto:{ENGINEER.email}">Questions? Email {firstName}</a>
+					{/snippet}
+				</AcceptedState>
+			{:else}
+				<p class="lead max-w-2xl text-lg text-(--offer-muted)">
+					Larry, we propose to host, secure and maintain both of your websites. We have rebuilt
+					Software Earnings and designed a new site for First Touch Payment Solutions. We keep both
+					fast and easy for search engines and AI assistants to read. Below is where your sites are
+					today and where they can be. Accept the offer when you are ready, or reply with any
+					questions.
+				</p>
+				<p class="price">
+					<strong>{money(monthly)}</strong> a month for both sites, or {money(yearly)} a year
+				</p>
+				<p class="cta">
+					<a class="accept" href="#offer-plans" onclick={toPlans}>Accept offer</a>
+					<a href="mailto:{ENGINEER.email}">Questions? Email {firstName}</a>
+				</p>
+			{/if}
 		</section>
 
 		<section class="engineer" aria-labelledby="offer-engineer">
@@ -652,42 +680,46 @@
 			</ul>
 		</section>
 
-		<section class="grid gap-8" aria-label="Accept the offer">
-			<PlanPicker
-				{offer}
-				bind:selection
-				title="Monthly or a year ahead"
-				renewalNote={false}
-				details={planDetails}
-			/>
-			<div class="longer">
-				<p class="font-semibold">Want to pay further ahead?</p>
-				<p class="text-(--offer-muted)">
-					Same rate, two months off each year: {money(yearly * 2)} for two years, {money(
-						yearly * 3
-					)}
-					for three. Reply to the message that brought you here, or write to
-					<a href="mailto:hello@voidprojects.ai">hello@voidprojects.ai</a>, and we will set it up.
-				</p>
-			</div>
-			<div class="grid items-center gap-8 sm:grid-cols-[1fr_auto]">
-				<SignUpButton offerId={offer.id} {selection} endpoint={context.checkoutEndpoint}
-					>Accept offer</SignUpButton
-				>
-				<QrCode
-					qr={context.qr}
-					url={context.url}
-					title="Accept on your phone"
-					fg={QR_INK}
-					bg="#fff"
+		{#if accepted}
+			<AcceptedPlan {offer} title="What your plan includes" details={planDetails} />
+		{:else}
+			<section class="grid gap-8" aria-label="Accept the offer">
+				<PlanPicker
+					{offer}
+					bind:selection
+					title="Monthly or a year ahead"
+					renewalNote={false}
+					details={planDetails}
 				/>
-			</div>
-			<p class="renewal">
-				Your plan renews automatically each month, or each year on the annual plan, until you
-				cancel. Cancel any time from your billing page. Your sites stay up until the end of the
-				period you paid for, and we email you a reminder before each annual renewal.
-			</p>
-		</section>
+				<div class="longer">
+					<p class="font-semibold">Want to pay further ahead?</p>
+					<p class="text-(--offer-muted)">
+						Same rate, two months off each year: {money(yearly * 2)} for two years, {money(
+							yearly * 3
+						)}
+						for three. Reply to the message that brought you here, or write to
+						<a href="mailto:hello@voidprojects.ai">hello@voidprojects.ai</a>, and we will set it up.
+					</p>
+				</div>
+				<div class="grid items-center gap-8 sm:grid-cols-[1fr_auto]">
+					<SignUpButton offerId={offer.id} {selection} endpoint={context.checkoutEndpoint}
+						>Accept offer</SignUpButton
+					>
+					<QrCode
+						qr={context.qr}
+						url={context.url}
+						title="Accept on your phone"
+						fg={QR_INK}
+						bg="#fff"
+					/>
+				</div>
+				<p class="renewal">
+					Your plan renews automatically each month, or each year on the annual plan, until you
+					cancel. Cancel any time from your billing page. Your sites stay up until the end of the
+					period you paid for, and we email you a reminder before each annual renewal.
+				</p>
+			</section>
+		{/if}
 	</OfferGate>
 
 	<dialog
@@ -707,7 +739,11 @@
 	<footer
 		class="flex flex-wrap items-center justify-between gap-3 border-t border-(--offer-border) pt-6 text-sm text-(--offer-muted)"
 	>
-		<p>Offer open through {formatDate(offer.expires)}.</p>
+		{#if accepted}
+			<p>Proposal sent {formatDate(offer.sent)}, accepted {formatDate(accepted.on)}.</p>
+		{:else}
+			<p>Offer open through {formatDate(offer.expires)}.</p>
+		{/if}
 		<!-- The standard footer badge, as docs/websites/how-to/add-the-footer-badge.md gives it. -->
 		<a
 			href="https://voidprojects.ai/websites"
@@ -1184,6 +1220,9 @@
 		.hero .cta {
 			order: 2;
 		}
+		.hero :global(.status) {
+			order: 1;
+		}
 		.hero .lead {
 			order: 3;
 			font-size: 1rem;
@@ -1197,6 +1236,7 @@
 	}
 	/* Standalone links get a 44px tap height; links inside sentences stay inline. */
 	.cta a,
+	.ask,
 	.links a,
 	footer > a {
 		display: inline-flex;

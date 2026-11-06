@@ -35,6 +35,7 @@ function entryPlugin(id, ssr) {
 				`import input from ${JSON.stringify(offerFile(id, 'offer.ts'))};`,
 				`import * as offers from ${JSON.stringify(join(lib, 'offers/offer.ts'))};`,
 				`import { publicAudit } from ${JSON.stringify(join(lib, 'offers/audit.ts'))};`,
+				`export { billingPortalUrl } from ${JSON.stringify(join(lib, 'offers/stripe.ts'))};`,
 				`import { SITE_ORIGIN } from ${JSON.stringify(join(lib, 'seo/site.ts'))};`,
 				`export { analyticsBeacon } from ${JSON.stringify(join(lib, 'analytics/beacon.ts'))};`,
 				`export const offer = offers.resolveOffer(${JSON.stringify(id)}, input);`,
@@ -176,12 +177,18 @@ async function buildOffer(id, builtAt) {
 	const ssr = await import(
 		`${pathToFileURL(join(ssrRoot, id, 'render.mjs')).href}?t=${Date.now()}`
 	);
-	const { offer, offers, SITE_ORIGIN, analyticsBeacon } = ssr;
+	const { offer, offers, SITE_ORIGIN, analyticsBeacon, billingPortalUrl } = ssr;
 	const url = new URL(offers.offerPath(id), SITE_ORIGIN).href;
 	const props = {
 		offer: offers.publicOffer(offer),
 		audit: await readAudit(id, ssr.publicAudit),
-		context: { url, qr: qrMatrix(url), builtAt, checkoutEndpoint: CHECKOUT_ENDPOINT }
+		context: {
+			url,
+			qr: qrMatrix(url),
+			builtAt,
+			checkoutEndpoint: CHECKOUT_ENDPOINT,
+			billingPortalUrl: billingPortalUrl() // read once per build, as /thanks does
+		}
 	};
 
 	await build(viteConfig(id, false));
@@ -212,3 +219,6 @@ for (const { offer, offers } of expired) {
 	);
 }
 if (built.length && !expired.length) console.log('offers: none expired');
+for (const { offer } of built.filter(({ offer }) => offer.accepted)) {
+	console.log(`offers: accepted ${offer.id} ${offer.prospect} on ${offer.accepted.on}`);
+}
