@@ -2,7 +2,7 @@
 
 # Add a prospect offer page
 
-An offer is a private, unlisted page at `voidprojects.ai/o/<id>/`. Each one is a folder under `offers/`, built into `build/o/<id>/` by `scripts/build-offers.mjs` when `npm run build` runs. `offers/9p2by3s8x3x1l4jd60ci/` (First Touch Payment Solutions) is a working example. It uses `ConcernsList`, `PlanPicker`, `SignUpButton`, `QrCode` and `OfferGate`, but not `AuditComparison` or add-ons; every block and the custom properties it reads are listed in `src/lib/offers/blocks/index.ts`.
+An offer is a private, unlisted page at `voidprojects.ai/o/<id>/`. Each one is a folder under `offers/`, built into `build/o/<id>/` by `scripts/build-offers.mjs` when `npm run build` runs. `offers/9p2by3s8x3x1l4jd60ci/` (First Touch Payment Solutions) is a working example. It uses `ConcernsList`, `PlanPicker`, `SignUpButton`, `QrCode`, `OfferGate`, and since it was accepted `AcceptedState` and `AcceptedPlan`, but not `AuditComparison` or add-ons; every block and the custom properties it reads are listed in `src/lib/offers/blocks/index.ts`.
 
 ## Why offers are not SvelteKit routes
 
@@ -34,6 +34,24 @@ npm run preview:offers     # serves build/ on port 5281; sign-up needs STRIPE_SE
 ```
 
 Open `http://localhost:5281/o/<id>/`. `npm run preview` does not show offers: it serves only SvelteKit's output.
+
+## When an offer is accepted
+
+Once the prospect has subscribed, mark the offer accepted in its `offer.ts`, for example:
+
+```ts
+accepted: { on: '2026-11-06', planId: 'both-sites', interval: 'month' },
+```
+
+`on` is the date they subscribed, `planId` one of the offer's plans and `interval` one that plan is sold on; the build fails otherwise. Put no customer details or Stripe ids here: Stripe holds those.
+
+Then rebuild and deploy. On an accepted offer:
+
+- The page never shows the expired notice, and the build stops listing it as expired.
+- `/api/offer-checkout` answers 409 for any new checkout, so a stale tab cannot start a second subscription.
+- The `AcceptedState` block shows the accepted date, plan and price and a **Manage billing** button to the Customer Portal (`context.billingPortalUrl`, from `PUBLIC_STRIPE_PORTAL_URL`; without it, a billing email link). The `AcceptedPlan` block shows the plan's included items, the renewal line and a link to `/terms`.
+
+The page decides what else changes. Check it with `acceptedPlan(offer)` (or `offer.accepted`): drop the `PlanPicker`, `SignUpButton` and `QrCode`, any prepay or expiry wording, and reword sentences that ask them to accept. The First Touch page shows both states in one file. Give it a `<title>` that says it is their plan, not a proposal.
 
 ## Expiry and clean-up
 

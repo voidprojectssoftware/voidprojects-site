@@ -58,6 +58,7 @@ export default defineOffer({
 			monthly: 27500 // annual defaults to 10 x monthly: 275000
 		}
 	],
+	accepted: { on: '2026-11-06', planId: 'both-sites', interval: 'month' },
 	contact: {
 		name: 'Larry Thornton',
 		phone: '(901) 492-1726',

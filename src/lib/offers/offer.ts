@@ -47,6 +47,14 @@ export interface OfferContact {
 	note?: string; // anything about following up, for example the best time to call
 }
 
+// The prospect took the offer. No customer details or Stripe ids: billing lives in
+// Stripe, and the page links to the Customer Portal for changes.
+export interface Acceptance {
+	on: string; // ISO date the subscription started
+	planId: string; // one of the offer's plans
+	interval: Interval; // must be an interval that plan is sold on
+}
+
 export interface OfferInput {
 	prospect: string; // business name, shown on the page
 	sent: string; // ISO date the link was sent; expiry and retention count from it
@@ -56,6 +64,7 @@ export interface OfferInput {
 	concerns: Concern[];
 	plans: PlanInput[];
 	addOns?: AddOnInput[];
+	accepted?: Acceptance; // set once they sign up: the page shows the accepted plan and checkout refuses a second one
 	contact: OfferContact; // who to follow up with; server side only, never sent to the page
 }
 
@@ -90,6 +99,7 @@ export interface Offer {
 	plans: Plan[];
 	addOns: AddOn[];
 	intervals: Interval[]; // every interval at least one plan is sold on, in INTERVALS order
+	accepted: Acceptance | null;
 	contact: OfferContact;
 }
 
@@ -138,7 +148,8 @@ export function resolveOffer(id: string, input: OfferInput): Offer {
 	}
 	for (const [key, value] of [
 		['sent', input.sent],
-		['expires', input.expires]
+		['expires', input.expires],
+		['accepted.on', input.accepted?.on]
 	] as const) {
 		if (value !== undefined && !ISO_DATE.test(value)) {
 			throw new Error(`${where}: ${key} must be an ISO date (YYYY-MM-DD)`);
@@ -163,6 +174,19 @@ export function resolveOffer(id: string, input: OfferInput): Offer {
 	}));
 	const sold = new Set(plans.flatMap((p) => p.prices.map((price) => price.interval)));
 
+	const accepted = input.accepted ?? null;
+	if (accepted) {
+		const plan = plans.find((p) => p.id === accepted.planId);
+		if (!plan)
+			throw new Error(`${where}: accepted.planId "${accepted.planId}" is not one of its plans`);
+		if (!INTERVALS.includes(accepted.interval) || !priceFor(plan, accepted.interval)) {
+			throw new Error(
+				`${where}: accepted.interval "${accepted.interval}" is not sold on plan ${plan.id}`
+			);
+		}
+		if (accepted.on < input.sent) throw new Error(`${where}: accepted.on is before sent`);
+	}
+
 	return {
 		id,
 		prospect: input.prospect,
@@ -174,6 +198,7 @@ export function resolveOffer(id: string, input: OfferInput): Offer {
 		plans,
 		addOns,
 		intervals: INTERVALS.filter((i) => sold.has(i)),
+		accepted: accepted && { on: accepted.on, planId: accepted.planId, interval: accepted.interval },
 		contact: input.contact
 	};
 }
@@ -183,9 +208,24 @@ export function publicOffer(offer: Offer): PublicOffer {
 	return rest;
 }
 
-// The offer stands through the whole of its `expires` day, UTC.
-export function isExpired(offer: Pick<Offer, 'expires'>, now: Date): boolean {
+// The offer stands through the whole of its `expires` day, UTC. An accepted offer
+// never expires: its page stays the record of the plan they signed up for.
+export function isExpired(
+	offer: Pick<Offer, 'expires'> & { accepted?: Acceptance | null },
+	now: Date
+): boolean {
+	if (offer.accepted) return false;
 	return now.getTime() >= Date.parse(offer.expires) + DAY_MS;
+}
+
+/** The accepted plan and its price on the accepted interval; null for an offer not yet taken. */
+export function acceptedPlan(
+	offer: Pick<Offer, 'plans' | 'accepted'>
+): { plan: Plan; price: Price; on: string } | null {
+	const accepted = offer.accepted;
+	const plan = accepted && offer.plans.find((p) => p.id === accepted.planId);
+	const price = plan && priceFor(plan, accepted.interval);
+	return accepted && plan && price ? { plan, price, on: accepted.on } : null;
 }
 
 export function retentionEnds(offer: Pick<Offer, 'sent'>): string {
