@@ -54,6 +54,7 @@
 		{#if busy}Opening checkout...{:else if children}{@render children()}{:else}Sign up{/if}
 	</button>
 	<p id="offer-signup-status" class:failed role="status">{message}</p>
+	<p class="terms">By continuing you agree to our <a href="/terms">Terms of Service</a>.</p>
 </div>
 
 <style>
@@ -87,6 +88,14 @@
 	}
 	p:empty {
 		display: none;
+	}
+	.terms {
+		font-size: 0.875rem;
+	}
+	.terms a {
+		color: inherit;
+		text-decoration: underline;
+		text-underline-offset: 3px;
 	}
 	.failed {
 		color: var(--offer-bad, #b42318);

@@ -69,6 +69,8 @@ ${FLOW.loopLabel}
 - [Home](${absoluteUrl(PAGES.home.path)}): ${PAGES.home.description}
 - [Blog](${absoluteUrl(PAGES.blog.path)}): ${PAGES.blog.description}
 - [Our brand](${absoluteUrl(PAGES.brand.path)}): ${PAGES.brand.description}
+- [Terms of Service](${absoluteUrl(PAGES.terms.path)}): ${PAGES.terms.description}
+- [Privacy Policy](${absoluteUrl(PAGES.privacy.path)}): ${PAGES.privacy.description}
 
 ## Sites we have built
 
