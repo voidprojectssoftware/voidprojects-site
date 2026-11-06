@@ -23,7 +23,7 @@ if (!ftpsRepo || !seRepo) {
 // The runs each /site-comparison/ page reads: FTPS names its run in the page;
 // Software Earnings takes the newest run by when it says it was taken, which its own
 // newestRun() and takenAt pick here too.
-const FTPS_AUDIT = 'docs/discovery/seo-audit/2026-10-28-after-88/result.json';
+const FTPS_AUDIT = 'docs/discovery/seo-audit/2026-11-04-after-224/result.json';
 
 const json = (repo, file) => JSON.parse(readFileSync(join(repo, file), 'utf8'));
 const load = (repo, file) => import(pathToFileURL(join(repo, file)).href);
@@ -160,85 +160,6 @@ function headline(comparison) {
 	];
 }
 
-// The current site alone, for First Touch: its rebuild so far follows Hibu's design and
-// is being replaced by an original one (that repo's ADR 0030), so nothing of the rebuild
-// is shown. Same measurements and benchmark lines; the why-lines speak to today.
-function currentOnly(comparison) {
-	const h = comparison.headline;
-	const n = comparison.pageCount;
-	const structured = check(comparison, 'Business details for search engines');
-	const headings = check(comparison, 'Headings in order, no skipped levels');
-	const of = (text) => text.replace(/ pages$/, '');
-	const one = (label, why, fine, before, value, max, target) =>
-		row(label, why, fine, before, null, { before: value, after: null, max }, target);
-	const missSeo = n - h.seoPerfectPages.before;
-	return [
-		one(
-			'Wait before the page shows on a phone',
-			[
-				`Your pages take ${seconds(h.lcpSeconds.before)} to show on a phone; ${h.lcpGood.before} of ${n} are within Google's 2.5 s.`,
-				'People leave slow pages before they find your number.'
-			],
-			`Largest Contentful Paint, mean of ${n} pages.`,
-			seconds(h.lcpSeconds.before),
-			h.lcpSeconds.before,
-			Math.ceil(h.lcpSeconds.before),
-			{ ...LCP_GOOD }
-		),
-		one(
-			'Speed on a phone, out of 100',
-			[
-				'Most people check out a business on a phone first.',
-				'This is their first impression of you.'
-			],
-			`Google Lighthouse performance score, mean of ${n} pages.`,
-			String(h.performance.before),
-			h.performance.before,
-			100,
-			LIGHTHOUSE_GOOD
-		),
-		one(
-			'Ready for Google, out of 100',
-			`${missSeo} of ${n} pages miss some of the basic checks Google makes before it lists a page.`,
-			`Google Lighthouse SEO score on phones, mean of ${n} pages; 100 on ${h.seoPerfectPages.before} of ${n}.`,
-			String(h.seo.before),
-			h.seo.before,
-			100,
-			LIGHTHOUSE_GOOD
-		),
-		one(
-			'Usable by every visitor, out of 100',
-			`Close, but a scanner found ${h.axeDesktopNodes.before} problems, such as links a screen reader cannot name.`,
-			`Google Lighthouse accessibility score on phones, mean of ${n} pages; axe-core WCAG 2.2 A and AA failures on desktop, all pages.`,
-			String(h.accessibilityScore.before),
-			h.accessibilityScore.before,
-			100,
-			LIGHTHOUSE_GOOD
-		),
-		one(
-			'Pages with a clear outline',
-			[
-				`${ofPages(headings.before)} of ${n} pages has its headings in order.`,
-				'Search engines and AI assistants get a muddled picture of the rest.'
-			],
-			'Headings in order, no skipped levels.',
-			of(headings.before),
-			ofPages(headings.before),
-			n,
-			allPages(n)
-		),
-		one(
-			'Pages with your business details for Google',
-			'Your pages already carry this; the new site keeps it.',
-			'Structured data (JSON-LD) on the page.',
-			of(structured.before),
-			ofPages(structured.before),
-			n,
-			allPages(n)
-		)
-	];
-}
-
 const ftpsLib = await load(ftpsRepo, 'src/lib/site-comparison.ts');
 const seLib = await load(seRepo, 'src/lib/site-comparison.ts');
 const seAgents = await load(seRepo, 'src/lib/agent-readiness.ts');
@@ -304,8 +225,7 @@ const figures = {
 			measured: ftps.method.beforeDate,
 			pages: ftps.pageCount,
 			source: { commit: commit(ftpsRepo), run: FTPS_AUDIT },
-			rows: currentOnly(ftps),
-			currentOnly: true,
+			rows: headline(ftps),
 			ai: null
 		},
 		{
