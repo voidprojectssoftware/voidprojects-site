@@ -119,12 +119,12 @@ const pagesFine = `${n.before} current ${n.before === 1 ? 'page' : 'pages'} agai
 
 // A check counted over pages, drawn as the share of each side's pages that pass it,
 // since the two sides do not have the same number of pages.
-const shareRow = (label, why, name) => {
+const shareRow = (label, why, name, what) => {
 	const c = check(name);
 	return row(
 		label,
 		why,
-		`${c.what ?? name} Measured on ${pagesFine}.`,
+		`${what ?? c.what ?? name} Measured on ${pagesFine}.`,
 		c.before,
 		c.after,
 		{ before: 100 * c.share.before, after: 100 * c.share.after, max: 100 },
@@ -197,9 +197,13 @@ const rows = [
 		'A description for search results'
 	),
 	shareRow(
-		'Pages with your business details for Google',
-		'Your name, address, phone and hours, in the form Google reads for its business panel.',
-		'Business details for search engines'
+		'Pages with details Google can read directly',
+		// Not "your business details": the check counts any structured data block, and the
+		// current pages it finds are product pages with Square's Product block, not the
+		// studio's name, address or hours (seo-accessibility-baseline.md finding 11).
+		'Facts about you and what you sell, in the structured form Google reads for its results.',
+		'Business details for search engines',
+		'Structured data (JSON-LD) of any kind on the page.'
 	)
 ];
 
@@ -269,12 +273,27 @@ const aiRows = [
 		)
 ].filter(Boolean);
 
+// Shop pages the new site builds from the preview catalog's filler until Square is
+// connected (pottery-haven-website #36): compareSites() marks each such pair with the
+// audit config's `filler` sentence, and its /site-comparison/ labels them and says none
+// of the products are the studio's (src/content/site-comparison.ts `filler`). The offer
+// shows no page or product names, only averages, so it keeps the pairs, as that page
+// does, and says the same in its own words wherever the figures are shown.
+const fillerPages = new Set(audit.pairs.filter((p) => p.filler).map((p) => p.rebuildPath)).size;
+const filler = fillerPages
+	? {
+			pages: fillerPages,
+			note: `${fillerPages} of the ${n.after} new pages measured are shop pages. Until the shop is connected to your Square catalog they show made-up sample products with Latin names and prices nobody charges, none of them yours, so for those pages the figures compare the page itself, not the products on it.`
+		}
+	: null;
+
 const figures = {
 	name: 'Pottery Haven',
 	current: `https://${audit.method.beforeHost}/`,
 	measured: audit.method.beforeDate,
 	pages: n,
-	notRebuilt: audit.notRebuilt.length, // current pages (the store's among them) the new site has no page for in this run
+	notRebuilt: audit.notRebuilt.length, // current pages the new site has no page for in this run
+	filler,
 	source: {
 		commit: commit(),
 		run: auditRun.path,

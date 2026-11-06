@@ -62,6 +62,8 @@
 	const width = (value: number, max: number) => `${Math.max(1.5, (100 * value) / max)}%`;
 	const at = (value: number, max: number) => `min(${(100 * value) / max}%, 100% - 2px)`;
 	const skipped = figures.notRebuilt;
+	// Set when shop pages in the run show the preview's sample products (figures.mjs).
+	const filler = figures.filler as { pages: number; note: string } | null;
 
 	// What the plan keeps running, beyond hosting: pottery-haven-website ADR 0007
 	// (lines 30-33: products from the studio's Square catalog, Square-hosted checkout, card
@@ -227,15 +229,25 @@
 				<span><span class="swatch now"></span>{NOW}</span>
 				<span><span class="swatch next"></span>{NEXT}</span>
 			</p>
+			{#if filler}<p class="filler">{filler.note}</p>{/if}
 			{@render tiles(figures.rows)}
 			{#if figures.ai}
 				<h3 class="text-xl">What AI assistants can read about you</h3>
 				{@render tiles(figures.ai.rows)}
+				{#if filler}
+					<p class="fine">
+						The shop pages’ sample products are not yours, so facts about a product itself, such as
+						a party package’s price, are not on them. The new site states the party packages on its
+						Parties page.
+					</p>
+				{/if}
 			{/if}
 			<p class="fine">
 				Measured {figures.measured} as a phone loads the pages: {figures.pages.before} pages of your current
 				site against the {figures.pages.after} new pages that replace them.{skipped > 0
-					? ` ${skipped} more pages of your current site have no new page in this measurement yet, so they are not counted.`
+					? skipped === 1
+						? ' One more page of your current site has no new page in this measurement, so it is not counted.'
+						: ` ${skipped} more pages of your current site have no new page in this measurement, so they are not counted.`
 					: ''}
 			</p>
 		</section>
@@ -519,6 +531,14 @@
 	}
 	.next-val {
 		color: var(--offer-fg);
+	}
+	.filler {
+		margin: 0;
+		padding: 0.75rem 1rem;
+		border-radius: 1rem;
+		background: #e2b89f; /* Haven teal's notice fill, with the navy ink on it */
+		color: var(--offer-fg);
+		font-size: 0.9375rem;
 	}
 	.callout {
 		color: var(--offer-callout);
