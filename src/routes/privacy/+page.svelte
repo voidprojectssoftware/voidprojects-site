@@ -46,7 +46,7 @@
 		},
 		{
 			name: 'Google (YouTube)',
-			role: 'Plays embedded videos on the blog posts that include one'
+			role: 'Plays embedded videos, only after you press play'
 		}
 	];
 </script>
@@ -109,10 +109,10 @@
 		your city name. We don't store your location or send it to our servers.
 	</p>
 	<p>
-		<strong>Embedded videos:</strong> some blog posts include YouTube videos, embedded in YouTube's privacy-enhanced
-		mode (youtube-nocookie.com). When you open one of those posts, the video player loads from YouTube
-		straight away, before you press play, and Google may then collect information (such as your IP address
-		and browser details) under its own privacy policy.
+		<strong>Embedded videos:</strong> some blog posts include YouTube videos. Until you press play, you
+		see an image hosted by us and nothing is requested from YouTube. When you press play, the video loads
+		from YouTube's privacy-enhanced mode (youtube-nocookie.com), and Google may then collect information
+		under its own privacy policy.
 	</p>
 	<p>
 		<strong>If we prepare an offer for you (prospects):</strong> your business's public information
@@ -216,8 +216,8 @@
 		treat you differently for asking.
 	</p>
 	<p>
-		You can also say no to the sky location prompt, skip the blog posts that embed videos, and block
-		cookies in your browser without losing anything on our site.
+		You can also say no to the sky location prompt, choose not to play videos, and block cookies in
+		your browser without losing anything on our site.
 	</p>
 	<p>
 		<strong>Do Not Track and Global Privacy Control:</strong> because we don't track you across sites
