@@ -218,8 +218,8 @@
 		why: string;
 		fine: string;
 		before: string;
-		after: string | null; // null where only the current site is shown (First Touch)
-		bar: { before: number; after: number | null; max: number };
+		after: string;
+		bar: { before: number; after: number; max: number };
 		impact?: string; // the consequence, shown as a callout after `why`
 		target?: { value: number; label: string; good: string; text: string; source: string }; // benchmark line, see figures.mjs
 	}
@@ -227,8 +227,8 @@
 	const width = (value: number, max: number) => `${Math.max(1.5, (100 * value) / max)}%`;
 	const at = (value: number, max: number) => `min(${(100 * value) / max}%, 100% - 2px)`;
 
-	// "About 5 seconds" and "under 2 seconds": figures.json wait rows, 4.9 s and 5.1 s
-	// today, 1.8 s and 0.8 s rebuilt. The rest restates the concerns in offer.ts.
+	// "About 5 seconds" and "under a second": figures.json wait rows, 5.6 s and 5.1 s
+	// today, 0.8 s on both rebuilds. The rest restates the concerns in offer.ts.
 	const STAY = [
 		'Pages take about 5 seconds to show on a phone',
 		'An insurance advert where your own words should be',
@@ -237,7 +237,7 @@
 		'Dozens of outside scripts on every page'
 	];
 	const MOVE = [
-		'Pages that show in under 2 seconds on a phone, as Software Earnings’ rebuild does', // the one callout in this list
+		'Pages that show in under a second on a phone, as both rebuilds do', // the one callout in this list
 		'Your own words on every screen',
 		'Contact details every search engine and assistant can read',
 		'Clean pages, and someone checking they stay that way',
@@ -342,16 +342,8 @@
 	{/if}
 {/snippet}
 
-{#snippet devices(id: string, name: string, preview: string, building: boolean)}
-	<!-- A finished rebuild links out; a design still in progress is shown, not linked. -->
-	<svelte:element
-		this={building ? 'div' : 'a'}
-		class="preview"
-		class:building-preview={building}
-		href={building ? undefined : preview}
-		rel={building ? undefined : 'noreferrer'}
-	>
-		{#if building}<span class="ribbon">Under construction</span>{/if}
+{#snippet devices(id: string, name: string, preview: string)}
+	<a class="preview" href={preview} rel="noreferrer">
 		<span class="frame">
 			<span class="chrome" aria-hidden="true">
 				<span class="dots"><span></span><span></span><span></span></span>
@@ -364,9 +356,7 @@
 					`shots/${id}-desktop-1280.webp`
 				)} 1280w"
 				sizes="(min-width: 56rem) 760px, calc(100vw - 5rem)"
-				alt={building
-					? `In-progress preview of the new ${name} site on a computer; the design will change`
-					: `The rebuilt ${name} home page on a computer`}
+				alt="The rebuilt {name} home page on a computer"
 				width="1280"
 				height="800"
 				loading="lazy"
@@ -376,41 +366,14 @@
 		<span class="phone">
 			<img
 				src={asset(`shots/${id}-phone.webp`)}
-				alt={building
-					? `In-progress preview of the new ${name} site on a phone`
-					: `The rebuilt ${name} home page on a phone`}
+				alt="The rebuilt {name} home page on a phone"
 				width="300"
 				height="503"
 				loading="lazy"
 				decoding="async"
 			/>
 		</span>
-	</svelte:element>
-{/snippet}
-
-{#snippet underConstruction()}
-	<div class="building">
-		<span class="building-mark" aria-hidden="true">
-			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-			{@html voidMark}
-		</span>
-		<div class="grid gap-3">
-			<p class="eyebrow">Under construction</p>
-			<h3>A new First Touch site, designed from scratch</h3>
-			<p>
-				Hibu, your current host, designed the template your site is built on. Its design and wording
-				may not be yours to carry over, so we are building First Touch an original design. <strong
-					class="callout"
-					>It keeps every fact your site states today: your products, people, phone numbers and
-					address.</strong
-				>
-			</p>
-			<p>
-				It gets the same speed, search and accessibility work you can see on the Software Earnings
-				rebuild below.
-			</p>
-		</div>
-	</div>
+	</a>
 {/snippet}
 
 {#snippet info(text: string, name: string)}
@@ -445,17 +408,15 @@
 							></span>{/if}</span
 					>
 					<span class="val">{row.before}</span>
-					{#if row.after !== null && row.bar.after !== null}
-						<span class="who">{NEXT}</span>
-						<span class="track"
-							><span class="fill next" style:width={width(row.bar.after, row.bar.max)}
-							></span>{#if row.target}<span
-									class="line"
-									style:left={at(row.target.value, row.bar.max)}
-								></span>{/if}</span
-						>
-						<span class="val next-val">{row.after}</span>
-					{/if}
+					<span class="who">{NEXT}</span>
+					<span class="track"
+						><span class="fill next" style:width={width(row.bar.after, row.bar.max)}
+						></span>{#if row.target}<span
+								class="line"
+								style:left={at(row.target.value, row.bar.max)}
+							></span>{/if}</span
+					>
+					<span class="val next-val">{row.after}</span>
 					{#if row.target}
 						{@const end = row.target.value >= row.bar.max}
 						<span class="marks">
@@ -558,10 +519,9 @@
 			</h1>
 			{#if accepted}
 				<p class="lead max-w-2xl text-lg text-(--offer-muted)">
-					Larry, thank you for choosing Void Projects. We will host, secure and maintain both of
-					your websites: Software Earnings, which we have rebuilt, and First Touch Payment
-					Solutions, whose new design we are building. Below is the proposal you accepted, kept for
-					your records.
+					Larry, thank you for choosing Void Projects. We have rebuilt Software Earnings and
+					designed a new site for First Touch Payment Solutions, and we will host, secure and
+					maintain both. Below is the proposal you accepted, kept for your records.
 				</p>
 				<AcceptedState
 					class="status"
@@ -576,10 +536,10 @@
 			{:else}
 				<p class="lead max-w-2xl text-lg text-(--offer-muted)">
 					Larry, we propose to host, secure and maintain both of your websites. We have rebuilt
-					Software Earnings, and we are building a new design for First Touch Payment Solutions. We
-					keep both fast and easy for search engines and AI assistants to read. Below is where your
-					sites are today and where they can be. Accept the offer when you are ready, or reply with
-					any questions.
+					Software Earnings and designed a new site for First Touch Payment Solutions. We keep both
+					fast and easy for search engines and AI assistants to read. Below is where your sites are
+					today and where they can be. Accept the offer when you are ready, or reply with any
+					questions.
 				</p>
 				<p class="price">
 					<strong>{money(monthly)}</strong> a month for both sites, or {money(yearly)} a year
@@ -607,8 +567,8 @@
 				</h2>
 				<p>
 					<strong class="callout"
-						>{ENGINEER.name.split(' ')[0]} built your new Software Earnings site, is building the new
-						First Touch site, and is your contact for anything you need.</strong
+						>{ENGINEER.name.split(' ')[0]} built your new Software Earnings and First Touch sites, and
+						is your contact for anything you need.</strong
 					>
 				</p>
 				<p class="promise">
@@ -627,36 +587,23 @@
 			{#each figures.sites as site (site.id)}
 				<section class="site grid grid-cols-1 gap-6" aria-labelledby="site-{site.id}">
 					{@render info(
-						site.currentOnly
-							? `Measured ${site.measured} on ${site.pages} pages of your current site, as a phone loads them.`
-							: `Measured ${site.measured} on ${site.pages} pages of both versions, as a phone loads them.`,
+						`Measured ${site.measured} on ${site.pages} pages of both versions, as a phone loads them.`,
 						'When and how these were measured'
 					)}
 					<div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2 pr-8">
 						<h2 id="site-{site.id}" class="site-name">{site.name}</h2>
-						{#if !site.currentOnly}
-							<div class="links flex flex-wrap items-center gap-x-5 text-sm font-semibold">
-								<a href={site.preview} rel="noreferrer">Open the rebuilt site</a>
-								<a href="{site.preview}site-comparison/" rel="noreferrer">Full comparison</a>
-							</div>
-						{/if}
+						<div class="links flex flex-wrap items-center gap-x-5 text-sm font-semibold">
+							<a href={site.preview} rel="noreferrer">Open the rebuilt site</a>
+							<a href="{site.preview}site-comparison/" rel="noreferrer">Full comparison</a>
+						</div>
 					</div>
 
-					{#if site.currentOnly}
-						{@render underConstruction()}
-						{@render devices(site.id, site.name, site.preview, true)}
-						<h3 class="today">Your current site today</h3>
-						<p class="legend">
-							<span><span class="swatch now"></span>{NOW}: your current site</span>
-						</p>
-					{:else}
-						{@render devices(site.id, site.name, site.preview, false)}
+					{@render devices(site.id, site.name, site.preview)}
 
-						<p class="legend">
-							<span><span class="swatch now"></span>{NOW}: your current site</span>
-							<span><span class="swatch next"></span>{NEXT}: the site we rebuilt</span>
-						</p>
-					{/if}
+					<p class="legend">
+						<span><span class="swatch now"></span>{NOW}: your current site</span>
+						<span><span class="swatch next"></span>{NEXT}: the site we rebuilt</span>
+					</p>
 					{@render tiles(site.rows)}
 
 					{#if site.ai}
@@ -1357,64 +1304,6 @@
 
 	/* Each site is its own section on the page background: a rule and space above,
 	   not a card around the tiles. */
-	.building {
-		display: flex;
-		align-items: flex-start;
-		gap: 1.25rem;
-		padding: 1.5rem;
-		border: 1px dashed oklch(0.6534 0.1876 301.62 / 0.45);
-		border-radius: 1.5rem;
-		background: linear-gradient(to bottom right, oklch(0.6534 0.1876 301.62 / 0.1), transparent);
-	}
-	.building h3 {
-		margin: 0;
-		font-size: 1.375rem;
-	}
-	.building-mark {
-		flex: none;
-		width: 3rem;
-		height: 3rem;
-	}
-	.building-mark :global(svg) {
-		display: block;
-		width: 100%;
-		height: 100%;
-	}
-	@media (max-width: 29.99rem) {
-		.building {
-			flex-direction: column;
-			gap: 0.75rem;
-			padding: 1.25rem;
-		}
-	}
-	/* In-progress preview: a solid label on top so it never reads as a finished site. */
-	.building-preview .frame img,
-	.building-preview .phone img {
-		opacity: 0.85;
-	}
-	.ribbon {
-		position: absolute;
-		z-index: 1;
-		top: 3.25rem; /* under the browser chrome */
-		left: 50%;
-		transform: translateX(-50%);
-		padding: 0.375rem 1rem;
-		border-radius: 999px;
-		background: var(--void-night);
-		color: #fff;
-		font-size: 0.875rem;
-		font-weight: 700;
-		letter-spacing: 0.04em;
-		white-space: nowrap;
-	}
-	:global([data-theme='dark']) .ribbon {
-		background: #fff;
-		color: var(--void-night);
-	}
-	.today {
-		margin: 0.5rem 0 0;
-		font-size: 1.25rem;
-	}
 	.site-name {
 		margin: 0;
 		font-size: 1.75rem;
