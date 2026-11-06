@@ -1,0 +1,67 @@
+/* Pottery Haven's "Haven teal" design system, the one its rebuild is built on
+   (pottery-haven-website src/design/chosen.ts names it, assumed; tokens from
+   src/design/systems/haven-teal/index.ts at commit 1111ac7): a white page, the logo's
+   pale gray-teal (#bfcdcd) and the site's navy (#2c435c) for every word, the teal-black
+   band (#314e4e) with the logo's field of dots, and the darkened terracotta (#8f3f1c) as
+   the one warm note. Soft 1.5rem cards and pill controls. Light only: the system has no
+   dark mode. Kalam, Cabin and Yesteryear are that system's own self-hosted fonts (SIL OFL,
+   licences beside them in public/fonts/), declared by page.svelte from the page URL,
+   because a font URL in this file would carry the offer id into the CSS. */
+@import 'tailwindcss' source('.');
+@source not './public';
+
+:root {
+	--ht-ground-raised: #eff5f5;
+	--ht-ink-muted: #314e4e;
+	--ht-rule: #707575;
+	--ht-pale: #bfcdcd;
+	--ht-panel: #e1e8e8;
+	--ht-band: #314e4e;
+	--ht-on-band: #eff5f5;
+	--ht-on-band-muted: #c6d1d1;
+	--ht-blue: #316f88;
+	--ht-terracotta: #8f3f1c;
+	--ht-display: 'Kalam', 'Comic Sans MS', ui-rounded, sans-serif;
+	--ht-hand: 'Yesteryear', 'Brush Script MT', cursive;
+	--offer-bg: #ffffff;
+	--offer-fg: #2c435c;
+	--offer-muted: var(--ht-ink-muted);
+	--offer-surface: var(--ht-ground-raised);
+	--offer-border: rgb(44 67 92 / 0.2);
+	--offer-accent: #2c435c;
+	--offer-accent-fg: #ffffff;
+	--offer-good: var(--ht-blue);
+	--offer-warn: #856045;
+	--offer-bad: var(--ht-terracotta);
+	--offer-radius: 1.5rem;
+	--offer-callout: var(--ht-terracotta);
+	color-scheme: light;
+}
+
+body {
+	margin: 0;
+	background: var(--offer-bg);
+	color: var(--offer-fg);
+	font-family: 'Cabin', ui-sans-serif, system-ui, sans-serif;
+	font-size: 1.0625rem;
+	line-height: 1.55;
+}
+
+h1,
+h2,
+h3 {
+	font-family: var(--ht-display);
+	font-weight: 700;
+	letter-spacing: 0.01em;
+	line-height: 1.15;
+}
+
+h2 {
+	margin-bottom: 0.75rem;
+	font-size: clamp(1.5rem, 1.3rem + 0.8vw, 1.9rem);
+}
+
+/* 44px tap targets for the plan picker's Monthly / Annual toggle on this page. */
+:root .toggle button[role='radio'] {
+	min-height: 2.75rem;
+}

@@ -1,0 +1,203 @@
+{
+	"name": "Pottery Haven",
+	"current": "https://www.potteryhaven.com/",
+	"measured": "November 6, 2026",
+	"pages": {
+		"before": 8,
+		"after": 7
+	},
+	"notRebuilt": 1,
+	"filler": {
+		"pages": 5,
+		"note": "5 of the 7 new pages measured are shop pages. Until the shop is connected to your Square catalog they show made-up sample products with Latin names and prices nobody charges, none of them yours, so for those pages the figures compare the page itself, not the products on it."
+	},
+	"source": {
+		"commit": "876f94e",
+		"run": "docs/discovery/seo-audit/2026-11-06-after-38/result.json",
+		"aeo": {
+			"live": "docs/discovery/aeo/2026-11-06",
+			"launch": "docs/discovery/aeo/2026-11-06-after-38"
+		}
+	},
+	"rows": [
+		{
+			"label": "Wait before the page shows on a phone",
+			"why": "Visitors see your page in 0.9 s instead of 15.2 s.",
+			"impact": "People leave a slow page before they reach your shop or your party booking.",
+			"fine": "Largest Contentful Paint, mean of 8 current pages against the 7 new pages that replace them; 0 of 8 within 2.5 s today, 7 of 7 rebuilt.",
+			"before": "15.2 s",
+			"after": "0.9 s",
+			"bar": {
+				"before": 15.2056705625,
+				"after": 0.9016621285714286,
+				"max": 16,
+				"lowerIsBetter": true
+			},
+			"target": {
+				"value": 2.5,
+				"label": "Good",
+				"good": "lower",
+				"text": "Good is 2.5 seconds or less",
+				"source": "Google’s Core Web Vitals mark for a good page load (web.dev)."
+			}
+		},
+		{
+			"label": "Speed on a phone, out of 100",
+			"why": "Most people look up a studio on their phone first.",
+			"impact": "This is their first impression of you.",
+			"fine": "Google Lighthouse performance score, mean of 8 current pages against the 7 new pages that replace them.",
+			"before": "23",
+			"after": "99",
+			"bar": {
+				"before": 23,
+				"after": 99,
+				"max": 100
+			},
+			"target": {
+				"value": 90,
+				"label": "Good",
+				"good": "higher",
+				"text": "Good is 90 or more",
+				"source": "The green “good” band of Google Lighthouse’s score (Chrome developer docs)."
+			}
+		},
+		{
+			"label": "Data a phone downloads per page",
+			"why": "Less to download means the page opens faster on a weak signal and costs visitors less data.",
+			"fine": "Total transfer size, mean of 8 current pages against the 7 new pages that replace them; 129 files a page today, 8 rebuilt.",
+			"before": "2,503 KB",
+			"after": "79 KB",
+			"bar": {
+				"before": 2503,
+				"after": 79,
+				"max": 2503,
+				"lowerIsBetter": true
+			}
+		},
+		{
+			"label": "Usable by every visitor, out of 100",
+			"why": "An accessibility scanner found 90 problems on these pages today, and none on the new ones.",
+			"fine": "Google Lighthouse accessibility score on phones, mean of 8 current pages against the 7 new pages that replace them; axe-core WCAG 2.2 A and AA failures on desktop.",
+			"before": "90",
+			"after": "100",
+			"bar": {
+				"before": 90,
+				"after": 100,
+				"max": 100
+			},
+			"target": {
+				"value": 90,
+				"label": "Good",
+				"good": "higher",
+				"text": "Good is 90 or more",
+				"source": "The green “good” band of Google Lighthouse’s score (Chrome developer docs)."
+			}
+		},
+		{
+			"label": "Ready for Google, out of 100",
+			"why": "Nothing basic is missing when Google decides how to list you.",
+			"fine": "Google Lighthouse SEO score on phones, mean of 8 current pages against the 7 new pages that replace them.",
+			"before": "91",
+			"after": "100",
+			"bar": {
+				"before": 91,
+				"after": 100,
+				"max": 100
+			},
+			"target": {
+				"value": 90,
+				"label": "Good",
+				"good": "higher",
+				"text": "Good is 90 or more",
+				"source": "The green “good” band of Google Lighthouse’s score (Chrome developer docs)."
+			}
+		},
+		{
+			"label": "Pages a visitor can zoom in on",
+			"why": "Some visitors need to pinch to enlarge the text before they can read it.",
+			"fine": "Pinching to enlarge text on a phone, which some visitors need to read it. Measured on 8 current pages against the 7 new pages that replace them.",
+			"before": "None",
+			"after": "All 7 pages",
+			"bar": {
+				"before": 0,
+				"after": 100,
+				"max": 100
+			},
+			"target": {
+				"value": 100,
+				"label": "Goal",
+				"good": "higher",
+				"text": "The goal is every page",
+				"source": "No published benchmark; every page is the natural goal."
+			}
+		},
+		{
+			"label": "Pages with a summary for Google results",
+			"why": "The short description Google may show under your name.",
+			"fine": "The short summary Google may show under the page’s title. Measured on 8 current pages against the 7 new pages that replace them.",
+			"before": "None",
+			"after": "All 7 pages",
+			"bar": {
+				"before": 0,
+				"after": 100,
+				"max": 100
+			},
+			"target": {
+				"value": 100,
+				"label": "Goal",
+				"good": "higher",
+				"text": "The goal is every page",
+				"source": "No published benchmark; every page is the natural goal."
+			}
+		},
+		{
+			"label": "Pages with details Google can read directly",
+			"why": "Facts about you and what you sell, in the structured form Google reads for its results.",
+			"fine": "Structured data (JSON-LD) of any kind on the page. Measured on 8 current pages against the 7 new pages that replace them.",
+			"before": "3 of 8 pages",
+			"after": "All 7 pages",
+			"bar": {
+				"before": 37.5,
+				"after": 100,
+				"max": 100
+			},
+			"target": {
+				"value": 100,
+				"label": "Goal",
+				"good": "higher",
+				"text": "The goal is every page",
+				"source": "No published benchmark; every page is the natural goal."
+			}
+		}
+	],
+	"ai": {
+		"facts": 56,
+		"rows": [
+			{
+				"label": "Your facts readable without running scripts",
+				"why": "Your current pages draw every word with a script, and many AI tools and crawlers do not run scripts.",
+				"impact": "They now see what a visitor sees: your hours, address and party packages.",
+				"fine": "Page text with JavaScript off. Share of 85 checks of 56 facts about the studio, on the same pages.",
+				"before": "7%",
+				"after": "81%",
+				"bar": {
+					"before": 7.0588235294117645,
+					"after": 81.17647058823529,
+					"max": 100
+				}
+			},
+			{
+				"label": "Your facts AI assistants can read directly",
+				"why": "AI assistants answer questions about studios like yours, and can quote your details instead of guessing them.",
+				"fine": "Structured data (JSON-LD). Share of 85 checks of 56 facts about the studio, on the same pages.",
+				"before": "0%",
+				"after": "39%",
+				"bar": {
+					"before": 0,
+					"after": 38.8235294117647,
+					"max": 100
+				}
+			}
+		]
+	}
+}
