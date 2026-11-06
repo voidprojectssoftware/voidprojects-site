@@ -766,8 +766,12 @@
 		fill: #fff;
 		pointer-events: none;
 	}
-	:global([data-theme='dark']) .stars {
-		display: block;
+	/* Desktop only: on phones the text spans the full width, so every star sits behind
+	   it, and the slice scaling of a portrait viewport enlarges the dots. */
+	@media (min-width: 40rem) {
+		:global([data-theme='dark']) .stars {
+			display: block;
+		}
 	}
 	/* Phones: the lockup takes the full width (its logos wrap to two rows below 40rem)
 	   and the theme toggle sits on its own row under it; side by side from 40rem. */
