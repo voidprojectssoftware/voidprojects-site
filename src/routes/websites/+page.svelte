@@ -256,10 +256,19 @@
 								{/if}
 							</div>
 							<p class="text-sm leading-relaxed text-foreground/65">{site.blurb}</p>
-							<span
-								class="mt-auto pt-1 text-sm font-medium wrap-anywhere text-foreground/80 group-hover:text-primary"
-								>Visit {site.host} ↗</span
-							>
+							<div class="mt-auto flex min-h-9 items-center justify-between gap-4 pt-1">
+								<span
+									class="text-sm font-medium wrap-anywhere text-foreground/80 group-hover:text-primary"
+									>Visit {site.host} ↗</span
+								>
+								{#if site.free}
+									<span
+										class="grid size-8 shrink-0 place-items-center rounded-xl bg-primary/20 text-primary"
+									>
+										<HandHeart class="size-5" aria-hidden="true" />
+									</span>
+								{/if}
+							</div>
 						</div>
 					</GlassCard>
 				</a>
