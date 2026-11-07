@@ -1,6 +1,7 @@
 <script lang="ts">
 	import './theme.css';
 	import { ENGINEER } from '$lib/content/websites.js';
+	import figures from './figures.json';
 	import {
 		ConcernsList,
 		OfferGate,
@@ -55,8 +56,57 @@
 		heading.focus({ preventScroll: true });
 	}
 
+	// A card from figures.json, which figures.mjs computes with howards-tinting-website's
+	// own comparison code; `before` is that page's "Did not load" wherever the old site
+	// has no figure (`hasFigure` false), and then no bar is drawn for it.
+	interface Card {
+		title: string;
+		before: string;
+		after: string;
+		note: string;
+		hasFigure: boolean;
+		bar?: { before: number | null; after: number | null; max: number };
+		target?: { value: number; label: string; good: string; text: string; source: string };
+	}
+	const glance: Card[] = figures.glance.cards;
+	const aiCards: Card[] = figures.ai.cards;
+	const pct = (value: number, max: number) => `${Math.min(100, (100 * value) / max)}%`;
+
 	const QR_INK = '#1f1a14'; // the sign band's lettering, dark on white so phones read it
 </script>
+
+{#snippet cards(list: Card[])}
+	<ul class="cards">
+		{#each list as card (card.title)}
+			<li class="card">
+				<p class="card-title">{card.title}</p>
+				<dl class="pair">
+					<div class="side">
+						<dt>{figures.sides.before}</dt>
+						<dd class="val" class:none={!card.hasFigure}>{card.before}</dd>
+					</div>
+					<div class="side">
+						<dt>{figures.sides.after}</dt>
+						<dd class="val after">{card.after}</dd>
+						{#if card.bar && card.bar.after !== null}
+							<span class="track" aria-hidden="true"
+								><span class="fill" style:width={pct(card.bar.after, card.bar.max)}
+								></span>{#if card.target}<span
+										class="line"
+										style:left={pct(card.target.value, card.bar.max)}
+									></span>{/if}</span
+							>
+							{#if card.target}
+								<span class="mark">{card.target.text}</span>
+							{/if}
+						{/if}
+					</div>
+				</dl>
+				<p class="fine">{card.note}</p>
+			</li>
+		{/each}
+	</ul>
+{/snippet}
 
 <svelte:head>
 	<!-- eslint-disable-next-line svelte/no-at-html-tags -->
@@ -85,10 +135,11 @@
 				before you decide anything. We would host it, keep it secure and up to date, and make your
 				changes. Below is what we found about your web presence today, and what the plan includes.
 			</p>
-			<p>
+			<p class="links">
 				<a class="preview" href={offer.previewUrl} rel="noreferrer"
 					>See your new site at {previewHost}</a
 				>
+				<a href={figures.comparison} rel="noreferrer">Your old site and the new one, compared</a>
 			</p>
 			<!-- websites.ts PRICING "$25/m": "with your domain at cost ... No build fee. No contract." -->
 			<p class="price">
@@ -121,10 +172,36 @@
 			</div>
 		</section>
 
-		<!-- FIGURES (part 2 of howards-tinting-website issue #8): the measured comparison of
-		     the old site and the rebuild renders here, from figures.json, which figures.mjs
-		     computes from that repo's committed audit runs once its /site-comparison/ PR (#6)
-		     merges. Model: offers/9p2by3s8x3x1l4jd60ci/figures.mjs. -->
+		<section class="grid gap-6" aria-labelledby="offer-figures">
+			<div class="grid gap-2">
+				<p class="eyebrow">Measured</p>
+				<h2 id="offer-figures">Your website today, and the new one</h2>
+				<p class="max-w-2xl text-(--offer-muted)">
+					We ran the same tests on both, as a phone loads them: your current site on
+					{figures.measured.before}, the new site’s {figures.measured.pages} pages on
+					{figures.measured.after}. Where your current site has no figure, it is because it did not
+					load.
+				</p>
+			</div>
+			{@render cards(glance)}
+			{#if figures.glance.failedNote}
+				<p class="fine max-w-2xl">{figures.glance.failedNote}</p>
+			{/if}
+
+			<div class="grid gap-3">
+				<h3 class="sub">What AI assistants can find out about your shop</h3>
+				{#if figures.ai.today}<p class="max-w-2xl">{figures.ai.today}</p>{/if}
+				{#if figures.ai.hours}<p class="max-w-2xl">{figures.ai.hours}</p>{/if}
+				<p class="max-w-2xl text-(--offer-muted)">{figures.ai.hoursAfter}</p>
+				{@render cards(aiCards)}
+			</div>
+
+			<p>
+				<a class="preview" href={figures.comparison} rel="noreferrer"
+					>Every figure, page by page, on the full comparison</a
+				>
+			</p>
+		</section>
 
 		<ConcernsList concerns={offer.concerns} title="What we found" />
 
@@ -276,6 +353,107 @@
 	.engineer-name {
 		margin: 0;
 		font-size: 1.75rem;
+	}
+	.links {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.25rem 1.5rem;
+	}
+	.sub {
+		margin: 0.5rem 0 0;
+		font-family: var(--sign-display);
+		font-size: 1.5rem;
+		font-weight: 800;
+		text-transform: uppercase;
+		line-height: 1.1;
+	}
+	.cards {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+		gap: 1rem;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+	.card {
+		display: grid;
+		align-content: start;
+		gap: 0.75rem;
+		padding: 1rem 1.125rem;
+		border: 1px solid var(--offer-border);
+		border-top: 6px solid var(--sign-red);
+		border-radius: var(--offer-radius);
+		background: var(--offer-surface);
+	}
+	.card-title {
+		margin: 0;
+		font-size: 1.0625rem;
+		font-weight: 700;
+		line-height: 1.3;
+	}
+	.pair {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 0.75rem;
+		margin: 0;
+	}
+	.side {
+		display: grid;
+		align-content: start;
+		gap: 0.25rem;
+	}
+	.side dt {
+		font-size: 0.8125rem;
+		font-weight: 600;
+		color: var(--offer-muted);
+	}
+	.val {
+		margin: 0;
+		font-family: var(--sign-display);
+		font-size: 1.875rem;
+		font-weight: 800;
+		line-height: 1.05;
+		font-variant-numeric: tabular-nums;
+	}
+	.val.none {
+		font-size: 1.25rem;
+		font-style: italic;
+		font-weight: 700;
+		color: var(--offer-muted);
+	}
+	.val.after {
+		color: var(--sign-red);
+	}
+	/* The new site's bar on the card's scale, with the published benchmark as a dark
+	   tick; the benchmark is spelled out under it rather than drawn as a label. */
+	.track {
+		position: relative;
+		display: block;
+		height: 0.5rem;
+		margin-top: 0.25rem;
+		background: #e4e2df;
+	}
+	.fill {
+		display: block;
+		height: 100%;
+		background: var(--sign-red);
+	}
+	.line {
+		position: absolute;
+		top: -0.25rem;
+		bottom: -0.25rem;
+		width: 2px;
+		margin-left: -1px;
+		background: var(--sign-gold-ink);
+	}
+	.mark {
+		font-size: 0.8125rem;
+		color: var(--offer-muted);
+	}
+	.fine {
+		margin: 0;
+		font-size: 0.875rem;
+		color: var(--offer-muted);
 	}
 	.renewal {
 		max-width: 42rem;

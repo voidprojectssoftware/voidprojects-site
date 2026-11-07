@@ -80,9 +80,9 @@ export default defineOffer({
 			monthly: 2500
 		}
 	],
-	// FIGURES (part 2 of issue #8): figures.mjs and figures.json, computed from
-	// howards-tinting-website's committed audit runs once its /site-comparison/ PR (#6)
-	// merges; page.svelte marks where they render.
+	// Figures: figures.json beside this file, computed by figures.mjs from
+	// howards-tinting-website's committed runs with that repo's own comparison code, so the
+	// page shows what its /site-comparison/ page shows (issue #8, part 2).
 	contact: {
 		name: 'Chris Howard',
 		email: 'chris@howardstinting.com', // howards-tinting-website src/config/site.ts `site.email`, labelled Supplied
