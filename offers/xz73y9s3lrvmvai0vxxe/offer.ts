@@ -7,12 +7,15 @@
 import { defineOffer } from '$lib/offers/offer.js';
 
 export default defineOffer({
-	prospect: 'Di Donna Studio', // site.businessName, confirmed by her on /questions/ (4 September 2026)
+	prospect: 'Di Donna Studio', // site.businessName, confirmed by her answer of 4 September 2026
 	// OWNER MUST SET `sent` to the day the link goes to Angela. This is a placeholder,
 	// the day the page was built (2026-11-06), chosen so an unchanged deploy expires
 	// early (2026-12-06) rather than staying open indefinitely. Not a real send date.
 	sent: '2026-11-06',
 	previewUrl: 'https://didonnastudio.com/',
+	// Two concerns, told once, in the page's "what changes" section. The third idea,
+	// Elleebana's sign-off, is the page's own section (page.svelte, ELLEEBANA), so it
+	// is not repeated here.
 	concerns: [
 		{
 			// src/config/services.ts header: every row of the salon menu was read off her
@@ -33,22 +36,14 @@ export default defineOffer({
 			detail:
 				'Before didonnastudio.com there was no website at an address of your own, with your services, hours and location on it, for search engines to list.',
 			impact: 'Anyone searching could only reach you through another company’s platform.'
-		},
-		{
-			// .claude/skills/elleebana-trainer-requirements/SKILL.md: Elleebana sign off a
-			// trainer partly on her website (their requirements email, confirmed).
-			// docs/process/handoff.md, 2026-10-22: "There is still no class on it" (Booksy).
-			title: 'Nowhere for your Elleebana training to live',
-			detail:
-				'Elleebana check a trainer’s own website before they sign her off, and your Booksy listing carries no classes.',
-			impact: 'Without a site of your own, there was nothing for that sign-off to look at.'
 		}
 	],
 	plans: [
 		{
 			id: 'studio-site',
 			label: 'Your site, hosted and looked after',
-			summary: 'Hosting, security and upkeep for didonnastudio.com.', // also Stripe Checkout's line description
+			summary:
+				'Hosting, security, upkeep and changes for didonnastudio.com, including work with Elleebana.', // also Stripe Checkout's line description
 			// Each from the published terms, https://voidprojects.ai/terms
 			// (src/routes/terms/+page.svelte, updated 2026-11-05), by section anchor:
 			// #what-you-get (no build fee, no minimum term), #who-owns-what (content,
@@ -59,6 +54,9 @@ export default defineOffer({
 			// is already in SHOWCASE in src/lib/content/websites.ts. The services
 			// themselves are in the page's covers section, not repeated here.
 			features: [
+				// The owner's promise (PR #102 feedback, 2026-11-06), not a /terms line: it is
+				// broader than #adding-features and outlasts #changes. See the PR body.
+				'Elleebana and anyone else your site must satisfy, handled for you as long as you stay',
 				'No build fee and no minimum term',
 				'Your words and photos stay yours',
 				'Your site files are yours to take, free, if you ever leave, to host anywhere',
@@ -75,8 +73,8 @@ export default defineOffer({
 		}
 	],
 	contact: {
-		name: 'Angela Di Donna', // site.name, confirmed by her on /questions/ (4 September 2026)
+		name: 'Angela Di Donna', // site.name, confirmed by her answer of 4 September 2026
 		phone: '(901) 833-0204',
-		note: 'Owner of Di Donna Studio (trades on Booksy and Facebook as Di Donna Colour Studio). Phone is evidenced, not confirmed: published on her Facebook page and in her Booksy booking note (site.ts contact.phone), and she has not said she wants it used. Her only published email is a personal Gmail she has asked to replace with one in her business name (site.ts contact.email, /questions/ "business-email"), so it is left out here; confirm the best address with her.'
+		note: 'Owner of Di Donna Studio (trades on Booksy and Facebook as Di Donna Colour Studio). Phone is evidenced, not confirmed: published on her Facebook page and in her Booksy booking note (site.ts contact.phone), and she has not said she wants it used. Her only published email is a personal Gmail she has asked to replace with one in her business name (site.ts contact.email), so it is left out here; confirm the best address with her.'
 	}
 });

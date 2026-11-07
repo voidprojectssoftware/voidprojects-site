@@ -7,7 +7,6 @@
 	import {
 		AcceptedPlan,
 		AcceptedState,
-		ConcernsList,
 		OfferGate,
 		PlanPicker,
 		QrCode,
@@ -92,74 +91,63 @@
 	// svelte-ignore state_referenced_locally
 	const host = new URL(offer.previewUrl).host;
 
-	// What she already has, each read from the didonnastudio-website repo at origin/main
-	// 2af0fe7: the salon menu and booking link (src/config/services.ts, site.booking),
-	// hours, address and the drawn street map (site.openingHours, site.location,
-	// StudioMap.astro), her profile verbatim (site.bio, confirmed, #184), /trainer/ and
-	// a page per course (unlisted at Elleebana's request, src/routes.ts, #31, #338),
-	// /classes/ (src/config/classes.ts), /questions/ (ADR 0035) and the domain
-	// (docs/process/deploying.md). Nothing here describes her practice.
-	const ALREADY = [
+	// The Elleebana work, step by step. Every claim is from the didonnastudio-website
+	// repo at origin/main 2af0fe7, and the rep is named by role only:
+	//   1. Eight requirements in Elleebana's email: .claude/skills/
+	//      elleebana-trainer-requirements/SKILL.md (confirmed, the email); items 1 and 2
+	//      are the refund policy and course dates.
+	//   2. A trainer page and a page per course: #338 (handoff 2026-10-30). The three
+	//      courses are the `signedOff` rows in src/config/courses.ts: Elleeplex
+	//      Profusion lash lamination, brow lamination, and the two combined, hands-on.
+	//      Elleebana's COO wrote that "to start" they will sign her off for those
+	//      three, so sign-off is a stated plan, not done.
+	//   3. src/pages/for-elleebana.astro, the page for their rep, with the
+	//      /trainer-window/ frames (src/routes.ts). Answered in full on 29 October 2026
+	//      by Elleebana USA's COO, by email to the owner and Angela (handoff
+	//      2026-10-29: "answered all twelve /for-elleebana/ questions by email").
+	//   4. #323 transcribed the answers: their course overviews, prices, trainer
+	//      number, model rule and certificate steps.
+	//   5. /trainer/ is unlisted at Elleebana's request until sign-off (src/routes.ts,
+	//      #31). The owner sent the rep /trainer/ on 31 October (handoff, #369). Course
+	//      dates wait on Angela (SHOW_FILLER, handoff 2026-10-29); the trainer card
+	//      comes from Elleebana on sign-off (requirements skill, item 3).
+	const ELLEEBANA = [
 		{
-			title: 'Your salon menu and prices',
-			detail: 'Every service from your Booksy listing, with its price and how long it takes.'
+			title: 'We read what Elleebana ask for',
+			body: 'Their requirements email lists eight things they look for on a trainer’s website, from a refund policy to course dates. We worked out what each one asks of your pages, and wrote down anything only Elleebana could settle.'
 		},
 		{
-			title: 'Booking from every page',
-			detail: '“Book an appointment” goes straight to your Booksy page.'
+			title: 'We built your trainer pages to meet them',
+			body: 'A trainer page, and a page for each of the three hands-on courses Elleebana plan to sign you off for first: lash lamination, brow lamination, and the two combined.'
 		},
 		{
-			title: 'How to find you',
-			detail: 'Your hours, address and directions, over a map of the streets around the studio.'
+			title: 'We asked Elleebana ourselves',
+			body: 'We made a page just for Elleebana’s chief operating officer, with the questions set beside the parts of your page they were about. On October 29 they answered all twelve.'
 		},
 		{
-			title: 'Your story, in your words',
-			detail: 'The profile you wrote, exactly as you wrote it.'
+			title: 'We put their answers to work',
+			body: 'Their course descriptions, prices, your trainer number, their model rules and their certificate steps are now on your course pages.'
 		},
 		{
-			title: 'Your Elleebana trainer pages',
-			detail:
-				'A trainer page and a page for each course, kept hidden until Elleebana sign you off, as they asked.'
-		},
-		{
-			title: 'Your own classes',
-			detail: 'A page for the classes you teach under your own name.'
-		},
-		{
-			title: 'A questions page for you',
-			detail: 'Details we need from you, answered by tapping instead of typing.'
-		},
-		{
-			title: 'Your own address',
-			detail: 'didonnastudio.com, live now.'
+			title: 'Ready, and waiting on their sign-off',
+			body: 'Your trainer pages stay hidden, as Elleebana asked, until they sign you off, and on October 31 we sent them the page to look over. Still to come are your course dates and the trainer card Elleebana send once you are signed off.'
 		}
 	];
 
-	// Restates the concerns in offer.ts and the list above, line for line.
-	const BEFORE = [
-		'Your menu and prices only on Booksy and Facebook',
-		'No website at an address of your own',
-		'Nowhere for Elleebana to see your training'
-	];
-	const NOW = [
-		'Your menu, prices and booking on your own site',
-		'didonnastudio.com, built for search engines to read',
-		'Trainer and course pages waiting for Elleebana’s sign-off'
-	];
-
-	// From the published terms (/terms): hosting, security updates, routine upkeep and
-	// small changes are #what-you-get; pricing new features first is #adding-features.
+	// What the monthly price covers. Hosting, security updates, upkeep and small changes
+	// are /terms#what-you-get. The last line is the owner's promise, broader than
+	// /terms#adding-features; the PR body quotes the conflict.
 	const COVERS = [
-		{ title: 'Hosting', detail: `Your site, served on ${host}.` },
-		{ title: 'Security updates', detail: 'Fixes applied as soon as they come out.' },
-		{ title: 'Watching your site', detail: 'If something breaks, we notice and deal with it.' },
+		{ title: 'Hosting and security updates', detail: `${host}, kept current and online.` },
+		{ title: 'Someone watching it', detail: 'If something breaks, we notice and deal with it.' },
 		{
-			title: 'Changes when you need them',
-			detail: 'Text, photos, hours and prices, at no extra charge.'
+			title: 'Changes whenever you need them',
+			detail: 'New prices, hours, photos or words. Tell us and it is done.'
 		},
 		{
-			title: 'New features, priced first',
-			detail: 'Anything bigger, we agree the new plan price with you before we start.'
+			title: 'Elleebana, and anyone like them',
+			detail:
+				'When someone your website has to satisfy asks for something, we deal with them, build it, and keep it current as their rules change.'
 		}
 	];
 </script>
@@ -170,14 +158,10 @@
 	<title>Hosting {accepted ? 'plan' : 'proposal'} for {offer.prospect} | Void Projects</title>
 </svelte:head>
 
-{#snippet icon(kind: 'yes' | 'no')}
-	<svg class="icon {kind}" viewBox="0 0 20 20" width="20" height="20" aria-hidden="true">
+{#snippet tick()}
+	<svg class="tick" viewBox="0 0 20 20" width="20" height="20" aria-hidden="true">
 		<circle cx="10" cy="10" r="10" />
-		{#if kind === 'yes'}
-			<path d="M5.5 10.5l3 3 6-7" />
-		{:else}
-			<path d="M6.5 6.5l7 7M13.5 6.5l-7 7" />
-		{/if}
+		<path d="M5.5 10.5l3 3 6-7" />
 	</svg>
 {/snippet}
 
@@ -211,19 +195,19 @@
 	</button>
 </header>
 
-<main class="mx-auto grid max-w-4xl grid-cols-1 gap-14 px-4 pt-6 pb-12 sm:px-8 sm:py-16">
+<main class="mx-auto grid max-w-4xl grid-cols-1 gap-16 px-4 pt-6 pb-12 sm:px-8 sm:py-16">
 	<OfferGate {offer} builtAt={context.builtAt}>
 		<section class="hero grid gap-4" aria-labelledby="offer-title">
 			<p class="eyebrow">{accepted ? 'Your hosting plan' : 'Proposal'}</p>
 			<h1 id="offer-title" class="text-[2rem] leading-tight min-[30rem]:text-4xl sm:text-5xl">
 				{accepted
-					? 'Hosting and upkeep for your website'
-					: 'Hosting and upkeep proposal for your website'}
+					? 'Your website, looked after'
+					: 'Your website is live. We would like to keep it that way.'}
 			</h1>
 			{#if accepted}
 				<p class="lead max-w-2xl text-lg text-(--offer-muted)">
-					Angela, thank you for choosing Void Projects. We will host, secure and look after
-					{host}. Below is the proposal you accepted, kept for your records.
+					Angela, thank you for choosing Void Projects. Below is the proposal you accepted, kept for
+					your records.
 				</p>
 				<AcceptedState
 					class="status"
@@ -237,10 +221,8 @@
 				</AcceptedState>
 			{:else}
 				<p class="lead max-w-2xl text-lg text-(--offer-muted)">
-					Angela, your website is built and already live at {host}. We propose to host, secure and
-					look after it from here, and to make your changes whenever you need them. Below is what
-					you have today and what the plan covers. Accept the offer when you are ready, or reply
-					with any questions.
+					Angela, {host} is built and open to anyone today. This is our offer to host it, keep it current,
+					make your changes, and carry on handling Elleebana for you, all for one monthly price.
 				</p>
 				<p class="price">
 					<strong>{money(monthly)}</strong> a month, or {money(yearly)} a year
@@ -252,45 +234,7 @@
 			{/if}
 		</section>
 
-		<section class="engineer" aria-labelledby="offer-engineer">
-			<img
-				class="face"
-				src={asset('engineer.webp')}
-				alt={ENGINEER.name}
-				width="112"
-				height="112"
-				decoding="async"
-			/>
-			<div class="grid gap-1.5">
-				<p class="eyebrow">Your engineer</p>
-				<h2 id="offer-engineer" class="engineer-name">
-					{ENGINEER.name}<span>{ENGINEER.role}, Void Projects</span>
-				</h2>
-				<p>
-					<strong class="callout"
-						>{firstName} built {host} and is your contact for anything you need.</strong
-					>
-				</p>
-				<p class="promise">
-					<span class="badge">Always a human, never a bot</span>
-					When you write to us, {firstName} answers. AI agents do the upkeep in the background. Every
-					conversation is with a person.
-				</p>
-				<p class="links flex flex-wrap gap-x-5 text-sm">
-					<a href="mailto:{ENGINEER.email}">{ENGINEER.email}</a>
-					<a href={ENGINEER.linkedin} rel="noreferrer">LinkedIn</a>
-				</p>
-			</div>
-		</section>
-
-		<section class="site grid grid-cols-1 gap-6" aria-labelledby="offer-site">
-			<div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
-				<h2 id="offer-site" class="site-name">Your website, already live</h2>
-				<div class="links flex flex-wrap items-center gap-x-5 text-sm font-semibold">
-					<a href={offer.previewUrl} rel="noreferrer">Open {host}</a>
-				</div>
-			</div>
-
+		<section class="site grid grid-cols-1 gap-8" aria-labelledby="offer-site">
 			<a class="preview" href={offer.previewUrl} rel="noreferrer">
 				<span class="frame">
 					<span class="chrome" aria-hidden="true">
@@ -323,55 +267,111 @@
 				</span>
 			</a>
 
-			<div class="grid gap-3">
-				<h3 class="text-lg font-semibold">What is already built</h3>
-				<ul class="items">
-					{#each ALREADY as item (item.title)}
-						<li>
-							{@render icon('yes')}
-							<div>
-								<p class="font-semibold">{item.title}</p>
-								<p class="text-(--offer-muted)">{item.detail}</p>
-							</div>
-						</li>
+			<div class="story grid gap-6 sm:grid-cols-[1fr_1.4fr] sm:gap-10">
+				<div class="grid content-start gap-3">
+					<h2 id="offer-site">Yours, at your own address</h2>
+					<p class="text-(--offer-muted)">
+						Your full menu and prices, booking straight into Booksy from every page, your hours and
+						how to find the studio, and your story in the words you wrote.
+					</p>
+					<p class="links text-sm font-semibold">
+						<a href={offer.previewUrl} rel="noreferrer">Open {host}</a>
+					</p>
+				</div>
+				<dl class="changes">
+					{#each offer.concerns as concern (concern.title)}
+						<div>
+							<dt>{concern.title}</dt>
+							<dd>
+								{concern.detail}
+								{#if concern.impact}<strong class="callout">{concern.impact}</strong>{/if}
+							</dd>
+						</div>
 					{/each}
-				</ul>
+					<div class="now">
+						<dt>Now it is yours</dt>
+						<dd>
+							One address that belongs to you, with everything on it, written for search engines to
+							read.
+						</dd>
+					</div>
+				</dl>
 			</div>
 		</section>
 
-		<ConcernsList concerns={offer.concerns} title="Before you had a site of your own" />
-
-		<section class="grid gap-4" aria-labelledby="offer-choice">
-			<h2 id="offer-choice">The difference for your business</h2>
-			<div class="choice grid gap-4 sm:grid-cols-2">
-				<div class="stay">
-					<h3>Before</h3>
-					<ul>
-						{#each BEFORE as line (line)}<li>{@render icon('no')}<span>{line}</span></li>{/each}
-					</ul>
-				</div>
-				<div class="move">
-					<h3>Now</h3>
-					<ul>
-						{#each NOW as line (line)}<li>{@render icon('yes')}<span>{line}</span></li>{/each}
-					</ul>
-				</div>
+		<section class="elleebana grid gap-8" aria-labelledby="offer-elleebana">
+			<div class="grid max-w-2xl gap-3">
+				<p class="eyebrow">Your Elleebana training</p>
+				<h2 id="offer-elleebana">We dealt with Elleebana, so you did not have to</h2>
+				<p class="text-lg text-(--offer-muted)">
+					Elleebana check a trainer’s own website before they sign her off. You told us which
+					courses you want to teach. We did the rest.
+				</p>
 			</div>
+			<ol class="steps">
+				{#each ELLEEBANA as step, i (step.title)}
+					<li class:last={i === ELLEEBANA.length - 1}>
+						<span class="num" aria-hidden="true">{i + 1}</span>
+						<div>
+							<h3>{step.title}</h3>
+							<p>{step.body}</p>
+						</div>
+					</li>
+				{/each}
+			</ol>
 		</section>
 
-		<section class="grid gap-4" aria-labelledby="offer-covers">
-			<h2 id="offer-covers">What {money(monthly)} a month covers</h2>
-			<ul class="items">
+		<section class="always" aria-labelledby="offer-always">
+			<div class="grid gap-3">
+				<h2 id="offer-always">All of it, in your {money(monthly)} a month</h2>
+				<p class="always-lead">
+					That kind of work is part of the plan for as long as you are with us, at no extra charge.
+					When Elleebana change what they ask for, or someone else your website has to answer to
+					comes along, we handle it.
+				</p>
+			</div>
+			<ul class="covers">
 				{#each COVERS as item (item.title)}
 					<li>
-						{@render icon('yes')}
+						{@render tick()}
 						<div>
 							<p class="font-semibold">{item.title}</p>
-							<p class="text-(--offer-muted)">{item.detail}</p>
+							<p class="detail">{item.detail}</p>
 						</div>
 					</li>
 				{/each}
 			</ul>
+		</section>
+
+		<section class="engineer" aria-labelledby="offer-engineer">
+			<img
+				class="face"
+				src={asset('engineer.webp')}
+				alt={ENGINEER.name}
+				width="112"
+				height="112"
+				decoding="async"
+			/>
+			<div class="grid gap-1.5">
+				<p class="eyebrow">Your engineer</p>
+				<h2 id="offer-engineer" class="engineer-name">
+					{ENGINEER.name}<span>{ENGINEER.role}, Void Projects</span>
+				</h2>
+				<p>
+					<strong class="callout"
+						>{firstName} built {host} and is your contact for anything you need.</strong
+					>
+				</p>
+				<p class="promise">
+					<span class="badge">Always a human, never a bot</span>
+					When you write to us, {firstName} answers. AI agents do the upkeep in the background. Every
+					conversation is with a person.
+				</p>
+				<p class="links flex flex-wrap gap-x-5 text-sm">
+					<a href="mailto:{ENGINEER.email}">{ENGINEER.email}</a>
+					<a href={ENGINEER.linkedin} rel="noreferrer">LinkedIn</a>
+				</p>
+			</div>
 		</section>
 
 		{#if accepted}
@@ -506,58 +506,100 @@
 		font-weight: 600;
 		color: var(--offer-callout);
 	}
+	p {
+		margin: 0;
+	}
+	a {
+		color: var(--dd-accent-text);
+		font-weight: 600;
+		text-underline-offset: 0.25em;
+	}
+	a:hover {
+		text-decoration: underline;
+	}
+	.sr-only {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+		white-space: nowrap;
+	}
 
-	.engineer {
-		display: flex;
-		align-items: flex-start;
-		gap: 1.25rem;
-		padding: 1.25rem 1.5rem;
-		border: 1px solid var(--offer-border);
-		border-radius: 1.5rem;
-		background: var(--offer-surface);
+	.hero {
+		padding-top: 1rem;
 	}
-	@media (max-width: 29.99rem) {
-		.engineer {
-			flex-direction: column;
-			gap: 0.75rem;
-			padding: 1.25rem;
-		}
-	}
-	.face {
-		flex: none;
-		width: 4.5rem;
-		height: 4.5rem;
-		border-radius: 999px;
-		object-fit: cover;
-		box-shadow: 0 0 0 1px var(--offer-border);
-	}
-	.promise {
-		font-size: 1rem;
-		color: var(--offer-muted);
-	}
-	.badge {
-		display: inline-block;
-		margin: 0 0.5rem 0.25rem 0;
-		padding: 0.125rem 0.625rem;
-		border-radius: 999px;
-		background: var(--dd-rose);
-		color: var(--dd-on-rose);
+	.eyebrow {
 		font-size: 0.8125rem;
 		font-weight: 600;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		color: var(--dd-accent-text);
 	}
-	.engineer a {
-		overflow-wrap: anywhere;
-	}
-	.engineer-name {
-		margin: 0;
-		font-size: 1.25rem;
-	}
-	.engineer-name span {
-		display: block;
-		font-size: 0.875rem;
-		font-weight: 500;
-		letter-spacing: 0;
+	.price {
+		font-size: 1.125rem;
 		color: var(--offer-muted);
+	}
+	.price strong {
+		font-size: 2rem;
+		letter-spacing: -0.02em;
+		color: var(--dd-accent-text);
+	}
+	/* Phones: price and the call to action come straight after the heading, so the
+	   first screen says what this is, what it costs and how to accept. */
+	@media (max-width: 39.99rem) {
+		.hero .price {
+			order: 1;
+		}
+		.hero .cta {
+			order: 2;
+		}
+		.hero :global(.status) {
+			order: 1;
+		}
+		.hero .lead {
+			order: 3;
+			font-size: 1rem;
+		}
+		.hero {
+			padding-top: 0;
+		}
+		.price strong {
+			font-size: 1.75rem;
+		}
+	}
+	/* Standalone links get a 44px tap height; links inside sentences stay inline. */
+	.cta a,
+	.ask,
+	.links a,
+	footer > a {
+		display: inline-flex;
+		align-items: center;
+		min-height: 2.75rem;
+	}
+	.cta {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.75rem 1.5rem;
+		margin-top: 0.25rem;
+	}
+	.accept {
+		display: inline-flex;
+		align-items: center;
+		height: 2.75rem;
+		padding: 0 1.5rem;
+		border-radius: 999px;
+		background: var(--offer-accent);
+		color: var(--offer-accent-fg);
+		font-weight: 600;
+	}
+	.accept:hover {
+		text-decoration: none;
+		filter: brightness(0.92);
+	}
+	:global(#offer-plans) {
+		scroll-margin-top: 1.5rem;
 	}
 
 	/* The live site in the main site's browser frame (BrowserFrame on /websites), with a
@@ -633,180 +675,184 @@
 		border-radius: 0.8rem;
 	}
 
-	.renewal {
-		max-width: 42rem;
-		font-size: 0.875rem;
-		color: var(--offer-muted);
-	}
-	p {
+	/* What changed: plain rows on the page ground, divided by hairlines, not cards. */
+	.changes {
+		display: grid;
 		margin: 0;
-	}
-	a {
-		color: var(--dd-accent-text);
-		font-weight: 600;
-		text-underline-offset: 0.25em;
-	}
-	a:hover {
-		text-decoration: underline;
-	}
-	.sr-only {
-		position: absolute;
-		width: 1px;
-		height: 1px;
-		overflow: hidden;
-		clip-path: inset(50%);
-		white-space: nowrap;
-	}
-
-	.hero {
-		padding-top: 1rem;
-	}
-	.eyebrow {
-		font-size: 0.8125rem;
-		font-weight: 600;
-		letter-spacing: 0.14em;
-		text-transform: uppercase;
-		color: var(--dd-accent-text);
-	}
-	.price {
-		font-size: 1.125rem;
-		color: var(--offer-muted);
-	}
-	/* Phones: price and the call to action come straight after the heading, so the
-	   first screen says what this is, what it costs and how to accept. */
-	@media (max-width: 39.99rem) {
-		.hero .price {
-			order: 1;
-		}
-		.hero .cta {
-			order: 2;
-		}
-		.hero :global(.status) {
-			order: 1;
-		}
-		.hero .lead {
-			order: 3;
-			font-size: 1rem;
-		}
-		.hero {
-			padding-top: 0;
-		}
-		.price strong {
-			font-size: 1.75rem;
-		}
-	}
-	/* Standalone links get a 44px tap height; links inside sentences stay inline. */
-	.cta a,
-	.ask,
-	.links a,
-	footer > a {
-		display: inline-flex;
-		align-items: center;
-		min-height: 2.75rem;
-	}
-	.cta {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: center;
-		gap: 0.75rem 1.5rem;
-		margin-top: 0.25rem;
-	}
-	.accept {
-		display: inline-flex;
-		align-items: center;
-		height: 2.75rem;
-		padding: 0 1.5rem;
-		border-radius: 999px;
-		background: var(--offer-accent);
-		color: var(--offer-accent-fg);
-		font-weight: 600;
-	}
-	.accept:hover {
-		text-decoration: none;
-		filter: brightness(0.92);
-	}
-	:global(#offer-plans) {
-		scroll-margin-top: 1.5rem;
-	}
-	.price strong {
-		font-size: 2rem;
-		letter-spacing: -0.02em;
-		color: var(--dd-accent-text);
-	}
-
-	.site-name {
-		margin: 0;
-		font-size: 1.75rem;
-	}
-	.site {
-		padding-top: 2.5rem;
 		border-top: 1px solid var(--offer-border);
 	}
-	.choice ul,
-	.items {
+	.changes > div {
+		display: grid;
+		gap: 0.25rem;
+		padding: 1rem 0;
+		border-bottom: 1px solid var(--offer-border);
+	}
+	.changes dt {
+		font-weight: 700;
+	}
+	.changes dd {
+		margin: 0;
+		color: var(--offer-muted);
+	}
+	.changes .now dt {
+		color: var(--dd-accent-text);
+	}
+
+	/* The Elleebana story: numbered steps on a rail, the page's one sequence. */
+	.steps {
+		display: grid;
 		margin: 0;
 		padding: 0;
 		list-style: none;
 	}
+	.steps li {
+		position: relative;
+		display: grid;
+		grid-template-columns: 2.5rem 1fr;
+		gap: 1rem;
+		padding-bottom: 1.75rem;
+	}
+	.steps li::before {
+		content: '';
+		position: absolute;
+		top: 2.5rem;
+		bottom: 0;
+		left: calc(1.25rem - 1px);
+		width: 2px;
+		background: var(--offer-border);
+	}
+	.steps li.last {
+		padding-bottom: 0;
+	}
+	.steps li.last::before {
+		display: none;
+	}
+	.num {
+		display: grid;
+		place-items: center;
+		width: 2.5rem;
+		height: 2.5rem;
+		border-radius: 999px;
+		background: var(--dd-rose);
+		color: var(--dd-on-rose);
+		font-weight: 700;
+	}
+	.steps li.last .num {
+		background: var(--offer-accent);
+		color: var(--offer-accent-fg);
+	}
+	.steps h3 {
+		margin: 0.375rem 0 0.25rem;
+		font-size: 1.25rem;
+	}
+	.steps p {
+		max-width: 40rem;
+		color: var(--offer-muted);
+	}
 
-	.choice > div {
-		padding: 1.5rem;
+	/* The promise: her rose studio band, full card width, the one coloured block. */
+	.always {
+		display: grid;
+		gap: 1.5rem;
+		padding: 1.75rem 1.5rem;
 		border-radius: 1.5rem;
-	}
-	.choice .stay {
-		border: 1px solid var(--offer-border);
-		background: var(--offer-surface);
-	}
-	/* Her studio band: the rose ground her home page puts behind "The studio". */
-	.choice .move {
-		border: 1px solid transparent;
 		background: var(--dd-rose);
 		color: var(--dd-on-rose);
 	}
-	.choice h3 {
-		margin: 0 0 0.875rem;
-		font-size: 1.25rem;
+	.always h2 {
+		margin: 0;
 	}
-	.choice ul,
-	.items {
+	.always-lead {
+		max-width: 42rem;
+		font-size: 1.125rem;
+	}
+	.covers {
 		display: grid;
-		gap: 0.625rem;
+		gap: 1rem 2rem;
+		margin: 0;
+		padding: 0;
+		list-style: none;
 	}
-	.choice li,
-	.items li {
+	.covers li {
 		display: flex;
 		align-items: flex-start;
-		gap: 0.625rem;
-	}
-	.items {
-		grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
 		gap: 0.75rem;
 	}
-	.items li {
-		padding: 1rem 1.25rem;
-		border: 1px solid var(--offer-border);
-		border-radius: 1rem;
-		background: var(--offer-surface);
+	.covers .detail {
+		opacity: 0.85;
 	}
-	.icon {
+	.tick {
 		flex: none;
 		margin-top: 0.125rem;
 	}
-	.icon path {
+	.tick circle {
+		fill: var(--offer-accent);
+	}
+	.tick path {
 		fill: none;
 		stroke: var(--offer-accent-fg);
 		stroke-width: 2;
 		stroke-linecap: round;
 		stroke-linejoin: round;
 	}
-	.icon.yes circle {
-		fill: var(--offer-accent);
+
+	.engineer {
+		display: flex;
+		align-items: flex-start;
+		gap: 1.25rem;
+		padding: 1.25rem 1.5rem;
+		border: 1px solid var(--offer-border);
+		border-radius: 1.5rem;
+		background: var(--offer-surface);
 	}
-	.icon.no circle {
-		fill: var(--dd-icon-no);
+	@media (max-width: 29.99rem) {
+		.engineer {
+			flex-direction: column;
+			gap: 0.75rem;
+			padding: 1.25rem;
+		}
 	}
-	.icon.no path {
-		stroke: #fff;
+	.face {
+		flex: none;
+		width: 4.5rem;
+		height: 4.5rem;
+		border-radius: 999px;
+		object-fit: cover;
+		box-shadow: 0 0 0 1px var(--offer-border);
+	}
+	.promise {
+		font-size: 1rem;
+		color: var(--offer-muted);
+	}
+	.badge {
+		display: inline-block;
+		margin: 0 0.5rem 0.25rem 0;
+		padding: 0.125rem 0.625rem;
+		border-radius: 999px;
+		background: var(--dd-rose);
+		color: var(--dd-on-rose);
+		font-size: 0.8125rem;
+		font-weight: 600;
+	}
+	.engineer a {
+		overflow-wrap: anywhere;
+	}
+	.engineer-name {
+		margin: 0;
+		font-size: 1.25rem;
+	}
+	.engineer-name span {
+		display: block;
+		font-size: 0.875rem;
+		font-weight: 500;
+		letter-spacing: 0;
+		color: var(--offer-muted);
+	}
+
+	.renewal {
+		max-width: 42rem;
+		font-size: 0.875rem;
+		color: var(--offer-muted);
 	}
 
 	@media (min-width: 40rem) {
@@ -845,8 +891,11 @@
 		.preview {
 			padding: 0 2.5rem 2.5rem 0;
 		}
-		.site {
-			padding-top: 3rem;
+		.always {
+			padding: 2.5rem;
+		}
+		.covers {
+			grid-template-columns: 1fr 1fr;
 		}
 	}
 </style>
