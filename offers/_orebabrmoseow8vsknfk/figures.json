@@ -18,9 +18,9 @@
 		"runs": 3
 	},
 	"source": {
-		"commit": "6a49021",
-		"audit": "docs/discovery/seo-audit/2026-11-06-preview-caaabc3/result.json",
-		"aeo": "docs/discovery/aeo/2026-11-06-preview-caaabc3/result.json",
+		"commit": "90f1160",
+		"audit": "docs/discovery/seo-audit/2026-11-07-after-37-38/result.json",
+		"aeo": "docs/discovery/aeo/2026-11-07-after-37-38/result.json",
 		"assistants": "docs/discovery/aeo/2026-11-06-baseline/assistants/result.json"
 	},
 	"glance": {
@@ -58,7 +58,7 @@
 				"note": "On a phone. Google counts 2.5 seconds or less as good; the new site is under it on all 7 pages.",
 				"bar": {
 					"before": null,
-					"after": 1.0300949857142858,
+					"after": 1.0301443285714285,
 					"max": 3.125
 				},
 				"target": {
@@ -106,8 +106,8 @@
 			{
 				"title": "Accessibility problems found",
 				"before": "Did not load",
-				"after": "7",
-				"note": "Page elements failing WCAG 2.2 A and AA, the accessibility standard, on a computer screen across seven pages; 7 on a phone. Lighthouse accessibility score: 100 out of 100.",
+				"after": "0",
+				"note": "Page elements failing WCAG 2.2 A and AA, the accessibility standard, on a computer screen across seven pages; 0 on a phone. Lighthouse accessibility score: 100 out of 100.",
 				"hasFigure": false
 			}
 		],
@@ -122,8 +122,8 @@
 			{
 				"title": "An AI model given the home page",
 				"before": "Did not load",
-				"after": "6.3 of 21",
-				"note": "The same questions as the assistant above, answered from the new home page alone, three runs: 6.3 of 21 facts on average. The current site has no page to give it.",
+				"after": "7 of 21",
+				"note": "The same questions as the assistant above, answered from the new home page alone, three runs: 7 of 21 facts on average. The current site has no page to give it.",
 				"hasFigure": false
 			},
 			{
@@ -136,15 +136,15 @@
 			{
 				"title": "From business details for search engines",
 				"before": "Did not load",
-				"after": "0 of 23",
-				"note": "Structured data (JSON-LD), the details written for programs. The new site has none yet: 0 of 23.",
+				"after": "7 of 23",
+				"note": "Structured data (JSON-LD), the details written for programs: 7 of 23 facts.",
 				"hasFigure": false
 			},
 			{
 				"title": "From a summary file for AI tools",
 				"before": "Did not load",
-				"after": "None",
-				"note": "An llms.txt file: a plain summary of the site for AI tools. Neither site has one yet.",
+				"after": "10 of 23",
+				"note": "An llms.txt file: a plain summary of the site for AI tools.",
 				"hasFigure": false
 			}
 		]
