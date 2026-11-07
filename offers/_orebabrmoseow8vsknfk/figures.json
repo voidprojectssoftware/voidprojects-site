@@ -30,7 +30,7 @@
 				"before": "0 of 4",
 				"after": "7 of 7",
 				"note": "For the current site, the four ways of typing its address: with and without “www”, secure and not. For the new site, its seven pages.",
-				"loaded": true
+				"hasFigure": true
 			},
 			{
 				"title": "Speed score on phones",
@@ -49,7 +49,7 @@
 					"text": "Good is 90 or more",
 					"source": "The green “good” band of Google Lighthouse’s score (Chrome developer docs)."
 				},
-				"loaded": false
+				"hasFigure": false
 			},
 			{
 				"title": "Time until the page’s main content shows",
@@ -68,21 +68,21 @@
 					"text": "Good is 2.5 seconds or less",
 					"source": "Google’s Core Web Vitals mark for a good page load (web.dev)."
 				},
-				"loaded": false
+				"hasFigure": false
 			},
 			{
 				"title": "Data downloaded per page",
 				"before": "Did not load",
 				"after": "85 KB",
 				"note": "On a phone. A small page matters most on a weak signal.",
-				"loaded": false
+				"hasFigure": false
 			},
 			{
 				"title": "Files requested per page",
 				"before": "Did not load",
 				"after": "7",
 				"note": "Each file is another trip to a server before the page is complete.",
-				"loaded": false
+				"hasFigure": false
 			},
 			{
 				"title": "Search engine score",
@@ -101,14 +101,14 @@
 					"text": "Good is 90 or more",
 					"source": "The green “good” band of Google Lighthouse’s score (Chrome developer docs)."
 				},
-				"loaded": false
+				"hasFigure": false
 			},
 			{
 				"title": "Accessibility problems found",
 				"before": "Did not load",
 				"after": "7",
 				"note": "Page elements failing WCAG 2.2 A and AA, the accessibility standard, on a computer screen across seven pages; 7 on a phone. Lighthouse accessibility score: 100 out of 100.",
-				"loaded": false
+				"hasFigure": false
 			}
 		],
 		"failedNote": "What the current site answered instead: two addresses an error page (HTTP 409, Cloudflare error 1001: the address still points at your former web host, which no longer serves it) and two addresses no connection at all. Lighthouse tried six times and stopped each time (CHROME_INTERSTITIAL_ERROR), so the current site has no speed, search or accessibility score."
@@ -124,28 +124,28 @@
 				"before": "Did not load",
 				"after": "6.3 of 21",
 				"note": "The same questions as the assistant above, answered from the new home page alone, three runs: 6.3 of 21 facts on average. The current site has no page to give it.",
-				"loaded": false
+				"hasFigure": false
 			},
 			{
 				"title": "From the words on the page",
 				"before": "Did not load",
 				"after": "9 of 23",
 				"note": "What a program reads from the home page’s text without running any script, the way many crawlers do: 9 of 23 facts.",
-				"loaded": false
+				"hasFigure": false
 			},
 			{
 				"title": "From business details for search engines",
 				"before": "Did not load",
 				"after": "0 of 23",
 				"note": "Structured data (JSON-LD), the details written for programs. The new site has none yet: 0 of 23.",
-				"loaded": false
+				"hasFigure": false
 			},
 			{
 				"title": "From a summary file for AI tools",
 				"before": "Did not load",
 				"after": "None",
 				"note": "An llms.txt file: a plain summary of the site for AI tools. Neither site has one yet.",
-				"loaded": false
+				"hasFigure": false
 			}
 		]
 	}
