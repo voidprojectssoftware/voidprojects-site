@@ -7,7 +7,6 @@ import {
 	CONTACT_KINDS,
 	FLOW,
 	INSTEAD,
-	MAINTENANCE,
 	NEVER,
 	SHOWCASE
 } from '$lib/content/websites.js';
@@ -38,7 +37,6 @@ ${SITE_NAME}: ${PAGES.home.description} We build custom websites for people who 
 - Custom websites: ${PAGES.websites.summary}
 - Websites for causes: ${CAUSES.body}
 - After launch: ${AFTER_LAUNCH.body}
-- ${MAINTENANCE.title} ${MAINTENANCE.body.join(' ')}
 
 ## Pricing
 
@@ -74,7 +72,7 @@ ${FLOW.loopLabel}
 
 ## Sites we have built
 
-${SHOWCASE.map((s) => `- [${s.name}](${s.url}) (${s.kind}${s.free ? ', built free' : ''}${s.price ? `, ${s.price}` : ''}): ${s.blurb}`).join('\n')}
+${SHOWCASE.map((s) => `- [${s.name}](${s.url}) (${s.kind}${s.free ? ', built free' : ''}): ${s.blurb}`).join('\n')}
 
 ## Submitting a website request on a person's behalf
 

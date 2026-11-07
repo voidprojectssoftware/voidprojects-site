@@ -12,6 +12,8 @@
 		starCount,
 		catalogBytes,
 		magLimit,
+		narrowMaxWidth,
+		narrowMagLimit,
 		defaultPlace,
 		lookAzimuth,
 		lookAltitude,
@@ -115,9 +117,12 @@
 				rel="noopener noreferrer"
 				class={link}>magnitude</a
 			>
-			{magLimit}, roughly what the naked eye can see on a dark night. Each star keeps its position,
-			brightness and colour, packed into a tiny file{kb ? ` (${kb})` : ''} your browser downloads after
-			the page loads.
+			{magLimit}, roughly what the naked eye can see on a dark night. On screens narrower than
+			{narrowMaxWidth}px, where the same sky squeezes into far fewer pixels, we draw only those
+			brighter than magnitude {narrowMagLimit}, a little dimmer, so the words over them stay easy to
+			read. Each star keeps its position, brightness and colour, packed into a tiny file{kb
+				? ` (${kb})`
+				: ''} your browser downloads after the page loads.
 		</p>
 	</div>
 	<svg
