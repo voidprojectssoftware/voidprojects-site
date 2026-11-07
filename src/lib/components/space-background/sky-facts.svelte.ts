@@ -24,6 +24,12 @@ export const SKY_CONFIG = {
 	sizeBase: 0.35, // radius of the faintest stars (px)
 	sizePerMag: 0.27, // extra radius per magnitude brighter
 	alphaFloor: 0.16, // dimmest stars
+	// Phones: a portrait screen packs the same field of view into far fewer pixels, so
+	// the sky reads about twice as dense as on desktop and busy behind text. Below this
+	// width only the brighter stars are drawn, and dimmer.
+	narrowMaxWidth: 640, // px
+	narrowMagLimit: 4, // hide stars fainter than this on narrow screens
+	narrowDim: 0.45, // opacity multiplier on narrow screens
 	twinkle: 0.28, // 0 = none .. 1 = full blink
 	parallax: 4, // max px the field shifts with the pointer
 	timeScale: 1 // 1 = real time; raise to speed up the sky's rotation
@@ -38,6 +44,8 @@ export type SkyFacts = {
 	starCount: number; // stars loaded from the catalogue after the magnitude cut; 0 until loaded
 	catalogBytes: number; // size of the fetched star-catalog.bin
 	magLimit: number;
+	narrowMaxWidth: number;
+	narrowMagLimit: number;
 	defaultPlace: string;
 	lookAzimuth: number;
 	lookAltitude: number;
@@ -51,6 +59,8 @@ export function skyFacts(): SkyFacts {
 		starCount: catalogStats.stars,
 		catalogBytes: catalogStats.bytes,
 		magLimit: SKY_CONFIG.magLimit,
+		narrowMaxWidth: SKY_CONFIG.narrowMaxWidth,
+		narrowMagLimit: SKY_CONFIG.narrowMagLimit,
 		defaultPlace: SKY_CONFIG.vantages[SKY_CONFIG.defaultVantage].name,
 		lookAzimuth: SKY_CONFIG.lookAzimuth,
 		lookAltitude: SKY_CONFIG.lookAltitude,

@@ -8,7 +8,6 @@
 	import { ContactForm } from '$lib/components/contact-form/index.js';
 	import { ProcessFlow } from '$lib/components/process-flow/index.js';
 	import { Splash } from '$lib/components/splash/index.js';
-	import { Maintenance } from '$lib/components/maintenance/index.js';
 	import { AfterLaunch } from '$lib/components/after-launch/index.js';
 	import { NeverGrid } from '$lib/components/never-grid/index.js';
 	import { ProfileCard } from '$lib/components/profile-card/index.js';
@@ -41,7 +40,7 @@
 
 <main id="main-content" class="flex flex-col">
 	<!-- Order follows the visitor's questions: what is it, what's it like for me, how
-	     does it run, what does it cost (and does it stay safe; is it free for causes), how is that possible, show me, let's talk. -->
+	     does it run, what does it cost (and is it free for causes), how is that possible, show me, let's talk. -->
 
 	<Section
 		wide
@@ -165,10 +164,6 @@
 	</Section>
 
 	<Section wide class="pb-24">
-		<Maintenance />
-	</Section>
-
-	<Section wide class="pb-24">
 		<a
 			href={CAUSES.href}
 			class="group flex flex-col gap-6 rounded-4xl bg-linear-to-br from-primary/18 via-primary/6 to-transparent p-6 ring-1 ring-primary/30 transition-colors hover:ring-primary/60 sm:p-10 lg:flex-row lg:items-center lg:gap-16"
@@ -238,7 +233,7 @@
 		</div>
 		<div class="grid gap-8 lg:grid-cols-2">
 			{#each SHOWCASE as site, i (site.url)}
-				<a href={site.url} target="_blank" rel="noopener" class="group block">
+				<a href={site.url} target="_blank" rel="noopener" class="group block min-w-0">
 					<GlassCard class="h-full gap-5 p-4 sm:p-5">
 						<BrowserFrame
 							src={site.screenshot}
@@ -262,19 +257,15 @@
 							</div>
 							<p class="text-sm leading-relaxed text-foreground/65">{site.blurb}</p>
 							<div class="mt-auto flex min-h-9 items-center justify-between gap-4 pt-1">
-								<span class="text-sm font-medium text-foreground/80 group-hover:text-primary"
+								<span
+									class="text-sm font-medium wrap-anywhere text-foreground/80 group-hover:text-primary"
 									>Visit {site.host} ↗</span
 								>
-								{#if site.price}
-									<span class="flex items-center gap-3">
-										{#if site.free}
-											<span
-												class="grid size-8 place-items-center rounded-xl bg-primary/20 text-primary"
-											>
-												<HandHeart class="size-5" aria-hidden="true" />
-											</span>
-										{/if}
-										<span class="text-2xl font-bold tracking-tight text-primary">{site.price}</span>
+								{#if site.free}
+									<span
+										class="grid size-8 shrink-0 place-items-center rounded-xl bg-primary/20 text-primary"
+									>
+										<HandHeart class="size-5" aria-hidden="true" />
 									</span>
 								{/if}
 							</div>
@@ -299,7 +290,7 @@
 				<ContactForm bind:sent={contactSent} />
 			</GlassCard>
 		</div>
-		<p class="pt-16 text-sm text-foreground/45">
+		<p class="pt-16 text-sm text-foreground/60">
 			Why does everything here float? <a
 				href="/about/brand"
 				class="underline underline-offset-4 hover:text-primary">About our brand</a
