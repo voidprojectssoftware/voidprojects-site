@@ -1,0 +1,85 @@
+/* Di Donna Studio's own colours, read from the didonnastudio-website repo
+   (src/design/editorial/palette.ts at origin/main 2af0fe7). Every value there is a
+   tone of the palettes src/design/tonal-palettes.ts generates from her logo magenta
+   #ef2c7b, and every value here but the error red is one of those tones, so the
+   pairs keep the contrast her site was measured at (ADR 0026 there):
+     light: page neutral 98, cards neutral 100, ink neutral 10, muted
+            neutralVariant 30, accent primary 40, deep accent primary 30, rose
+            band primary 90, hairline neutralVariant 80.
+     dark:  her dark band neutral 6, cards neutral 12 (surface-container), ink
+            neutral 90, muted neutral 70, accent primary 80 with primary 20 on it
+            (M3's dark primary and on-primary), rose band primary 17 with primary
+            90 on it, hairline neutral 30.
+   Type is her site's: the system sans stack (--dde-sans), no font file, so no
+   offer id lands in a font URL. Light opens by default, as her site does; the
+   header toggle switches to dark. */
+@import 'tailwindcss' source('.');
+@source not './public';
+
+:root {
+	--dd-accent-strong: #bb0058; /* primary 40: buttons, 6.4:1 under white */
+	--dd-accent-text: #bb0058; /* primary 40 as text: 6.1:1 on the page */
+	--dd-deep: #8f0042; /* primary 30: callouts, 8.9:1 on the page, 7.2:1 on rose */
+	--dd-rose: #ffd9e1; /* primary 90: her studio band */
+	--dd-on-rose: #8f0042; /* primary 30 */
+	--dd-icon-no: #847376; /* neutralVariant 50: 4.5:1 on cards, white cross 4.5:1 on it */
+	--offer-bg: #fff7f8;
+	--offer-fg: #22191b;
+	--offer-muted: #514346;
+	--offer-surface: #ffffff;
+	--offer-border: #d6c2c5;
+	--offer-accent: var(--dd-accent-strong);
+	--offer-accent-fg: #ffffff;
+	--offer-good: var(
+		--dd-deep
+	); /* the plan picker's saving line, in her accent: her palettes have no green */
+	--offer-bad: #ba1a1a; /* sign-up errors: M3's baseline error 40, as her palettes have no red */
+	--offer-radius: 1rem;
+	--offer-callout: var(--dd-deep);
+	--offer-link: var(--dd-accent-text);
+	--dd-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+	color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+	--dd-accent-strong: #ffb0c5; /* primary 80 */
+	--dd-accent-text: #ffb0c5; /* primary 80: 10.8:1 on the dark band, 9.6:1 on cards */
+	--dd-deep: #ffb0c5;
+	--dd-rose: #5a0026; /* primary 17 */
+	--dd-on-rose: #ffd9e1; /* primary 90 */
+	--dd-icon-no: #817476; /* neutral 50: 3.7:1 on cards, white cross 4.5:1 on it */
+	--offer-bg: #191113;
+	--offer-fg: #efdfe1;
+	--offer-muted: #b6a8aa;
+	--offer-surface: #261d1f;
+	--offer-border: #4f4446;
+	--offer-accent-fg: #66002c; /* primary 20, 7.7:1 on primary 80 */
+	--offer-bad: #ffb4ab; /* M3's baseline error 80 */
+	color-scheme: dark;
+}
+
+body {
+	margin: 0;
+	background: var(--offer-bg);
+	color: var(--offer-fg);
+	font-family: var(--dd-sans);
+	line-height: 1.55;
+}
+
+h1,
+h2,
+h3 {
+	font-weight: 700;
+	letter-spacing: -0.02em;
+}
+
+h2 {
+	margin-bottom: 0.75rem;
+	font-size: 1.875rem;
+	line-height: 1.2;
+}
+
+/* 44px tap targets for the plan picker's Monthly / Annual toggle on this page. */
+:root .toggle button[role='radio'] {
+	min-height: 2.75rem;
+}
