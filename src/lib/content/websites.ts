@@ -34,22 +34,10 @@ export interface ShowcaseSite {
 	kind: string; // short label, e.g. "Cause" or "Small business"
 	blurb: string;
 	free: boolean; // built at no charge (cause work)
-	price?: string; // what the client pays, shown on the card, e.g. "$50/m"
 	screenshot: string; // desktop capture under static/
 }
 
 export const SHOWCASE: ShowcaseSite[] = [
-	{
-		name: 'Rally4Hallie',
-		url: 'https://rally4hallie.com',
-		host: 'rally4hallie.com',
-		kind: 'Cause',
-		blurb:
-			'Connects family and friends to Hallie’s journey overcoming breast cancer: her own updates, an email list so nobody misses one, and a shirt store that funds her care. Hallie is the mother of one of our own, and the site was built free.',
-		free: true,
-		price: '$0/m',
-		screenshot: '/websites/rally4hallie-desktop.jpg'
-	},
 	{
 		name: 'Di Donna Studio',
 		url: 'https://didonnastudio.com',
@@ -58,8 +46,37 @@ export const SHOWCASE: ShowcaseSite[] = [
 		blurb:
 			'A booking-first home for Angela Di Donna’s hair, skin, brow, and lash studio in Hernando, Mississippi: every service and price in one place, her story, and the way to book.',
 		free: false,
-		price: '$50/m',
 		screenshot: '/websites/didonnastudio-desktop.jpg'
+	},
+	{
+		name: 'First Touch Payment Solutions',
+		url: 'https://www.firsttouchpaymentsolutions.com',
+		host: 'firsttouchpaymentsolutions.com',
+		kind: 'Small business',
+		blurb:
+			'A clear home for a Memphis, Tennessee team that handles cash, check, and card processing for retailers: each solution on a page of its own, its support lines, and a free consultation a call away.',
+		free: false,
+		screenshot: '/websites/firsttouchpaymentsolutions-desktop.jpg'
+	},
+	{
+		name: 'Software Earnings',
+		url: 'https://www.softwareearnings.com',
+		host: 'softwareearnings.com',
+		kind: 'Small business',
+		blurb:
+			'A home for a Memphis, Tennessee maker of payments software for financial institutions since 1988: its three product suites, every component they hold, and the way to request a demo.',
+		free: false,
+		screenshot: '/websites/softwareearnings-desktop.jpg'
+	},
+	{
+		name: 'Rally4Hallie',
+		url: 'https://rally4hallie.com',
+		host: 'rally4hallie.com',
+		kind: 'Cause',
+		blurb:
+			'Connects family and friends to Hallie’s journey overcoming breast cancer: her own updates, an email list so nobody misses one, and a shirt store that funds her care. Hallie is the mother of one of our own, and the site was built free.',
+		free: true,
+		screenshot: '/websites/rally4hallie-desktop.jpg'
 	}
 ];
 
@@ -216,77 +233,6 @@ export const CAUSES = {
 		'You get the same engineers and the same process as every other site we build.',
 		'If your site needs something that goes above what we can cover in cost, we will tell you up front and talk it through. Never a surprise.'
 	]
-};
-
-// Upkeep and security, included in the price. Every figure and CVE below is cited;
-// the yearly counts are CVEs published per calendar year by the NVD CVE API
-// (pubStartDate/pubEndDate windows, noRejected), queried 2026-11-01.
-export const MAINTENANCE = {
-	title: 'Updates and security are included.',
-	body: [
-		'New security holes are found in software every day, and more each year. Our agents continuously watch security news, the National Vulnerability Database (NVD), and GitHub security advisories.',
-		'When a fix comes out for something your site depends on, we update your site as soon as it is available. An engineer reviews every fix before it goes live. It is part of the price, not an extra.'
-	],
-	counts: {
-		title: 'Reported security flaws (CVEs) per year',
-		source: { label: 'NVD', href: 'https://nvd.nist.gov/developers/vulnerabilities' },
-		note: '48,151 in 2025, more than seven times as many as in 2016.',
-		years: [
-			{ year: 2016, count: 6449 },
-			{ year: 2017, count: 14642 },
-			{ year: 2018, count: 16510 },
-			{ year: 2019, count: 17305 },
-			{ year: 2020, count: 18322 },
-			{ year: 2021, count: 20149 },
-			{ year: 2022, count: 25073 },
-			{ year: 2023, count: 28816 },
-			{ year: 2024, count: 39953 },
-			{ year: 2025, count: 48151 }
-		]
-	},
-	exposures: {
-		title: 'What a self-managed WordPress site faced in 2026',
-		intro: 'A few of the year’s real, published flaws. Each one needed an update to close.',
-		items: [
-			{
-				when: 'April 2026',
-				what: 'cPanel & WHM',
-				body: 'A login bypass let attackers into this hosting control panel without a password. CISA lists it as exploited, with known ransomware use.',
-				links: [
-					{ label: 'CVE-2026-41940', href: 'https://nvd.nist.gov/vuln/detail/CVE-2026-41940' }
-				]
-			},
-			{
-				when: 'July 2026',
-				what: 'WordPress itself',
-				body: 'Two flaws chained together let an attacker with no login run code on default installs of WordPress 6.9 and newer. CISA lists both as exploited.',
-				links: [
-					{ label: 'CVE-2026-63030', href: 'https://nvd.nist.gov/vuln/detail/CVE-2026-63030' },
-					{ label: 'CVE-2026-60137', href: 'https://nvd.nist.gov/vuln/detail/CVE-2026-60137' },
-					{
-						label: 'WordPress 7.0.2',
-						href: 'https://wordpress.org/news/2026/07/wordpress-7-0-2-release/'
-					}
-				]
-			},
-			{
-				when: 'September 2026',
-				what: 'WordPress itself',
-				body: 'A page-template flaw, open to anyone, could lead to running code on some common server and theme setups. The fix went back to every version since 4.7. CISA listed it as exploited three days after it was published.',
-				links: [
-					{ label: 'CVE-2026-87902', href: 'https://nvd.nist.gov/vuln/detail/CVE-2026-87902' },
-					{
-						label: 'WordPress advisory',
-						href: 'https://github.com/WordPress/wordpress-develop/security/advisories/GHSA-7hp8-65ch-5whp'
-					}
-				]
-			}
-		],
-		source: {
-			label: 'CISA Known Exploited Vulnerabilities',
-			href: 'https://www.cisa.gov/known-exploited-vulnerabilities-catalog'
-		}
-	}
 };
 
 // The "how is this possible?" answer.

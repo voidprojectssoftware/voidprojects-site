@@ -41,6 +41,7 @@
 
 	type Star = {
 		ra: number; // hours
+		mag: number;
 		sinDec: number;
 		cosDec: number;
 		alpha: number;
@@ -65,6 +66,7 @@
 
 		let w = 0;
 		let h = 0;
+		let narrow = false; // below CONFIG.narrowMaxWidth: fewer, dimmer stars
 		let raf = 0;
 		let running = false;
 
@@ -179,6 +181,7 @@
 				const size = CONFIG.sizeBase + m * CONFIG.sizePerMag;
 				next.push({
 					ra: c.ra,
+					mag: c.mag,
 					sinDec: Math.sin(dec),
 					cosDec: Math.cos(dec),
 					alpha: Math.min(0.97, CONFIG.alphaFloor + (m / 8) * 0.82),
@@ -202,6 +205,7 @@
 		const resize = () => {
 			w = window.innerWidth;
 			h = window.innerHeight;
+			narrow = w < CONFIG.narrowMaxWidth;
 			canvas.width = Math.floor(w * dpr);
 			canvas.height = Math.floor(h * dpr);
 			canvas.style.width = `${w}px`;
@@ -239,8 +243,10 @@
 			const cx = w / 2;
 			const cy = h / 2;
 
+			const magCut = narrow ? CONFIG.narrowMagLimit : CONFIG.magLimit;
 			visible.length = 0;
 			for (const s of stars) {
+				if (s.mag > magCut) continue;
 				const ha = (lst - s.ra) * 15 * DEG; // hour angle
 				const cosDcosH = s.cosDec * Math.cos(ha);
 				const u = cosLat * cosDcosH + sinLat * s.sinDec; // sin(altitude)
@@ -294,13 +300,17 @@
 			if (projectDirty || now - lastProjectAt >= PROJECT_MS) project(now);
 
 			const twAmt = CONFIG.twinkle;
+			const dim = narrow ? CONFIG.narrowDim : 1;
 			const twPhase = now * 0.001;
 			for (const s of visible) {
-				const tw = reduce
-					? 1
-					: 1 -
-						twAmt +
-						twAmt * (0.5 + 0.5 * SIN_LUT[((s.twPhase + twPhase * s.twSpeed) * TW_SCALE) & TW_MASK]);
+				const tw =
+					dim *
+					(reduce
+						? 1
+						: 1 -
+							twAmt +
+							twAmt *
+								(0.5 + 0.5 * SIN_LUT[((s.twPhase + twPhase * s.twSpeed) * TW_SCALE) & TW_MASK]));
 
 				const x = s.bx + offX;
 				const y = s.by + offY;
