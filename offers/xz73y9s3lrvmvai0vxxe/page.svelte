@@ -202,7 +202,7 @@
 			<h1 id="offer-title" class="text-[2rem] leading-tight min-[30rem]:text-4xl sm:text-5xl">
 				{accepted
 					? 'Your website, looked after'
-					: 'Your website is live. We would like to keep it that way.'}
+					: 'Your website is live, and we’ll look after it for you.'}
 			</h1>
 			{#if accepted}
 				<p class="lead max-w-2xl text-lg text-(--offer-muted)">
@@ -221,8 +221,9 @@
 				</AcceptedState>
 			{:else}
 				<p class="lead max-w-2xl text-lg text-(--offer-muted)">
-					Angela, {host} is built and open to anyone today. This is our offer to host it, keep it current,
-					make your changes, and carry on handling Elleebana for you, all for one monthly price.
+					Angela, {host} is built and open to everyone. We would love to host it, keep it current, make
+					your changes whenever you need them, and go on handling Elleebana for you, all for one monthly
+					price.
 				</p>
 				<p class="price">
 					<strong>{money(monthly)}</strong> a month, or {money(yearly)} a year
