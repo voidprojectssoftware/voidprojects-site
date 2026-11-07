@@ -1,5 +1,10 @@
 import { describe, expect, it, vi } from 'vitest';
-import { checkoutResponse, type CheckoutReply, type FindOffer } from './checkout-http.js';
+import {
+	ALREADY_ACCEPTED,
+	checkoutResponse,
+	type CheckoutReply,
+	type FindOffer
+} from './checkout-http.js';
 import { resolveOffer, type OfferInput } from './offer.js';
 import type { CheckoutStripe } from './stripe.js';
 
@@ -18,7 +23,12 @@ const INPUT: OfferInput = {
 };
 const OFFER = resolveOffer('testofferaaaa0000', INPUT);
 const EXPIRED = resolveOffer('testofferexpired00', { ...INPUT, sent: '2026-01-01' });
-const OFFERS = new Map([OFFER, EXPIRED].map((o) => [o.id, o]));
+const ACCEPTED = resolveOffer('testofferaccepted0', {
+	...INPUT,
+	sent: '2026-01-01', // past its expiry too: accepted wins over expired
+	accepted: { on: '2026-01-05', planId: 'static', interval: 'month' }
+});
+const OFFERS = new Map([OFFER, EXPIRED, ACCEPTED].map((o) => [o.id, o]));
 const findOffer: FindOffer = (id) => OFFERS.get(id);
 const NOW = new Date('2026-11-04T12:00:00Z');
 const ORIGIN = 'https://voidprojects.ai';
@@ -102,6 +112,25 @@ describe('checkoutResponse', () => {
 		);
 		expect(status).toBe(410);
 		expect(reply.message).toBe('This offer has expired.');
+		expect(create).not.toHaveBeenCalled();
+	});
+
+	it('refuses any new checkout on an accepted offer with 409, pointing to billing', async () => {
+		const { stripe, create } = mockStripe();
+		for (const body of [
+			{ offerId: ACCEPTED.id, planId: 'static', interval: 'month' },
+			{ offerId: ACCEPTED.id, planId: 'static', interval: 'year', addOnIds: ['newsletter'] },
+			{ offerId: ACCEPTED.id, planId: 'monthly-only', interval: 'month' }
+		]) {
+			const { status, reply } = await post(body, stripe);
+			expect(status).toBe(409);
+			expect(reply).toEqual({ ok: false, message: ALREADY_ACCEPTED });
+			expect(reply.message).toMatch(/Manage billing/);
+		}
+		// Refused before the Stripe check, so it is the same answer without a key.
+		expect(
+			(await post({ offerId: ACCEPTED.id, planId: 'static', interval: 'month' }, undefined)).status
+		).toBe(409);
 		expect(create).not.toHaveBeenCalled();
 	});
 

@@ -55,6 +55,10 @@ export interface CheckoutDeps {
 	log?: (line: string) => void; // Stripe failures only, never the request body
 }
 
+// A stale tab on an accepted offer must not start a second subscription.
+export const ALREADY_ACCEPTED =
+	'This offer has already been accepted, so there is nothing more to buy here. To update your card or billing details, reload this page and use Manage billing, or write to hello@voidprojects.ai.';
+
 const UNAVAILABLE =
 	'Online sign-up is not available right now. Reply to the message that brought you here and we will set it up.';
 
@@ -100,6 +104,7 @@ export function selectCheckout(
 ): { selection: CheckoutSelection } | { status: number; message: string } {
 	const offer = findOffer(request.offerId);
 	if (!offer) return { status: 404, message: 'This offer does not exist.' };
+	if (offer.accepted) return { status: 409, message: ALREADY_ACCEPTED };
 	if (isExpired(offer, now)) return { status: 410, message: 'This offer has expired.' };
 	const plan = offer.plans.find((p) => p.id === request.planId);
 	const planPrice = plan && priceFor(plan, request.interval);

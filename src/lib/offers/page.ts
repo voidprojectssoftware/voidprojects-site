@@ -14,6 +14,7 @@ export interface OfferContext {
 	qr: QrMatrix;
 	builtAt: string; // ISO timestamp of the build; first render judges expiry from it so hydration matches
 	checkoutEndpoint: string;
+	billingPortalUrl: string | null; // Customer Portal login link from PUBLIC_STRIPE_PORTAL_URL; null means billing changes go by email
 }
 
 export interface OfferPageProps {

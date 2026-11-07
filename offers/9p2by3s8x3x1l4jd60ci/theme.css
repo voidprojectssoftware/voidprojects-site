@@ -31,6 +31,7 @@
 	--offer-bad: oklch(0.55 0.2 27);
 	--offer-radius: 1rem;
 	--offer-callout: var(--void-primary-text);
+	--offer-link: var(--void-primary-text);
 	--void-track: oklch(0.145 0 0 / 0.07);
 	--void-tile: var(--offer-bg);
 	--void-icon-no: oklch(0.55 0.006 300);
