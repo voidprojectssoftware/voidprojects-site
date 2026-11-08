@@ -53,6 +53,13 @@ describe('resolveOffer accepted', () => {
 	});
 });
 
+describe('resolveOffer sent', () => {
+	it('fails the build on an offer without sent, which only a skipped draft may lack', () => {
+		const { sent: _sent, ...draft } = INPUT; // eslint-disable-line @typescript-eslint/no-unused-vars
+		expect(() => resolveOffer(ID, draft)).toThrow(/sent is not set/);
+	});
+});
+
 describe('isExpired', () => {
 	it('never reports an accepted offer as expired', () => {
 		const late = new Date('2027-06-01T00:00:00Z');

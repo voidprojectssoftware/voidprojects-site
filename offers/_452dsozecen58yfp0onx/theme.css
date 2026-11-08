@@ -1,0 +1,75 @@
+/* Spirit Hill Maple Nursery's "Under the canopy" design system, the one the rebuild is
+   drawn in, from spirithillmaplenursery-website src/design/systems/under-the-canopy/
+   index.ts (main ea5f46b): the deep teal taken down to shade as the page (#15302f), a
+   step up for cards (#1d3a39) and down for the bands (#0f2423), the site's warm white
+   as text (#fffdfb, 13.8:1 on the page there), sage as muted text (#a8b8ae), mid teal
+   rules (#4f7170), and amber (#ffb84d) as the light through the leaves, with the page
+   teal on it (8.17:1 there). Rounded: 20px cards, pill controls. Dark only, as the
+   system is. Cormorant Garamond 600 is that system's own self-hosted font (SIL OFL,
+   public/fonts/), declared by page.svelte from the page URL, because a font URL in this
+   file would carry the offer id into the CSS. The pass and fail tones are this page's
+   own (the system has none), light enough to read on the cards. */
+@import 'tailwindcss' source('.');
+@source not './public';
+
+:root {
+	--canopy-ground: #15302f;
+	--canopy-raised: #1d3a39;
+	--canopy-band: #0f2423;
+	--canopy-amber: #ffb84d;
+	--canopy-tan: #dbb89a;
+	--canopy-rule: #4f7170;
+	--canopy-display: 'Cormorant Garamond', Garamond, 'Times New Roman', serif;
+	--offer-bg: var(--canopy-ground);
+	--offer-fg: #fffdfb;
+	--offer-muted: #a8b8ae;
+	--offer-surface: var(--canopy-raised);
+	--offer-border: var(--canopy-rule);
+	--offer-accent: var(--canopy-amber);
+	--offer-accent-fg: var(--canopy-ground);
+	--offer-good: #9fd8a8;
+	--offer-warn: var(--canopy-tan);
+	--offer-bad: #ffa395;
+	--offer-radius: 20px;
+	--offer-callout: var(--canopy-amber);
+	--offer-link: var(--canopy-amber);
+	color-scheme: dark;
+}
+
+body {
+	margin: 0;
+	background: var(--offer-bg);
+	color: var(--offer-fg);
+	font-family:
+		system-ui,
+		-apple-system,
+		'Segoe UI',
+		Roboto,
+		'Helvetica Neue',
+		Arial,
+		sans-serif;
+	font-size: 1.0625rem;
+	line-height: 1.65;
+}
+
+h1,
+h2 {
+	font-family: var(--canopy-display);
+	font-weight: 600;
+	letter-spacing: -0.005em;
+	line-height: 1.1;
+}
+
+h2 {
+	margin-bottom: 0.75rem;
+	font-size: clamp(2rem, 2.5vw + 1rem, 3rem);
+}
+
+a {
+	color: var(--canopy-amber);
+}
+
+/* 44px tap targets for the plan picker's Monthly / Annual toggle on this page. */
+:root .toggle button[role='radio'] {
+	min-height: 2.75rem;
+}
