@@ -1,11 +1,12 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import { page } from '$app/state';
 	import OrbitMark from '$lib/brand/OrbitMark.svelte';
 	import { NudgeChain } from '$lib/nudge/index.js';
 	import { brandViolet } from '$lib/physics/colors.js';
 
-	// `short` is the visible label below 360px, where the full one overflows the header; the full label stays the accessible name.
-	type NavLink = { href: string; label: string; short?: string; children?: NavLink[] };
+	// `wide` links hide below sm (the footer carries them) so the rest fit a 360px phone at 150% text.
+	type NavLink = { href: string; label: string; wide?: boolean; children?: NavLink[] };
 
 	const LINKS: NavLink[] = [
 		{
@@ -14,12 +15,12 @@
 			children: [{ href: '/websites/causes', label: 'Causes' }]
 		},
 		{ href: '/blog', label: 'Blog' },
-		{ href: '/about/brand', label: 'Our Brand', short: 'Brand' }
+		{ href: '/about/brand', label: 'Our Brand', wide: true },
+		{ href: '/contact', label: 'Contact' }
 	];
 
-	// The compact nav that fades in once the hero has scrolled past, showing the
-	// site name and secondary links. Hidden (but kept in the layout, `aria-hidden`)
-	// while at rest so it doesn't compete with the hero title.
+	// `scrolled={false}` hides the nav (kept in the layout, `aria-hidden`). No page does
+	// that today: visitors need the nav on first paint, Home included.
 	let { scrolled = true, transparent = true }: { scrolled?: boolean; transparent?: boolean } =
 		$props();
 
@@ -36,9 +37,20 @@
 		keyboardOpen = false;
 	};
 
+	// A dropdown left open would float over the content scrolling under it.
+	$effect(() => {
+		void scrollY;
+		untrack(() => {
+			branchOpen = false;
+			keyboardOpen = false;
+		});
+	});
+
 	// Items float a few px and tug each other; a sub-page hangs off its parent on a string.
 	const HOME = '/';
-	const chain = new NudgeChain();
+	// Phones pack the items tight, so they drift less there and keep to one line.
+	const narrow = typeof window !== 'undefined' && window.matchMedia('(max-width: 40rem)').matches;
+	const chain = new NudgeChain(narrow ? { wander: 1.5, maxOffset: 4 } : {});
 	chain.link(HOME, LINKS[0].href, 0.004); // the wordmark only feels the nav faintly
 	LINKS.forEach((link, i) => {
 		if (i > 0) chain.link(LINKS[i - 1].href, link.href);
@@ -57,18 +69,11 @@
 	});
 	$effect(() => () => chain.destroy());
 
-	// Below 360px the nav has no gap, so neighbouring plain links' 24px boxes would touch (and the
-	// float drift then overlaps them). Trade 2px of padding on each facing side for a 4px margin:
-	// the glyphs stay where they were and the boxes no longer meet.
-	const plain = (i: number) => !!LINKS[i] && !LINKS[i].children;
-	const narrowSpacing = (i: number) =>
-		`${plain(i - 1) ? 'max-[360px]:ml-1 max-[360px]:pl-0.5' : ''} ${plain(i + 1) ? 'max-[360px]:pr-0.5' : ''}`;
-
 	const isCurrent = (href: string) => path === href;
 	const inSection = (link: NavLink) =>
 		isCurrent(link.href) || (link.children ?? []).some((c) => isCurrent(c.href));
 	const linkClass = (active: boolean) =>
-		`rounded-full px-2 py-1.5 leading-none max-[379px]:px-1 sm:px-3 whitespace-nowrap transition-colors ${
+		`inline-flex h-11 items-center rounded-full px-2 leading-none max-[25rem]:px-1 sm:px-3 whitespace-nowrap transition-colors ${
 			active ? 'text-primary' : 'text-foreground/75 hover:text-foreground'
 		}`;
 </script>
@@ -80,24 +85,26 @@
 		? 'border-transparent bg-background'
 		: frosted
 			? 'border-foreground/8 bg-background/70 backdrop-blur-md'
-			: 'border-transparent bg-transparent'} px-4 pt-4 max-[379px]:px-3 sm:px-8 lg:px-10"
+			: 'border-transparent bg-transparent'} flex items-center px-4 max-[25rem]:px-3 sm:px-8 lg:px-10"
 >
 	<div
-		class="flex flex-row items-center gap-2 transition-opacity duration-300 sm:gap-5"
+		class="flex min-w-0 flex-row items-center gap-2 transition-opacity duration-300 sm:gap-5"
 		class:opacity-0={!scrolled}
 		class:pointer-events-none={!scrolled}
 		aria-hidden={!scrolled}
 	>
-		<div class="flex items-center gap-2" use:float={HOME}>
+		<!-- The wordmark drops to the mark alone below 23rem, so the nav still fits at 150% text. -->
+		<a
+			href="/"
+			aria-label="Void Projects home"
+			class="flex h-11 shrink-0 items-center gap-2 text-base leading-none font-bold whitespace-nowrap hover:opacity-60 sm:text-2xl"
+			use:float={HOME}
+		>
 			<OrbitMark class="size-6 sm:size-8" />
-			<a
-				href="/"
-				class="text-base leading-none font-bold whitespace-nowrap hover:opacity-60 sm:text-2xl"
-				>Void Projects</a
-			>
-		</div>
+			<span class="max-[23rem]:hidden">Void Projects</span>
+		</a>
 		<nav class="flex items-center gap-0 text-xs sm:gap-3 sm:text-sm">
-			{#each LINKS as link, i (link.href)}
+			{#each LINKS as link (link.href)}
 				{#if link.children}
 					<div
 						class="group relative flex items-center"
@@ -115,7 +122,7 @@
 							<a
 								href={link.href}
 								aria-current={isCurrent(link.href) ? 'page' : undefined}
-								class="{linkClass(inSection(link))} pr-0.5 max-[379px]:pr-0.5 sm:pr-0.5"
+								class="{linkClass(inSection(link))} pr-0.5 max-[25rem]:pr-0.5 sm:pr-0.5"
 								>{link.label}</a
 							>
 							<button
@@ -123,7 +130,7 @@
 								aria-label="Show pages under {link.label}"
 								aria-expanded={branchOpen}
 								onclick={() => (branchOpen = !branchOpen)}
-								class="-my-0.5 mr-0.5 grid size-6 place-items-center rounded-full text-foreground/50 hover:text-foreground"
+								class="mr-0.5 grid h-11 w-7 place-items-center rounded-full text-foreground/70 hover:text-foreground"
 							>
 								<svg
 									viewBox="0 0 10 10"
@@ -142,7 +149,7 @@
 						</span>
 						<!-- Sub-pages hang below on a string. Shown on demand: always-on would sit over page titles just under the header. -->
 						<div
-							class="absolute top-full left-0 flex-col pt-5 group-hover:flex {branchOpen ||
+							class="absolute top-full left-0 flex-col pt-1 group-hover:flex {branchOpen ||
 							keyboardOpen
 								? 'flex'
 								: 'hidden'}"
@@ -154,7 +161,7 @@
 								aria-hidden="true"
 							>
 								<path
-									d="M38 -6 Q35 9 38 24"
+									d="M38 -14 Q35 3 38 18"
 									fill="none"
 									stroke={brandViolet(0.85)}
 									stroke-width="1.5"
@@ -168,7 +175,7 @@
 									aria-current={isCurrent(child.href) ? 'page' : undefined}
 									class="{linkClass(
 										isCurrent(child.href)
-									)} [text-shadow:0_0_2px_rgb(8_10_20/0.85),0_0_8px_rgb(8_10_20/0.85)]"
+									)} bg-background/85 backdrop-blur-sm [text-shadow:0_0_2px_rgb(8_10_20/0.85),0_0_8px_rgb(8_10_20/0.85)]"
 									use:hang={child.href}>{child.label}</a
 								>
 							{/each}
@@ -178,12 +185,8 @@
 					<a
 						href={link.href}
 						aria-current={isCurrent(link.href) ? 'page' : undefined}
-						aria-label={link.short ? link.label : undefined}
-						class="{linkClass(isCurrent(link.href))} {narrowSpacing(i)}"
-						use:float={link.href}
-						>{#if link.short}<span class="max-[360px]:hidden">{link.label}</span><span
-								class="hidden max-[360px]:inline">{link.short}</span
-							>{:else}{link.label}{/if}</a
+						class="{linkClass(isCurrent(link.href))} {link.wide ? 'max-sm:hidden' : ''}"
+						use:float={link.href}>{link.label}</a
 					>
 				{/if}
 			{/each}

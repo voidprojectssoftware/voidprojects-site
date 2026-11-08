@@ -39,10 +39,11 @@
 
 <div class="pointer-events-none absolute inset-x-0 flex justify-center {className}">
 	<div use:bind class="card pointer-events-none relative opacity-0">
-		<!-- Bottom padding leaves room for the corner action. -->
-		<GlassCard class="w-72 px-6 pt-5 pb-11">
+		<!-- Bottom padding leaves room for the corner action. Near-opaque so the glyphs and
+		     graph labels passing behind it never pile over the text. -->
+		<GlassCard class="w-72 bg-background/90 px-6 pt-5 pb-11 backdrop-blur-sm">
 			<h3 class="text-xl leading-tight font-semibold tracking-tight text-foreground">{title}</h3>
-			<p class="text-sm leading-relaxed text-foreground/65">{desc}</p>
+			<p class="text-sm leading-relaxed text-foreground/75">{desc}</p>
 
 			{#if repo}
 				<a

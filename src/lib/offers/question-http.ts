@@ -76,7 +76,7 @@ export async function questionResponse(
 	const result = validateContact({
 		name: followUp.name,
 		email: followUp.email,
-		kind: 'A business',
+		kind: 'A website',
 		message: raw.message
 	});
 	if ('error' in result) return json(400, { error: result.error });

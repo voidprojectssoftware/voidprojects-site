@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { ArrowRight, Bot, HandHeart, MessagesSquare, Zap } from '@lucide/svelte';
+	import { ArrowRight, Bot, Check, HandHeart, MessagesSquare, Zap } from '@lucide/svelte';
 	import { SiteHeader } from '$lib/components/site-header/index.js';
 	import OrbitMark from '$lib/brand/OrbitMark.svelte';
 	import { Section } from '$lib/components/voidprojects/section/index.js';
@@ -19,7 +19,9 @@
 		SPLASHES,
 		CAUSES,
 		INSTEAD,
-		ENGINEER
+		ENGINEER,
+		STATIC_SITE,
+		STATIC_SITE_INCLUDES
 	} from '$lib/content/websites.js';
 	import { CAUSE_ICONS } from '$lib/content/cause-icons.js';
 	import { JsonLd } from '$lib/components/json-ld/index.js';
@@ -156,6 +158,17 @@
 									>{row.link.label}</a
 								>
 							{/if}
+							{#if row === STATIC_SITE}
+								<p class="pt-3 text-sm font-semibold text-foreground/85">What’s included</p>
+								<ul class="flex flex-col gap-1.5 pt-2 text-sm">
+									{#each STATIC_SITE_INCLUDES as item (item)}
+										<li class="flex gap-2">
+											<Check class="mt-0.5 size-4 shrink-0 text-primary" aria-hidden="true" />
+											<span>{item}</span>
+										</li>
+									{/each}
+								</ul>
+							{/if}
 						</dd>
 					</div>
 				{/each}
@@ -189,7 +202,7 @@
 							<CauseIcon class="size-4.5" aria-hidden="true" />
 						</span>
 						<span class="text-sm leading-snug font-semibold">{k.title}</span>
-						<span class="text-xs leading-relaxed text-foreground/60">{k.hook}</span>
+						<span class="text-xs leading-relaxed text-foreground/70">{k.hook}</span>
 					</li>
 				{/each}
 			</ul>
@@ -290,7 +303,7 @@
 				<ContactForm bind:sent={contactSent} />
 			</GlassCard>
 		</div>
-		<p class="pt-16 text-sm text-foreground/60">
+		<p class="pt-16 text-sm text-foreground/70">
 			Why does everything here float? <a
 				href="/about/brand"
 				class="underline underline-offset-4 hover:text-primary">About our brand</a

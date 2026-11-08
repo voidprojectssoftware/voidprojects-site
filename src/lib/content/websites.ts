@@ -3,14 +3,28 @@
 
 export const CONTACT_EMAIL = 'hello@voidprojects.ai';
 
-// "The site is for" choices on the contact form; /api/contact accepts only these.
+// "What do you need?" choices on the contact form; /api/contact accepts only these.
 export const CONTACT_KINDS = [
-	'A business',
+	'A website',
+	'Custom software or automation',
+	'Consulting or AI training',
 	'A cause',
-	'Something personal',
 	'Not sure yet'
 ] as const;
 export type ContactKind = (typeof CONTACT_KINDS)[number];
+
+// Short keys for preselecting a kind by link, e.g. /contact?kind=software.
+export const CONTACT_KIND_KEYS: Record<string, ContactKind> = {
+	website: 'A website',
+	software: 'Custom software or automation',
+	consulting: 'Consulting or AI training',
+	training: 'Consulting or AI training',
+	cause: 'A cause',
+	unsure: 'Not sure yet'
+};
+
+// Kinds that are about a website; the team email subject says "Website request" for these.
+export const WEBSITE_KINDS: readonly ContactKind[] = ['A website', 'A cause'];
 
 // Minecraft-style splash on the hero headline; one is picked at random per load.
 export const SPLASHES = [
@@ -127,7 +141,7 @@ export const PRICING: {
 	{
 		figure: '$25/m',
 		spoken: '$25 a month',
-		body: 'for a static site: business or personal pages that don’t change, with your domain at cost. Already paying for a site? We’ll match what you pay now and take over hosting and upkeep. No build fee. No contract. Cancel any time.',
+		body: 'for a static site: business or personal pages without logins, live data, or bookings, with your domain at cost. Need a change? Tell us and we make it for you. Already paying for a site? We’ll match what you pay now and take over hosting and upkeep. No build fee. No contract. Cancel any time.',
 		offer: { name: 'Static website', usd: 25, monthly: true }
 	},
 	{
@@ -141,11 +155,20 @@ export const PRICING: {
 // The $25/m row, quoted in the /websites head copy.
 export const STATIC_SITE = PRICING.find((p) => p.offer.monthly)!;
 
+// Listed under the $25/m row; each item is stated on this page already or in the Terms (section 1, 7).
+export const STATIC_SITE_INCLUDES = [
+	'Design and build by our engineers, with no build fee',
+	'Hosting, security updates, and routine upkeep',
+	'Small changes (text, photos, hours, prices) at no extra charge, usually live the same day',
+	'Your domain at cost, registered in your name',
+	'No contract: cancel any time, and ask for your site’s files when you go'
+];
+
 // Contact form starters, picked by a link's ?preset= key so the URL stays short and
 // shareable. The form only fills an empty message, and the visitor can edit or clear it.
 export const CONTACT_PRESETS: Record<string, { kind: ContactKind; message: string }> = {
 	quote: {
-		kind: 'A business',
+		kind: 'A website',
 		message:
 			'I’d like a quote for a site that needs (live data, accounts, bookings, higher reliability, something else): \n\nAbout my business: '
 	}

@@ -40,7 +40,7 @@ describe('composeContactEmail with an offer tag', () => {
 			{
 				name: 'Pat Baker',
 				email: 'pat@test-bakery.example',
-				kind: 'A business',
+				kind: 'A website',
 				message: 'When does the site go live?',
 				offer: { id: 'testofferaaaa0000', business: 'Test\nBakery LLC' }
 			},
@@ -64,5 +64,19 @@ describe('composeContactEmail with an offer tag', () => {
 		expect(email.content.subject).toBe('Website request from Sam (A cause)');
 		expect(email.content.plainText).toContain('Kind: A cause');
 		expect(email.content.plainText).not.toContain('Offer:');
+	});
+
+	it('drops "Website" from the subject for a non-website kind', () => {
+		const email = composeContactEmail(
+			{
+				name: 'Tom',
+				email: 'tom@example.com',
+				kind: 'Custom software or automation',
+				message: 'Hello'
+			},
+			'from@voidprojects.ai',
+			'to@voidprojects.ai'
+		);
+		expect(email.content.subject).toBe('Request from Tom (Custom software or automation)');
 	});
 });

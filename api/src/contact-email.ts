@@ -2,6 +2,7 @@
 // api/ (not $lib) so the Vite dev middleware can never load it or reach ACS.
 import { EmailClient, type EmailMessage } from '@azure/communication-email';
 import { logDelivery, type ContactSubmission, type Deliver } from '$lib/contact/contact-http.js';
+import { WEBSITE_KINDS } from '$lib/content/websites.js';
 
 export const CONTACT_EMAIL_SETTINGS = [
 	'ACS_CONNECTION_STRING',
@@ -53,7 +54,7 @@ export function composeContactEmail(
 		content: {
 			subject: offer
 				? `Offer question from ${name}, ${offer.business} (offer ${offer.id})`
-				: `Website request from ${name} (${submission.kind})`,
+				: `${WEBSITE_KINDS.includes(submission.kind) ? 'Website request' : 'Request'} from ${name} (${submission.kind})`,
 			plainText: [
 				`Name: ${name}`,
 				`Email: ${submission.email}`,
@@ -67,7 +68,7 @@ export function composeContactEmail(
 				'--',
 				offer
 					? 'Sent from the voidprojects.ai thank-you page after Stripe Checkout; name, email and business come from the Checkout Session. Reply to answer the customer directly.'
-					: 'Sent by the voidprojects.ai /websites contact form. Reply to answer the visitor directly.'
+					: 'Sent by a voidprojects.ai contact form. Reply to answer the visitor directly.'
 			].join('\n')
 		}
 	};

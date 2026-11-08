@@ -1,4 +1,4 @@
-// POST /api/contact: the /websites contact form. Bundled by scripts/build-api.mjs.
+// POST /api/contact: the site contact forms (/contact, /websites, /websites/causes). Bundled by scripts/build-api.mjs.
 import { app } from '@azure/functions';
 import { contactResponse } from '$lib/contact/contact-http.js';
 import { contactDelivery } from './contact-email.js';

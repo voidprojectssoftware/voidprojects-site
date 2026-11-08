@@ -21,6 +21,13 @@
 	import { JsonLd } from '$lib/components/json-ld/index.js';
 	import { PageMeta } from '$lib/components/page-meta/index.js';
 	import { PAGES, organizationJsonLd } from '$lib/seo/site.js';
+	import {
+		HERO_CTA,
+		HERO_LINE,
+		SERVICES,
+		SERVICES_HEADING,
+		WHY_LESS
+	} from '$lib/content/services.js';
 
 	const team = [
 		{
@@ -54,7 +61,7 @@
 
 	let heroRef = $state<HTMLElement | null>(null);
 	let githubRef = $state<HTMLElement | null>(null);
-
+	let servicesRef = $state<HTMLElement | null>(null);
 	let scrolled = $state(false);
 	// Total page-scroll progress (0-1), mirrored into state so the timeline rail can
 	// track it; the same value is fanned to the physics stage in onScroll.
@@ -62,12 +69,28 @@
 	const DRIFT_THRESHOLD = 0.25;
 	const EXIT_THRESHOLD = 0.75;
 	const sectionVisible = $derived(scrollProgress >= EXIT_THRESHOLD);
+	const drifting = $derived(scrollProgress >= DRIFT_THRESHOLD);
 
 	const heroTitle = 'Void Projects';
 	const titleChars = [...heroTitle];
 
-	const heroSubtitle = 'AI-centric projects from a developer collective.';
+	const heroSubtitle = HERO_LINE;
 	const subtitleChars = [...heroSubtitle];
+
+	// Character indexes grouped into words and single spaces, so each word renders in a
+	// no-wrap box: the letters are separate inline-blocks (for the drift), and without
+	// the box a narrow screen would break a line mid-word.
+	function wordRuns(chars: string[]): number[][] {
+		const runs: number[][] = [];
+		chars.forEach((ch, i) => {
+			const prev = runs.at(-1);
+			if (ch !== ' ' && prev && chars[prev[0]] !== ' ') prev.push(i);
+			else runs.push([i]);
+		});
+		return runs;
+	}
+	const titleRuns = wordRuns(titleChars);
+	const subtitleRuns = wordRuns(subtitleChars);
 
 	// Per-character word membership, so the Constellation graph can bind the letters
 	// of each word into a chain and hook each word back to the card. Spaces get null
@@ -217,15 +240,16 @@
 
 	// The spine: the relationship between each consecutive pair of words, a
 	// dependency-grammar reading ("language as a graph"). Aligned to word order
-	// (Void, Projects, AI-centric, projects, from, a, developer, collective).
+	// (Void, Projects, Consulting, custom, software, websites, and, AI, training).
 	const LINK_LABELS = [
 		'modifies', // Void -> Projects
-		'elaborated by', // Projects -> AI-centric
-		'describes', // AI-centric -> projects
-		'extends', // projects -> from
-		'introduces', // from -> a
-		'scopes', // a -> developer
-		'modifies' // developer -> collective
+		'offers', // Projects -> Consulting
+		'lists', // Consulting -> custom
+		'modifies', // custom -> software
+		'lists', // software -> websites
+		'joins', // websites -> and
+		'joins', // and -> AI
+		'modifies' // AI -> training
 	];
 	const constellationCard = cards.find((c) => c.title === 'Constellation');
 
@@ -416,6 +440,13 @@
 
 		let last = measure();
 		let autoReturning = false;
+		let returnTo = 0;
+		// The services section sits between the hero and the scene, below the sticky header.
+		const servicesTop = () => {
+			if (!servicesRef) return 0;
+			const header = document.querySelector('header')?.offsetHeight ?? 0;
+			return servicesRef.getBoundingClientRect().top + window.scrollY - header;
+		};
 
 		const onScroll = () => {
 			const { y, progress } = measure();
@@ -431,12 +462,14 @@
 			if (!reduceMotion) {
 				if (autoReturning) {
 					// Stand down once home, or if the user pushed back down and took over.
-					if (y <= 1 || y > last.y) autoReturning = false;
+					if (y <= returnTo + 1 || y > last.y) autoReturning = false;
 				} else if (last.progress >= firstCardThreshold && progress < firstCardThreshold) {
-					// Crossed up out of the projects: glide to the top so the title reforms at
-					// the origin rather than leaving the user in the scattered-glyph limbo.
+					// Crossed up out of the projects: glide back to the services section (the
+					// title reforms behind it) rather than leaving the user in the scattered-glyph
+					// limbo, and without skipping past the services on the way to the top.
 					autoReturning = true;
-					window.scrollTo({ top: 0, behavior: 'smooth' });
+					returnTo = Math.max(0, servicesTop());
+					window.scrollTo({ top: returnTo, behavior: 'smooth' });
 				}
 			}
 
@@ -534,7 +567,17 @@
 	>
 {/snippet}
 
-<SiteHeader {scrolled}></SiteHeader>
+{#snippet glyphRun(chars: string[], meta: CharMeta[], run: number[])}<span
+		class="inline-block whitespace-nowrap"
+		>{#each run as i (i)}<span
+				use:driftNode={meta[i]}
+				use:nudge
+				aria-hidden="true"
+				style="display:inline-block;white-space:pre">{chars[i] === ' ' ? '\u00A0' : chars[i]}</span
+			>{/each}</span
+	>{/snippet}
+
+<SiteHeader />
 <main id="main-content" class="flex flex-col">
 	<Section
 		bind:ref={heroRef}
@@ -548,44 +591,52 @@
 				class:pointer-events-none={sectionVisible}
 			>
 				<h1
-					class="pointer-events-none text-5xl font-bold select-none max-[600px]:text-4xl sm:text-7xl lg:text-8xl"
+					class="pointer-events-none text-center text-5xl font-bold select-none max-[600px]:text-4xl sm:text-7xl lg:text-8xl"
 					aria-label={heroTitle}
 				>
-					{#each titleChars as ch, i (i)}<span
-							use:driftNode={titleMeta[i]}
-							use:nudge
-							aria-hidden="true"
-							style="display:inline-block;white-space:pre">{ch === ' ' ? '\u00A0' : ch}</span
-						>{/each}
+					{#each titleRuns as run, r (r)}{@render glyphRun(titleChars, titleMeta, run)}{/each}
 				</h1>
 				<p
-					class="pointer-events-none px-2 text-center text-lg select-none sm:text-2xl"
+					class="pointer-events-none max-w-[22ch] px-2 text-center text-xl font-medium select-none sm:max-w-none sm:text-2xl"
 					aria-label={heroSubtitle}
 				>
-					{#each subtitleChars as ch, i (i)}<span
-							use:driftNode={subtitleMeta[i]}
-							use:nudge
-							aria-hidden="true"
-							style="display:inline-block;white-space:pre">{ch === ' ' ? '\u00A0' : ch}</span
-						>{/each}
+					{#each subtitleRuns as run, r (r)}{@render glyphRun(
+							subtitleChars,
+							subtitleMeta,
+							run
+						)}{/each}
 				</p>
+				<!-- Fades once the title scatters: the button does not drift with the letters. -->
+				<a
+					href="/contact"
+					class="mt-4 inline-flex h-12 items-center rounded-full bg-primary-strong px-7 text-base font-semibold text-white transition-opacity duration-300 hover:bg-primary-strong/85 focus-visible:ring-3 focus-visible:ring-primary/40 focus-visible:outline-none"
+					class:opacity-0={drifting}
+					class:pointer-events-none={drifting}
+					tabindex={drifting ? -1 : undefined}>{HERO_CTA}</a
+				>
 			</div>
 			<!-- Deliberately outside the fading div above: unlike the title/subtitle, the
 			     GitHub button should stay up (and clickable) through the Meet The Team
-			     section - z-20 lifts it above that section's own z-10 panel. -->
-			<div use:drift bind:this={githubRef} class="relative z-20 inline-block">
+			     section - z-20 lifts it above that section's own z-10 panel. Below lg the
+			     stacked team cards fill the screen, so it fades there instead of covering one. -->
+			<div
+				use:drift
+				bind:this={githubRef}
+				class="relative z-20 inline-block transition-opacity duration-500 {sectionVisible
+					? 'max-lg:pointer-events-none max-lg:opacity-0'
+					: ''}"
+			>
 				<Button
 					href={GITHUB_URL}
 					target="_blank"
 					rel="noopener noreferrer"
 					draggable={false}
 					variant="ghost"
-					size="lg"
-					class="group/github h-auto cursor-pointer gap-2.5 px-5 py-3 text-xl font-semibold text-primary hover:bg-primary/10 hover:text-primary"
+					class="group/github h-11 cursor-pointer gap-2 px-4 text-sm font-medium text-foreground/70 hover:bg-primary/10 hover:text-primary"
 					onclick={warpToGithub}
 				>
 					<svg
-						class="size-6 transition-transform group-hover/github:scale-110"
+						class="size-4 transition-transform group-hover/github:scale-110"
 						viewBox="0 0 24 24"
 						fill="currentColor"
 						aria-hidden="true"
@@ -613,7 +664,7 @@
 			class:pointer-events-none={scrolled}
 			aria-hidden={scrolled}
 		>
-			<span class="text-sm tracking-wide opacity-70">Scroll for our work</span>
+			<span class="text-sm tracking-wide opacity-70">Scroll for what we do</span>
 			<ChevronDown class="size-6 animate-bounce opacity-70" />
 		</div>
 		<div
@@ -627,7 +678,7 @@
 			>
 				{#each team as member, i (member.name)}
 					<div class="team-float" style:animation-delay="{i * -1.7}s">
-						<GlassCard class="gap-0 bg-background/55 p-4 backdrop-blur-sm lg:p-6">
+						<GlassCard class="gap-0 bg-background/90 p-4 backdrop-blur-sm lg:p-6">
 							<ProfileCard
 								layout="vertical"
 								src={member.src}
@@ -645,6 +696,46 @@
 			</div>
 		</div>
 	</Section>
+	<!-- In flow after the sticky hero, so it scrolls up over it; z-1 and the opaque
+	     panel keep the hero glyphs hidden behind it. -->
+	<section
+		bind:this={servicesRef}
+		id="services"
+		aria-labelledby="services-heading"
+		class="relative z-1 border-y border-foreground/8 bg-background px-6 py-16 sm:px-12 sm:py-20 lg:px-35"
+	>
+		<div class="mx-auto flex max-w-6xl flex-col gap-8">
+			<h2 id="services-heading" class="text-3xl font-bold tracking-tight sm:text-4xl">
+				{SERVICES_HEADING}
+			</h2>
+			<ul class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+				{#each SERVICES as service (service.key)}
+					<li class="flex flex-col gap-3 rounded-2xl bg-foreground/4 p-5 ring-1 ring-foreground/10">
+						<h3 class="text-lg font-semibold">{service.title}</h3>
+						<p class="flex-1 leading-relaxed text-foreground/75">{service.body}</p>
+						<div class="flex flex-wrap gap-x-4 gap-y-1 text-sm font-medium">
+							{#if service.link}
+								<a
+									href={service.link.href}
+									class="inline-flex min-h-11 items-center text-primary underline-offset-4 hover:underline"
+									>{service.link.label}</a
+								>
+							{/if}
+							<a
+								href="/contact?kind={service.key}"
+								class="inline-flex min-h-11 items-center text-primary underline-offset-4 hover:underline"
+								>{service.ask}</a
+							>
+						</div>
+					</li>
+				{/each}
+			</ul>
+			<div class="flex max-w-3xl flex-col gap-2">
+				<h3 class="text-lg font-semibold">{WHY_LESS.title}</h3>
+				<p class="leading-relaxed text-foreground/75">{WHY_LESS.body}</p>
+			</div>
+		</div>
+	</section>
 	<div class="h-1250"></div>
 </main>
 

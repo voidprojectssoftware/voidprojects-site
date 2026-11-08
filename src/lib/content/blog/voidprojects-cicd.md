@@ -10,7 +10,7 @@ tags:
 
 The team at Void Projects has been intent on making most, if not all, of the code we write open source. We desire to be as public-facing as we possibly can. Everyone at Void Projects has agreed that, by making our work visible and accessible to everyone, we all benefit!
 
-This, of course, is not a novel idea—it is an idea central to open source. However, many of our projects (such as the very website you are reading this post on) are not damaged by being made visible. They are only damaged if their infrastructure is exposed.
+This, of course, is not a novel idea; it is an idea central to open source. However, many of our projects (such as the very website you are reading this post on) are not damaged by being made visible. They are only damaged if their infrastructure is exposed.
 
 When we first started building this website, I was given ownership over its deployment. As a challenge, I decided to forego a traditional CI/CD pattern for the Void Projects website, and instead scaffold a different system that keeps our vital infrastructure private and our code public.
 
@@ -22,7 +22,7 @@ The system has a simple design:
 
 Any repository in our organization, public or private, can make a call to any of our private repositories. A GitHub App with write access, which is installed in each repository, generates a token that is used to call a respective private repository. It’s also unique to each run.
 
-In other words—it acts as a member of our organization to properly allow a common workflow to access our organization-level secrets.
+In other words, it acts as a member of our organization to properly allow a common workflow to access our organization-level secrets.
 
 A calling repository must use our common notification workflow:
 
@@ -85,5 +85,5 @@ Since our secrets live at the Organization level, you can pass a flag when you c
 
 ### Post-Mortem
 
-In retrospect, this felt like a small project compared to what we have cooking at Void Projects. My biggest takeaways were mostly underscored by how I implemented a solution and not necessarily the solution itself. If anything, I have a better understanding of how I’d like to work going forward—which I will always take as a win.
+In retrospect, this felt like a small project compared to what we have cooking at Void Projects. My biggest takeaways were mostly underscored by how I implemented a solution and not necessarily the solution itself. If anything, I have a better understanding of how I’d like to work going forward, which I will always take as a win.
 

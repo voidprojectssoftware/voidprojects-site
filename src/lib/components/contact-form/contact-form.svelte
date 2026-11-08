@@ -5,6 +5,7 @@
 	import {
 		CONTACT_EMAIL,
 		CONTACT_KINDS,
+		CONTACT_KIND_KEYS,
 		CONTACT_PRESETS,
 		type ContactKind
 	} from '$lib/content/websites.js';
@@ -30,6 +31,13 @@
 	// and on a same-page click. Client only: the page is prerendered, and SvelteKit forbids
 	// reading url.searchParams while prerendering.
 	const presetKey = $derived(browser ? page.url.searchParams.get('preset') : null);
+	// A ?kind= link (CONTACT_KIND_KEYS) only picks the kind; a preset, when both are given, wins.
+	const kindKey = $derived(browser ? page.url.searchParams.get('kind') : null);
+	$effect(() => {
+		if (!kindKey || !Object.hasOwn(CONTACT_KIND_KEYS, kindKey)) return;
+		const picked = CONTACT_KIND_KEYS[kindKey];
+		untrack(() => (kind = picked));
+	});
 	$effect(() => {
 		if (!presetKey || !Object.hasOwn(CONTACT_PRESETS, presetKey)) return;
 		const preset = CONTACT_PRESETS[presetKey];
@@ -110,7 +118,7 @@
 			</label>
 		</div>
 		<fieldset class="flex flex-col gap-2">
-			<legend class="{label} pb-1.5">The site is for</legend>
+			<legend class="{label} pb-1.5">What do you need?</legend>
 			<div class="flex flex-wrap gap-2">
 				{#each CONTACT_KINDS as k (k)}
 					<label
@@ -131,7 +139,7 @@
 				class="{field} min-h-28 resize-y"
 				bind:value={message}
 				required
-				placeholder="Who it's for, what it needs to do, any site you have today."
+				placeholder="What you want done, who it's for, and anything you use today."
 			></textarea>
 		</label>
 		<div class="sr-only" aria-hidden="true">
@@ -147,7 +155,7 @@
 			>
 				Start the conversation
 			</button>
-			<p class="text-sm text-foreground/50">
+			<p class="text-sm text-foreground/65">
 				Goes straight to us, or write us at
 				<a class="text-foreground/80 underline underline-offset-4" href="mailto:{CONTACT_EMAIL}"
 					>{CONTACT_EMAIL}</a

@@ -2,13 +2,20 @@
 	import { SiteHeader } from '$lib/components/site-header/index.js';
 	import { Section } from '$lib/components/voidprojects/section/index.js';
 	import { upgradeYoutubeEmbeds } from '$lib/components/youtube-embed/index.js';
+	import { PageMeta } from '$lib/components/page-meta/index.js';
+	import { page } from '$app/state';
 
 	let { data } = $props();
+
+	const meta = $derived({
+		path: `/blog/${page.params.slug}`,
+		title: `${data.meta.title} | Void Projects`,
+		description: data.meta.description
+	});
 </script>
 
 <svelte:head>
-	<title>{data.meta.title} — Void Projects</title>
-	<meta name="description" content={data.meta.description} />
+	<PageMeta {meta} />
 </svelte:head>
 
 <SiteHeader transparent={false} />
