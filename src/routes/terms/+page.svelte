@@ -288,7 +288,7 @@
 	<h2 id="contact">{heading('contact')}</h2>
 	<address>
 		Void Projects LLC<br />
-		501 Union St Ste 545 PMB 834400<br />
+		Mailing address: 501 Union St Ste 545 PMB 834400<br />
 		Nashville, Tennessee 37219-1876, US<br />
 		{@render mail()}
 	</address>

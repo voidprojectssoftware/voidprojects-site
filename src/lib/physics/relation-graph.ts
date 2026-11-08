@@ -281,6 +281,7 @@ export class RelationGraph implements Actor {
 	hubLengthFor?: (width: number, height: number) => number;
 
 	private svg: SVGSVGElement | null = null;
+	private opacity = 1; // see setOpacity; applied to each new drawing
 	private group: SVGGElement | null = null;
 	private readonly edges: Edge[] = [];
 	/** The glyph member bodies, for the pairwise repulsion (the hub is excluded). */
@@ -455,6 +456,12 @@ export class RelationGraph implements Actor {
 		this.damped.clear();
 		this.removeSvg();
 		this.active = false;
+	}
+
+	/** Dim the whole drawing (edges, labels, pulse), e.g. while page content passes over it. */
+	setOpacity(opacity: number) {
+		this.opacity = opacity;
+		if (this.svg) this.svg.style.opacity = String(opacity);
 	}
 
 	onScroll() {
@@ -807,8 +814,9 @@ export class RelationGraph implements Actor {
 		// Cover the viewport so SVG user units equal viewport pixels (body coords).
 		// z-index -1 sits between the star background (-z-10) and the hero text.
 		svg.style.cssText =
-			'position:fixed;left:0;top:0;width:100%;height:100%;pointer-events:none;z-index:-1;overflow:visible';
+			'position:fixed;left:0;top:0;width:100%;height:100%;pointer-events:none;z-index:-1;overflow:visible;transition:opacity 0.5s';
 		svg.setAttribute('aria-hidden', 'true');
+		svg.style.opacity = String(this.opacity);
 		const group = document.createElementNS(SVG_NS, 'g');
 		group.style.opacity = '0'; // fades in via sync()
 		svg.appendChild(group);

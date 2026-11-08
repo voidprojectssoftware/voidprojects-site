@@ -5,9 +5,9 @@
 		CalendarCheck,
 		Check,
 		Eye,
+		FolderDown,
 		Globe,
 		HandHeart,
-		History,
 		MessagesSquare,
 		PencilLine,
 		PiggyBank,
@@ -50,9 +50,9 @@
 		preview: Eye,
 		edits: PencilLine,
 		hosting: Server,
-		backups: History,
 		domain: Globe,
-		contract: CalendarCheck
+		contract: CalendarCheck,
+		files: FolderDown
 	};
 
 	let contactSent = $state(false);

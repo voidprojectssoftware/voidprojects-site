@@ -30,6 +30,7 @@
 	import { PageMeta } from '$lib/components/page-meta/index.js';
 	import { PAGES, organizationJsonLd } from '$lib/seo/site.js';
 	import {
+		CLOSING,
 		HERO_CTA,
 		HERO_LINE,
 		SERVICES,
@@ -224,9 +225,12 @@
 	// centered on it; tear it down when it leaves. RelationGraph is generic over
 	// bodies, so it links the glyphs, the GitHub button, and the card without any of
 	// them knowing about each other — the composition root wires them up here.
-	// Phones stack the words tightly, so the per-letter "precedes" labels are dropped there.
+	// The per-letter "precedes" labels stay faint on desktop and are dropped on phones,
+	// where the words stack tightly; the labels between words carry the reading.
 	const narrowGraph = typeof window !== 'undefined' && window.innerWidth < 768;
-	const graph = new RelationGraph(narrowGraph ? { intraLabelOpacity: 0, hubLabelSize: 14 } : {});
+	const graph = new RelationGraph(
+		narrowGraph ? { intraLabelOpacity: 0, hubLabelSize: 14 } : { intraLabelOpacity: 0.22 }
+	);
 	stage.add(graph);
 
 	// Pin the card and blow the glyphs off it in a direction, so the graph stays clear
@@ -264,17 +268,16 @@
 
 	// The spine: the relationship between each consecutive pair of words, a
 	// dependency-grammar reading ("language as a graph"). Aligned to word order
-	// (Void, Projects, AI, strategy, and, training, custom, software, and, websites).
+	// (Void, Projects, Websites, custom, software, AI, strategy, and, training).
 	const LINK_LABELS = [
 		'modifies', // Void -> Projects
-		'offers', // Projects -> AI
+		'offers', // Projects -> Websites
+		'lists', // Websites -> custom
+		'modifies', // custom -> software
+		'lists', // software -> AI
 		'modifies', // AI -> strategy
 		'joins', // strategy -> and
-		'joins', // and -> training
-		'lists', // training -> custom
-		'modifies', // custom -> software
-		'joins', // software -> and
-		'joins' // and -> websites
+		'joins' // and -> training
 	];
 	const constellationCard = cards.find((c) => c.title === 'Constellation');
 
@@ -492,7 +495,8 @@
 			// Past the services the scattered title stays hidden until the card brings it
 			// into the Constellation scene, so the hero never reappears on its own.
 			heroFade =
-				progress >= driftAt && cardsOnScreen === 0 ? 0 : 1 - Math.min(1, servicesCoverage() * 1.4);
+				progress >= driftAt && cardsOnScreen === 0 ? 0 : 1 - Math.min(1, servicesCoverage() * 3);
+			graph.setOpacity(heroFade);
 			// Re-evaluate after setScrollProgress: a card's onStateChange (fired above)
 			// may have just changed cardsOnScreen, and sectionVisible already reflects
 			// the scrollProgress write above.
@@ -516,14 +520,17 @@
 		};
 
 		// Ties the scene to the services section: the glyphs start drifting once it covers
-		// the hero, and the card tosses in as it leaves (its bottom near the top fifth), so
-		// the scroll goes services, then straight into the Constellation scene.
+		// the hero, and the card tosses in as it leaves, so the scroll goes services, then
+		// straight into the Constellation scene. Desktop pins the card mid-left, so it waits
+		// for the section to clear the header; phones pin it low, so it can come in while the
+		// section's last lines are still leaving the top, with no empty screen between.
 		const measureScene = () => {
 			const scrollable = document.documentElement.scrollHeight - window.innerHeight;
 			if (scrollable <= 0 || !servicesRef) return;
 			const header = document.querySelector('header')?.offsetHeight ?? 0;
 			const top = servicesTop();
-			const bottom = top + header + servicesRef.offsetHeight - window.innerHeight * 0.2;
+			const clearAt = window.innerWidth >= 768 ? header : window.innerHeight * 0.55;
+			const bottom = top + header + servicesRef.offsetHeight - clearAt;
 			driftAt = Math.min(EXIT_THRESHOLD - 0.2, Math.max(0.02, top / scrollable));
 			cardAt = Math.min(EXIT_THRESHOLD - 0.15, Math.max(driftAt + 0.02, bottom / scrollable));
 			glyphs.setDriftThreshold(driftAt);
@@ -637,184 +644,199 @@
 
 <SiteHeader />
 <main id="main-content" class="flex flex-col">
-	<Section
-		bind:ref={heroRef}
-		glass={false}
-		class="relative sticky top-16 h-[calc(100dvh-4rem)] items-center justify-center gap-3 overflow-clip"
-	>
-		<div
-			class="flex flex-col items-center gap-4 transition-opacity duration-500"
-			style:opacity={heroFade}
+	<!-- The sticky hero's scroll range: it releases here, before the closing call to action. -->
+	<div class="flex flex-col">
+		<Section
+			bind:ref={heroRef}
+			glass={false}
+			class="relative sticky top-16 h-[calc(100dvh-4rem)] items-center justify-center gap-3 overflow-clip"
 		>
 			<div
-				class="flex flex-col items-center gap-4 transition-opacity duration-700"
-				class:opacity-0={sectionVisible}
-				class:pointer-events-none={sectionVisible}
+				class="flex flex-col items-center gap-4 transition-opacity duration-500"
+				style:opacity={heroFade}
 			>
-				<h1
-					class="pointer-events-none text-5xl font-bold select-none max-[600px]:text-4xl sm:text-7xl lg:text-8xl"
-					aria-label={heroTitle}
-				>
-					{#each titleRuns as run, r (r)}{@render glyphRun(titleChars, titleMeta, run)}{/each}
-				</h1>
-				<p
-					class="pointer-events-none px-2 text-center text-lg select-none sm:text-2xl"
-					aria-label={heroSubtitle}
-				>
-					{#each subtitleRuns as run, r (r)}{@render glyphRun(
-							subtitleChars,
-							subtitleMeta,
-							run
-						)}{/each}
-				</p>
-			</div>
-			<div class="flex flex-wrap items-center justify-center gap-3 pt-2">
-				<!-- Fades once the title scatters: unlike the GitHub button it does not drift. -->
-				<a
-					href="/contact"
-					class="inline-flex h-11 items-center rounded-full bg-primary-strong px-6 text-sm font-semibold text-white transition-opacity duration-300 hover:bg-primary-strong/85"
-					class:opacity-0={drifting}
-					class:pointer-events-none={drifting}
-					tabindex={drifting ? -1 : undefined}>{HERO_CTA}</a
-				>
-				<!-- Deliberately outside the fading div above: unlike the title/subtitle, the
-			     GitHub button should stay up (and clickable) through the Meet The Team
-			     section - z-20 lifts it above that section's own z-10 panel. Below lg the
-			     stacked team cards fill the screen, so it fades there instead of covering one. -->
 				<div
-					use:drift
-					bind:this={githubRef}
-					class="relative z-20 inline-block transition-opacity duration-500 {sectionVisible
-						? 'max-lg:pointer-events-none max-lg:opacity-0'
-						: ''}"
+					class="flex flex-col items-center gap-4 transition-opacity duration-700"
+					class:opacity-0={sectionVisible}
+					class:pointer-events-none={sectionVisible}
 				>
-					<Button
-						href={GITHUB_URL}
-						target="_blank"
-						rel="noopener noreferrer"
-						draggable={false}
-						variant="ghost"
-						class="group/github h-11 cursor-pointer gap-2 rounded-full border border-foreground/15 px-6 text-sm font-semibold text-foreground hover:bg-foreground/5 hover:text-foreground"
-						onclick={warpToGithub}
+					<h1
+						class="pointer-events-none text-5xl font-bold select-none max-[600px]:text-4xl sm:text-7xl lg:text-8xl"
+						aria-label={heroTitle}
 					>
-						<svg
-							class="size-4 transition-transform group-hover/github:scale-110"
-							viewBox="0 0 24 24"
-							fill="currentColor"
-							aria-hidden="true"
+						{#each titleRuns as run, r (r)}{@render glyphRun(titleChars, titleMeta, run)}{/each}
+					</h1>
+					<p
+						class="pointer-events-none px-2 text-center text-lg select-none sm:text-2xl"
+						aria-label={heroSubtitle}
+					>
+						{#each subtitleRuns as run, r (r)}{@render glyphRun(
+								subtitleChars,
+								subtitleMeta,
+								run
+							)}{/each}
+					</p>
+				</div>
+				<div class="flex flex-wrap items-center justify-center gap-3 pt-2">
+					<!-- Fades once the title scatters: unlike the GitHub button it does not drift. -->
+					<a
+						href="/contact"
+						class="inline-flex h-11 items-center rounded-full bg-primary-strong px-6 text-sm font-semibold text-white transition-opacity duration-300 hover:bg-primary-strong/85"
+						class:opacity-0={drifting}
+						class:pointer-events-none={drifting}
+						tabindex={drifting ? -1 : undefined}>{HERO_CTA}</a
+					>
+					<!-- Deliberately outside the fading div above: unlike the title/subtitle, the
+			     GitHub button should stay up (and clickable) through the Meet The Team
+			     section - z-20 lifts it above that section's own z-10 panel. Below lg it
+			     shows only with the hero: docked under the card or the stacked team cards it
+			     read as a second copy, and it covered the last card. -->
+					<div
+						use:drift
+						bind:this={githubRef}
+						class="relative z-20 inline-block transition-opacity duration-500 {drifting
+							? 'max-lg:pointer-events-none max-lg:opacity-0'
+							: ''}"
+					>
+						<Button
+							href={GITHUB_URL}
+							target="_blank"
+							rel="noopener noreferrer"
+							draggable={false}
+							variant="ghost"
+							class="group/github h-11 cursor-pointer gap-2 rounded-full border border-foreground/15 px-6 text-sm font-semibold text-foreground hover:bg-foreground/5 hover:text-foreground"
+							onclick={warpToGithub}
 						>
-							<path
-								d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"
-							/>
-						</svg>
-						Warp to Github
-					</Button>
+							<svg
+								class="size-4 transition-transform group-hover/github:scale-110"
+								viewBox="0 0 24 24"
+								fill="currentColor"
+								aria-hidden="true"
+							>
+								<path
+									d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"
+								/>
+							</svg>
+							Warp to Github
+						</Button>
+					</div>
 				</div>
 			</div>
-		</div>
-		<!-- Fades as the team arrives, so the ejecting card never shows between their cards. -->
-		<div
-			class="pointer-events-none absolute inset-0 transition-opacity duration-500"
-			class:opacity-0={sectionVisible}
-		>
-			{#each cards as card (card.title)}
-				<ProjectCard
-					actor={card.actor}
-					title={card.title}
-					desc={card.desc}
-					repo={card.repo}
-					class={card.class}
-				/>
-			{/each}
-		</div>
-		<a
-			href="#services"
-			onclick={(e) => {
-				e.preventDefault();
-				seekTo(driftAt);
-			}}
-			class="absolute bottom-8 left-1/2 flex min-h-11 -translate-x-1/2 flex-col items-center gap-1 transition-opacity duration-300 select-none hover:text-primary"
-			class:opacity-0={scrolled}
-			class:pointer-events-none={scrolled}
-			aria-hidden={scrolled}
-			tabindex={scrolled ? -1 : undefined}
-		>
-			<span class="text-sm tracking-wide opacity-70"
-				>Scroll for {SERVICES_HEADING.toLowerCase()}</span
-			>
-			<ChevronDown class="size-6 animate-bounce opacity-70" />
-		</a>
-		<div
-			class="absolute inset-0 z-10 mb-10 flex flex-col items-center justify-center transition-opacity duration-700"
-			class:opacity-0={!sectionVisible}
-			class:pointer-events-none={!sectionVisible}
-			aria-hidden={!sectionVisible}
-		>
+			<!-- Fades as the team arrives, so the ejecting card never shows between their cards. -->
 			<div
-				class="grid w-full max-w-6xl grid-cols-1 items-start gap-3 px-4 lg:grid-cols-3 lg:gap-6 lg:px-8"
+				class="pointer-events-none absolute inset-0 transition-opacity duration-500"
+				class:opacity-0={sectionVisible}
 			>
-				{#each team as member, i (member.name)}
-					<div class="team-float" style:animation-delay="{i * -1.7}s">
-						<GlassCard class="gap-0 bg-background/90 p-4 backdrop-blur-sm lg:p-6">
-							<ProfileCard
-								layout="vertical"
-								src={member.src}
-								alt={member.name}
-								name={member.name}
-								role="Co-Founder"
-								subrole={member.subrole}
-								skills={member.skills}
-								linkedin={member.linkedin}
-								desc={member.desc}
-							/>
-						</GlassCard>
-					</div>
+				{#each cards as card (card.title)}
+					<ProjectCard
+						actor={card.actor}
+						title={card.title}
+						desc={card.desc}
+						repo={card.repo}
+						class={card.class}
+					/>
 				{/each}
 			</div>
-		</div>
-	</Section>
-	<!-- In flow after the sticky hero, so it scrolls up over it (z-1); the hero fades as it
+			<a
+				href="#services"
+				onclick={(e) => {
+					e.preventDefault();
+					seekTo(driftAt);
+				}}
+				class="absolute bottom-8 left-1/2 flex min-h-11 -translate-x-1/2 flex-col items-center gap-1 transition-opacity duration-300 select-none hover:text-primary"
+				class:opacity-0={scrolled}
+				class:pointer-events-none={scrolled}
+				aria-hidden={scrolled}
+				tabindex={scrolled ? -1 : undefined}
+			>
+				<span class="text-sm tracking-wide opacity-70"
+					>Scroll for {SERVICES_HEADING.toLowerCase()}</span
+				>
+				<ChevronDown class="size-6 animate-bounce opacity-70" />
+			</a>
+			<div
+				class="absolute inset-0 z-10 mb-10 flex flex-col items-center justify-center transition-opacity duration-700"
+				class:opacity-0={!sectionVisible}
+				class:pointer-events-none={!sectionVisible}
+				aria-hidden={!sectionVisible}
+			>
+				<div
+					class="grid w-full max-w-6xl grid-cols-1 items-start gap-3 px-4 lg:grid-cols-3 lg:gap-6 lg:px-8"
+				>
+					{#each team as member, i (member.name)}
+						<div class="team-float" style:animation-delay="{i * -1.7}s">
+							<GlassCard class="gap-0 bg-background/90 p-4 backdrop-blur-sm lg:p-6">
+								<ProfileCard
+									layout="vertical"
+									src={member.src}
+									alt={member.name}
+									name={member.name}
+									role="Co-Founder"
+									subrole={member.subrole}
+									skills={member.skills}
+									linkedin={member.linkedin}
+									desc={member.desc}
+								/>
+							</GlassCard>
+						</div>
+					{/each}
+				</div>
+			</div>
+		</Section>
+		<!-- In flow after the sticky hero, so it scrolls up over it (z-1); the hero fades as it
 	     is covered (heroFade), so the sky shows between the cards and not the title. -->
-	<PageSection bind:ref={servicesRef} wide class="relative z-1 pt-24 pb-24">
-		<div
-			id="services"
-			class="mx-auto flex max-w-2xl scroll-mt-24 flex-col items-center gap-3 pb-10 text-center"
-		>
-			<h2 class="text-3xl font-bold tracking-tight">{SERVICES_HEADING}</h2>
-			<p class="text-lg leading-relaxed text-balance text-foreground/65">{SERVICES_INTRO}</p>
-		</div>
-		<div class="grid w-full gap-5 md:grid-cols-2 xl:grid-cols-4">
-			{#each SERVICES as service (service.key)}
-				{@const Icon = SERVICE_ICONS[service.key]}
-				<GlassCard class="h-full gap-3 p-6">
-					<span class="grid size-10 place-items-center rounded-xl bg-primary/15 text-primary">
-						<Icon class="size-5" aria-hidden="true" />
-					</span>
-					<h3 class="pt-1 text-lg font-semibold">{service.title}</h3>
-					<p class="text-sm leading-relaxed text-foreground/65">{service.body}</p>
-					<div class="mt-auto flex flex-wrap gap-x-4 text-sm">
-						{#each service.links ?? [] as link (link.href)}
+		<PageSection bind:ref={servicesRef} wide class="relative z-1 pt-24 pb-24">
+			<div
+				id="services"
+				class="mx-auto flex max-w-2xl scroll-mt-24 flex-col items-center gap-3 pb-10 text-center"
+			>
+				<h2 class="text-3xl font-bold tracking-tight">{SERVICES_HEADING}</h2>
+				<p class="text-lg leading-relaxed text-balance text-foreground/65">{SERVICES_INTRO}</p>
+			</div>
+			<div class="grid w-full gap-5 md:grid-cols-2 xl:grid-cols-4">
+				{#each SERVICES as service (service.key)}
+					{@const Icon = SERVICE_ICONS[service.key]}
+					<GlassCard class="h-full gap-3 p-6">
+						<span class="grid size-10 place-items-center rounded-xl bg-primary/15 text-primary">
+							<Icon class="size-5" aria-hidden="true" />
+						</span>
+						<h3 class="pt-1 text-lg font-semibold">{service.title}</h3>
+						<p class="text-sm leading-relaxed text-foreground/65">{service.body}</p>
+						<div class="mt-auto flex flex-wrap gap-x-4 text-sm">
+							{#each service.links ?? [] as link (link.href)}
+								<a
+									href={link.href}
+									class="inline-flex min-h-11 items-center font-medium text-primary underline-offset-4 hover:underline"
+									>{link.label}</a
+								>
+							{/each}
 							<a
-								href={link.href}
+								href="/contact?kind={service.key}"
 								class="inline-flex min-h-11 items-center font-medium text-primary underline-offset-4 hover:underline"
-								>{link.label}</a
+								>{service.ask}</a
 							>
-						{/each}
-						<a
-							href="/contact?kind={service.key}"
-							class="inline-flex min-h-11 items-center font-medium text-primary underline-offset-4 hover:underline"
-							>{service.ask}</a
-						>
-					</div>
-				</GlassCard>
-			{/each}
-		</div>
-		<div class="mx-auto flex max-w-3xl flex-col items-center gap-3 pt-16 text-center">
-			<h3 class="text-2xl font-bold tracking-tight">{WHY_LESS.title}</h3>
-			<p class="text-lg leading-relaxed text-balance text-foreground/65">{WHY_LESS.body}</p>
-		</div>
+						</div>
+					</GlassCard>
+				{/each}
+			</div>
+			<div class="mx-auto flex max-w-3xl flex-col items-center gap-3 pt-16 text-center">
+				<h3 class="text-2xl font-bold tracking-tight">{WHY_LESS.title}</h3>
+				<p class="text-lg leading-relaxed text-balance text-foreground/65">{WHY_LESS.body}</p>
+			</div>
+		</PageSection>
+		<div class="h-1250"></div>
+	</div>
+	<PageSection wide class="items-center pt-16 pb-28 text-center">
+		<h2 class="text-3xl font-bold tracking-tight">{CLOSING.title}</h2>
+		<p class="max-w-xl pt-3 text-lg leading-relaxed text-balance text-foreground/65">
+			{CLOSING.body}
+		</p>
+		<a
+			href="/contact"
+			class="mt-8 inline-flex h-11 items-center rounded-full bg-primary-strong px-6 text-sm font-semibold text-white hover:bg-primary-strong/85"
+			>{HERO_CTA}</a
+		>
 	</PageSection>
-	<div class="h-1250"></div>
 </main>
 
 <ScrollTimeline

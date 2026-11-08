@@ -11,9 +11,15 @@ export interface Service {
 }
 
 // The plain line under the hero title. Drawn letter by letter as physics glyphs, so keep it short.
-export const HERO_LINE = 'AI strategy and training, custom software and websites.';
+export const HERO_LINE = 'Websites, custom software, AI strategy and training.';
 
 export const HERO_CTA = 'Tell us what you need';
+
+// The call to action that closes Home, after the team.
+export const CLOSING = {
+	title: 'Have something in mind?',
+	body: 'A website, software, or help with AI. An engineer reads every message, and we reply within one business day.'
+};
 
 export const SERVICES_HEADING = 'What we do';
 export const SERVICES_INTRO = 'Four ways we help, from the same engineers.';

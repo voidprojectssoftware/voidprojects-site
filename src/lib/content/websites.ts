@@ -144,7 +144,7 @@ export const PRICING: {
 	{
 		figure: '$25/m',
 		spoken: '$25 a month',
-		body: 'for a static site: pages that don’t change often, with your domain at cost. Switching? A static site moves for $25 a month. If yours needs more, we’ll never charge more than you pay now.',
+		body: 'for a static site: pages that don’t change often, with your domain at cost, and we make your changes for you. Switching? A static site moves for $25 a month. If yours needs more, we’ll never charge more than you pay now.',
 		offer: { name: 'Static website', usd: 25, monthly: true }
 	},
 	{
@@ -168,10 +168,10 @@ export const STATIC_SITE_INCLUDES = {
 		{ key: 'firstPass', label: 'A first pass the same day' },
 		{ key: 'preview', label: 'A live preview from the start' },
 		{ key: 'edits', label: 'Small edits included' },
-		{ key: 'hosting', label: 'Hosting and upkeep' },
-		{ key: 'backups', label: 'Backed up and versioned' },
+		{ key: 'hosting', label: 'Hosting, upkeep, and versioned backups' },
 		{ key: 'domain', label: 'Your domain, in your name' },
-		{ key: 'contract', label: 'No contract, cancel any time' }
+		{ key: 'contract', label: 'No contract, cancel any time' },
+		{ key: 'files', label: 'Your site’s files if you leave' }
 	],
 	note: 'The first pass is built from your existing online presence, and you get the preview link before we start, so you can watch it being built. Bigger new features, we quote first.'
 };
@@ -284,9 +284,9 @@ export const CAUSES = {
 		]
 	},
 	promise: [
-		'We’ll do our best to build it for free: design, build, and every round of changes.',
+		'It’s free: design, build, hosting, your domain, and every round of changes.',
 		'You get the same engineers and the same process as every other site we build.',
-		'If your site needs something that goes above what we can cover in cost, we will tell you up front and talk it through. Never a surprise.'
+		'If a request would cost more than we can cover, we tell you early and talk it through. Never a surprise bill.'
 	]
 };
 
