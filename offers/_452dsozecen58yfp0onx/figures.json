@@ -19,10 +19,10 @@
 		"runs": 3
 	},
 	"source": {
-		"commit": "095aa0d",
-		"audit": "docs/discovery/seo-audit/2026-11-08-final/result.json",
+		"commit": "baf05d0",
+		"audit": "docs/discovery/seo-audit/2026-11-08-shipped/result.json",
 		"liveFacts": "docs/discovery/aeo/2026-11-08-baseline/result.json",
-		"launchFacts": "docs/discovery/aeo/2026-11-08-final/result.json",
+		"launchFacts": "docs/discovery/aeo/2026-11-08-shipped/result.json",
 		"assistants": "docs/discovery/aeo/2026-11-08-baseline/assistants/result.json"
 	},
 	"glance": {
@@ -38,21 +38,21 @@
 				"id": "lcp",
 				"title": "Time until the page’s main content shows",
 				"before": "2.7 s",
-				"after": "1.7 s",
+				"after": "1.5 s",
 				"note": "Google counts 2.5 seconds or less as good. Pages under that line: 5 of 7 on the current site, all 7 on the new one."
 			},
 			{
 				"id": "kilobytes",
 				"title": "Data downloaded per page",
 				"before": "2,372 KB",
-				"after": "243 KB",
-				"note": "The new pages are about a tenth of the size of the current ones. A small page matters most on a weak signal."
+				"after": "193 KB",
+				"note": "The new pages are about a twelfth of the size of the current ones. A small page matters most on a weak signal."
 			},
 			{
 				"id": "requests",
 				"title": "Files requested per page",
 				"before": "228",
-				"after": "8",
+				"after": "16",
 				"note": "Each file is another trip to a server before the page is complete."
 			},
 			{
@@ -85,14 +85,14 @@
 				"id": "model",
 				"title": "An AI model given each page",
 				"before": "81 of 99",
-				"after": "69 of 99",
+				"after": "69.7 of 99",
 				"note": "An AI model given only a page’s text, asked the questions each fact answers, three runs, averaged."
 			},
 			{
 				"id": "text",
 				"title": "From the words on the page",
 				"before": "88 of 99",
-				"after": "75 of 99",
+				"after": "76 of 99",
 				"note": "What a program reads from a page’s text without running any script, the way many crawlers do."
 			},
 			{
@@ -106,10 +106,10 @@
 				"id": "summary",
 				"title": "From the summary files for AI tools",
 				"before": "14 of 99",
-				"after": "73 of 99",
+				"after": "72 of 99",
 				"note": "An llms.txt file, a plain summary of the site for AI tools, and a plain-text copy of each page beside it."
 			}
 		],
-		"hoursGap": "Of the facts the new pages do not state in their text, 14 of 24 are your opening hours, which the new site leaves out until you confirm them (see “What the new site does differently”). The other 10 are named page by page in the measurement listed under “How it was measured”."
+		"hoursGap": "Of the facts the new pages do not state in their text, 14 of 23 are your opening hours, which the new site leaves out until you confirm them (see “What the new site does differently”). The other 9 are named page by page in the measurement listed under “How it was measured”."
 	}
 }
