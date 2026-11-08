@@ -4,6 +4,7 @@
 		ANNUAL_MONTHS_CHARGED,
 		formatAmount,
 		priceFor,
+		type AddOn,
 		type Interval,
 		type Plan,
 		type Price,
@@ -64,7 +65,54 @@
 		const rest = selection.addOnIds.filter((a) => a !== id);
 		selection = { ...selection, addOnIds: on ? [...rest, id] : rest };
 	}
+
+	// Add-ons that share a `group` are alternatives: shown together, where the first of
+	// them sits, as radios with a "None" choice. Checkout refuses two from one group.
+	type Entry = { addOn: AddOn } | { group: string; addOns: AddOn[] };
+	let entries = $derived(
+		offer.addOns.reduce<Entry[]>((list, addOn) => {
+			if (addOn.group === undefined) return [...list, { addOn }];
+			const entry = list.find((e) => 'group' in e && e.group === addOn.group);
+			if (entry && 'group' in entry) entry.addOns.push(addOn);
+			else list.push({ group: addOn.group, addOns: [addOn] });
+			return list;
+		}, [])
+	);
+
+	function chooseInGroup(members: AddOn[], id: string | null) {
+		const rest = selection.addOnIds.filter((a) => !members.some((m) => m.id === a));
+		selection = { ...selection, addOnIds: id ? [...rest, id] : rest };
+	}
 </script>
+
+{#snippet addOnRow(addOn: AddOn, radioName?: string, choose?: () => void)}
+	{@const price = priceFor(addOn, selection.interval)}
+	<label class="addon" class:unavailable={!price}>
+		{#if radioName && choose}
+			<input
+				type="radio"
+				name={radioName}
+				disabled={!price}
+				checked={selection.addOnIds.includes(addOn.id)}
+				onchange={choose}
+			/>
+		{:else}
+			<input
+				type="checkbox"
+				disabled={!price}
+				checked={selection.addOnIds.includes(addOn.id)}
+				onchange={(e) => toggleAddOn(addOn.id, e.currentTarget.checked)}
+			/>
+		{/if}
+		<span class="label">{addOn.label}</span>
+		{#if price}
+			<span class="price"
+				>+{formatAmount(price.amount, offer.currency)}<small>{PER[price.interval]}</small></span
+			>
+		{/if}
+		{#if addOn.summary}<span class="summary">{addOn.summary}</span>{/if}
+	</label>
+{/snippet}
 
 <section class={className} aria-labelledby="offer-plans">
 	<h2 id="offer-plans">{title}</h2>
@@ -132,24 +180,29 @@
 	{#if offer.addOns.length}
 		<fieldset class="addons">
 			<legend>Add-ons</legend>
-			{#each offer.addOns as addOn (addOn.id)}
-				{@const price = priceFor(addOn, selection.interval)}
-				<label class="addon" class:unavailable={!price}>
-					<input
-						type="checkbox"
-						disabled={!price}
-						checked={selection.addOnIds.includes(addOn.id)}
-						onchange={(e) => toggleAddOn(addOn.id, e.currentTarget.checked)}
-					/>
-					<span class="label">{addOn.label}</span>
-					{#if price}
-						<span class="price"
-							>+{formatAmount(price.amount, offer.currency)}<small>{PER[price.interval]}</small
-							></span
-						>
-					{/if}
-					{#if addOn.summary}<span class="summary">{addOn.summary}</span>{/if}
-				</label>
+			{#each entries as entry, i ('group' in entry ? `group:${entry.group}` : entry.addOn.id)}
+				{#if 'group' in entry}
+					{@const members = entry.addOns}
+					<fieldset class="group">
+						<legend>{entry.group}</legend>
+						<label class="addon">
+							<input
+								type="radio"
+								name="offer-addon-group-{i}"
+								checked={!members.some((m) => selection.addOnIds.includes(m.id))}
+								onchange={() => chooseInGroup(members, null)}
+							/>
+							<span class="label">None</span>
+						</label>
+						{#each members as addOn (addOn.id)}
+							{@render addOnRow(addOn, `offer-addon-group-${i}`, () =>
+								chooseInGroup(members, addOn.id)
+							)}
+						{/each}
+					</fieldset>
+				{:else}
+					{@render addOnRow(entry.addOn)}
+				{/if}
 			{/each}
 		</fieldset>
 	{/if}
@@ -218,8 +271,7 @@
 		opacity: 0.55;
 		cursor: not-allowed;
 	}
-	.plan input,
-	.addon input[type='radio'] {
+	.plan input {
 		position: absolute;
 		opacity: 0;
 		pointer-events: none;
@@ -267,9 +319,17 @@
 		margin-bottom: 0.5rem;
 		font-weight: 700;
 	}
-	.addons {
+	.addons,
+	.group {
 		display: grid;
 		gap: 0.5rem;
+	}
+	.group {
+		margin: 0.5rem 0;
+	}
+	.group legend {
+		margin-bottom: 0.5rem;
+		font-weight: 600;
 	}
 	.addon {
 		grid-template-columns: auto 1fr auto;

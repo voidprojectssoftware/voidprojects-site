@@ -32,6 +32,7 @@ export interface AddOnInput extends Pricing {
 	id: string; // unique within the offer
 	label: string;
 	summary?: string;
+	group?: string; // add-ons sharing a group are alternatives: pick at most one; the group is also the picker's heading for them
 }
 
 export interface Concern {
@@ -85,6 +86,7 @@ export interface AddOn {
 	id: string;
 	label: string;
 	summary?: string;
+	group?: string;
 	prices: Price[];
 }
 
@@ -170,8 +172,14 @@ export function resolveOffer(id: string, input: OfferInput): Offer {
 		id: a.id,
 		label: a.label,
 		summary: a.summary,
+		...(a.group === undefined ? {} : { group: a.group }),
 		prices: prices(a, `${where} add-on ${a.id}`)
 	}));
+	for (const a of addOns) {
+		if (a.group !== undefined && !a.group.trim()) {
+			throw new Error(`${where} add-on ${a.id}: group must not be blank`);
+		}
+	}
 	const sold = new Set(plans.flatMap((p) => p.prices.map((price) => price.interval)));
 
 	const accepted = input.accepted ?? null;
@@ -230,6 +238,19 @@ export function acceptedPlan(
 
 export function retentionEnds(offer: Pick<Offer, 'sent'>): string {
 	return addDays(offer.sent, RETENTION_DAYS);
+}
+
+/** Add-on ids that share a group with another chosen id, after the first of that group; empty when the choice is allowed. */
+export function groupConflicts(addOns: Pick<AddOn, 'id' | 'group'>[], ids: string[]): string[] {
+	const taken = new Set<string>();
+	const conflicts: string[] = [];
+	for (const id of ids) {
+		const group = addOns.find((a) => a.id === id)?.group;
+		if (group === undefined) continue;
+		if (taken.has(group)) conflicts.push(id);
+		taken.add(group);
+	}
+	return conflicts;
 }
 
 export function priceFor(item: { prices: Price[] }, interval: Interval): Price | undefined {

@@ -74,10 +74,60 @@ export default defineOffer({
 				'No late fees, and a reminder about 14 days before each annual renewal',
 				'In our portfolio only if you say yes'
 			],
-			// PLACEHOLDER pending the owner's price (howards-tinting-website issue #8): the
-			// published static plan, src/lib/content/websites.ts PRICING "$25/m", "with your
-			// domain at cost ... No build fee. No contract." Annual defaults to 10 x monthly: 25000.
+			// The owner, 2026-11-07: "lets put it at $50/month base". Annual defaults to
+			// ANNUAL_MONTHS_CHARGED (10) x monthly: $500 a year.
+			monthly: 5000
+		}
+	],
+	// Optional add-ons, each priced here and only here (the checkout reads this file, never
+	// the browser). Add-ons sharing a `group` are alternatives: the picker shows them as
+	// radios with "None", and /api/offer-checkout refuses two from one group. No /terms
+	// section covers email or a Google Business Profile, so no summary cites one.
+	addOns: [
+		{
+			id: 'email-microsoft-365',
+			group: 'Business email',
+			label: 'Microsoft 365 Business Standard, one person',
+			summary:
+				'A Microsoft 365 business subscription for one person, with email at your own domain. We set it up and manage the subscription for you.',
+			// OWNER: confirm price. Recommended $25/month (annual default 10 x: $250).
+			// Cost basis: Microsoft 365 Business Standard per user per month, which could not be
+			// checked on 2026-11-07 because microsoft.com refused the request ("Your request has
+			// been blocked"), so it is unverified here: from memory, $12.50 on an annual
+			// commitment, announced to rise to $14.00 on 2026-07-01, a few percent more when an
+			// annual commitment is paid monthly, and more again on a monthly commitment.
+			// The rest covers setup (MX, SPF, DKIM, DMARC on the domain) and looking after it.
 			monthly: 2500
+		},
+		{
+			id: 'email-mailbox-or-forwarding',
+			group: 'Business email',
+			label: 'One mailbox, or forwarding',
+			summary:
+				'One mailbox at your own domain, or addresses at your domain that forward to an inbox you already use. We set it up and keep it working.',
+			// OWNER: confirm price. Recommended $10/month (annual default 10 x: $100).
+			// Cost basis, each from the provider's own pricing page on 2026-11-07:
+			// forwarding through Cloudflare Email Routing costs nothing (developers.cloudflare.com/
+			// email-service/platform/pricing/, updated 2026-06-09: inbound "Unlimited" on Workers
+			// Free and Paid; sending to verified destination addresses "free on all plans").
+			// A mailbox: Zoho Mail Lite US$1 (5 GB) or US$1.25 (10 GB) per user per month, yearly
+			// only, Mail Premium US$4 (zoho.com/mail/zohomail-pricing.html); Fastmail Standard
+			// $5 per user per month billed annually, $6 monthly, own domain included
+			// (fastmail.com/pricing/). Priced on the dearest of these, $6, plus setup and upkeep.
+			monthly: 1000
+		},
+		{
+			id: 'google-business-profile',
+			label: 'Your Google Business Profile, looked after',
+			summary:
+				'We keep your Google listing’s hours, phone, website and photos up to date and matching your site, and make the changes you ask for.',
+			// OWNER: confirm price. Recommended $20/month (annual default 10 x: $200).
+			// Cost basis: the profile itself is free ("Yes, creating a Business Profile and
+			// listing your business on Google is free", business.google.com/us/business-profile/,
+			// 2026-11-07), so this is our time alone: an estimate, not a sourced figure, of
+			// under an hour a month for routine edits once the profile is claimed and we are a
+			// manager on it.
+			monthly: 2000
 		}
 	],
 	// Figures: figures.json beside this file, computed by figures.mjs from

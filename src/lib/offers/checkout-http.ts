@@ -4,6 +4,7 @@
 import { SITE_ORIGIN } from '$lib/seo/site.js';
 import {
 	INTERVALS,
+	groupConflicts,
 	isExpired,
 	priceFor,
 	type AddOn,
@@ -118,6 +119,9 @@ export function selectCheckout(
 		if (!addOn || !price) return { status: 400, message: 'That add-on is not part of this offer.' };
 		addOns.push(addOn);
 		lines.push({ id, price });
+	}
+	if (groupConflicts(addOns, request.addOnIds).length) {
+		return { status: 400, message: 'Choose only one option from each group of add-ons.' };
 	}
 	return {
 		selection: {

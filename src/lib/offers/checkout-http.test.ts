@@ -18,7 +18,11 @@ const INPUT: OfferInput = {
 		{ id: 'static', label: 'Static site', summary: 'Hosted and kept up to date.', monthly: 2500 },
 		{ id: 'monthly-only', label: 'Monthly only', monthly: 4000, annual: false }
 	],
-	addOns: [{ id: 'newsletter', label: 'Newsletter sign-up', monthly: 500 }],
+	addOns: [
+		{ id: 'newsletter', label: 'Newsletter sign-up', monthly: 500 },
+		{ id: 'mail-suite', label: 'Office suite', group: 'Email', monthly: 1500 },
+		{ id: 'mail-box', label: 'One mailbox', group: 'Email', monthly: 500 }
+	],
 	contact: { name: 'Test Contact' }
 };
 const OFFER = resolveOffer('testofferaaaa0000', INPUT);
@@ -143,6 +147,41 @@ describe('checkoutResponse', () => {
 		]) {
 			expect((await post(body, stripe)).status).toBe(400);
 		}
+		expect(create).not.toHaveBeenCalled();
+	});
+
+	it('takes one add-on from a group alongside others, priced from server data', async () => {
+		const { stripe, create } = mockStripe();
+		const { status } = await post(
+			{
+				offerId: OFFER.id,
+				planId: 'static',
+				interval: 'year',
+				addOnIds: ['mail-box', 'newsletter']
+			},
+			stripe
+		);
+		expect(status).toBe(200);
+		const [params] = create.mock.calls[0] as unknown as [
+			{ line_items: { price_data: { unit_amount: number } }[]; metadata: { add_ons: string } }
+		];
+		expect(params.line_items.map((l) => l.price_data.unit_amount)).toEqual([25000, 5000, 5000]);
+		expect(params.metadata.add_ons).toBe('mail-box,newsletter');
+	});
+
+	it('refuses two add-ons from one group without calling Stripe', async () => {
+		const { stripe, create } = mockStripe();
+		const { status, reply } = await post(
+			{
+				offerId: OFFER.id,
+				planId: 'static',
+				interval: 'month',
+				addOnIds: ['mail-suite', 'newsletter', 'mail-box']
+			},
+			stripe
+		);
+		expect(status).toBe(400);
+		expect(reply.message).toMatch(/only one option from each group/);
 		expect(create).not.toHaveBeenCalled();
 	});
 

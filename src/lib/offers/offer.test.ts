@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { acceptedPlan, isExpired, resolveOffer, type OfferInput } from './offer.js';
+import { acceptedPlan, groupConflicts, isExpired, resolveOffer, type OfferInput } from './offer.js';
 
 // A made-up offer for the tests only; no real offer id appears in src/.
 const INPUT: OfferInput = {
@@ -57,5 +57,37 @@ describe('isExpired', () => {
 		expect(isExpired(open, late)).toBe(true);
 		expect(isExpired(taken, late)).toBe(false);
 		expect(acceptedPlan(open)).toBeNull();
+	});
+});
+
+describe('add-on groups', () => {
+	const addOns: OfferInput['addOns'] = [
+		{ id: 'gbp', label: 'Listing care', monthly: 1000 },
+		{ id: 'suite', label: 'Office suite', group: 'Email', monthly: 1500 },
+		{ id: 'box', label: 'One mailbox', group: 'Email', monthly: 500 }
+	];
+
+	it('keeps the group on grouped add-ons and leaves it off the rest', () => {
+		const offer = resolveOffer(ID, { ...INPUT, addOns });
+		expect(offer.addOns.map((a) => a.group)).toEqual([undefined, 'Email', 'Email']);
+		expect('group' in offer.addOns[0]).toBe(false);
+	});
+
+	it('fails the build on a blank group', () => {
+		expect(() =>
+			resolveOffer(ID, { ...INPUT, addOns: [{ id: 'x', label: 'X', group: ' ', monthly: 100 }] })
+		).toThrow(/group must not be blank/);
+	});
+
+	it('allows one per group with any number of ungrouped add-ons', () => {
+		const offer = resolveOffer(ID, { ...INPUT, addOns });
+		expect(groupConflicts(offer.addOns, ['gbp', 'box'])).toEqual([]);
+		expect(groupConflicts(offer.addOns, ['suite'])).toEqual([]);
+		expect(groupConflicts(offer.addOns, [])).toEqual([]);
+	});
+
+	it('names every id after the first from one group', () => {
+		const offer = resolveOffer(ID, { ...INPUT, addOns });
+		expect(groupConflicts(offer.addOns, ['box', 'gbp', 'suite'])).toEqual(['suite']);
 	});
 });

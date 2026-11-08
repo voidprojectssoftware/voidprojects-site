@@ -141,11 +141,18 @@
 				>
 				<a href={figures.comparison} rel="noreferrer">Your old site and the new one, compared</a>
 			</p>
-			<!-- websites.ts PRICING "$25/m": "with your domain at cost ... No build fee. No contract." -->
+			<!-- The price is offer.ts's (the owner's, 2026-11-07). "Domain at cost", "no build fee" and
+			     "no contract": /terms #who-owns-what and #what-you-get. -->
 			<p class="price">
 				<strong>{money(monthly)}</strong> a month, or {money(yearly)} a year. Your domain at cost. No
 				build fee. No contract.
 			</p>
+			{#if offer.addOns.length}
+				<p class="text-(--offer-muted)">
+					Business email at your domain and looking after your Google listing are optional extras,
+					priced below.
+				</p>
+			{/if}
 			<p class="cta">
 				<a class="accept" href="#offer-plans" onclick={toPlans}>Accept offer</a>
 				<a href="mailto:{ENGINEER.email}">Questions? Email {ENGINEER.name.split(' ')[0]}</a>
