@@ -18,9 +18,9 @@
 		"runs": 3
 	},
 	"source": {
-		"commit": "90f1160",
-		"audit": "docs/discovery/seo-audit/2026-11-07-after-37-38/result.json",
-		"aeo": "docs/discovery/aeo/2026-11-07-after-37-38/result.json",
+		"commit": "e8c866a",
+		"audit": "docs/discovery/seo-audit/2026-11-08-final-2/result.json",
+		"aeo": "docs/discovery/aeo/2026-11-08-final-2/result.json",
 		"assistants": "docs/discovery/aeo/2026-11-06-baseline/assistants/result.json"
 	},
 	"glance": {
@@ -54,11 +54,11 @@
 			{
 				"title": "Time until the page’s main content shows",
 				"before": "Did not load",
-				"after": "1.0 s",
+				"after": "1.2 s",
 				"note": "On a phone. Google counts 2.5 seconds or less as good; the new site is under it on all 7 pages.",
 				"bar": {
 					"before": null,
-					"after": 1.0301443285714285,
+					"after": 1.2338923571428573,
 					"max": 3.125
 				},
 				"target": {
@@ -73,14 +73,14 @@
 			{
 				"title": "Data downloaded per page",
 				"before": "Did not load",
-				"after": "85 KB",
+				"after": "117 KB",
 				"note": "On a phone. A small page matters most on a weak signal.",
 				"hasFigure": false
 			},
 			{
 				"title": "Files requested per page",
 				"before": "Did not load",
-				"after": "7",
+				"after": "8",
 				"note": "Each file is another trip to a server before the page is complete.",
 				"hasFigure": false
 			},
