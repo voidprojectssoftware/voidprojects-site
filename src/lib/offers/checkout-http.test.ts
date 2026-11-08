@@ -20,7 +20,13 @@ const INPUT: OfferInput = {
 	],
 	addOns: [
 		{ id: 'newsletter', label: 'Newsletter sign-up', monthly: 500 },
-		{ id: 'mail-suite', label: 'Office suite', group: 'Email', monthly: 1500 },
+		{
+			id: 'mail-suite',
+			label: 'Office suite',
+			group: 'Email',
+			monthly: 1500,
+			seats: { max: 5, unit: 'person', units: 'people' }
+		},
 		{ id: 'mail-box', label: 'One mailbox', group: 'Email', monthly: 500 }
 	],
 	contact: { name: 'Test Contact' }
@@ -182,6 +188,75 @@ describe('checkoutResponse', () => {
 		);
 		expect(status).toBe(400);
 		expect(reply.message).toMatch(/only one option from each group/);
+		expect(create).not.toHaveBeenCalled();
+	});
+
+	it('bills a per-seat add-on as one line with the seat count as its quantity', async () => {
+		const { stripe, create } = mockStripe();
+		const { status } = await post(
+			{
+				offerId: OFFER.id,
+				planId: 'static',
+				interval: 'month',
+				addOnIds: ['mail-suite', 'newsletter'],
+				seats: { 'mail-suite': 3 }
+			},
+			stripe
+		);
+		expect(status).toBe(200);
+		const [params] = create.mock.calls[0] as unknown as [
+			{ line_items: { quantity: number; price_data: { unit_amount: number } }[] }
+		];
+		expect(params.line_items.map((l) => [l.price_data.unit_amount, l.quantity])).toEqual([
+			[2500, 1],
+			[1500, 3],
+			[500, 1]
+		]);
+	});
+
+	it('uses the default seat count when none is sent', async () => {
+		const { stripe, create } = mockStripe();
+		await post(
+			{ offerId: OFFER.id, planId: 'static', interval: 'month', addOnIds: ['mail-suite'] },
+			stripe
+		);
+		const [params] = create.mock.calls[0] as unknown as [{ line_items: { quantity: number }[] }];
+		expect(params.line_items.map((l) => l.quantity)).toEqual([1, 1]);
+	});
+
+	it.each([
+		['too low', 0],
+		['too high', 6],
+		['not whole', 2.5],
+		['a string', '3'],
+		['null', null]
+	])('refuses a seat count that is %s without calling Stripe', async (_, count) => {
+		const { stripe, create } = mockStripe();
+		const { status, reply } = await post(
+			{
+				offerId: OFFER.id,
+				planId: 'static',
+				interval: 'month',
+				addOnIds: ['mail-suite'],
+				seats: { 'mail-suite': count }
+			},
+			stripe
+		);
+		expect(status).toBe(400);
+		expect(reply.message).toBe('Choose a whole number of people from 1 to 5.');
+		expect(create).not.toHaveBeenCalled();
+	});
+
+	it('refuses seats for an add-on that is not chosen or not sold per seat', async () => {
+		const { stripe, create } = mockStripe();
+		for (const [addOnIds, seats] of [
+			[['newsletter'], { 'mail-suite': 2 }],
+			[['newsletter'], { newsletter: 2 }],
+			[['mail-suite'], []]
+		] as const) {
+			const body = { offerId: OFFER.id, planId: 'static', interval: 'month', addOnIds, seats };
+			expect((await post(body, stripe)).status).toBe(400);
+		}
 		expect(create).not.toHaveBeenCalled();
 	});
 

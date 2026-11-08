@@ -51,7 +51,7 @@ export function checkoutSessionParams(
 	return {
 		mode: 'subscription',
 		line_items: lines.map((line, i) => ({
-			quantity: 1,
+			quantity: line.quantity,
 			price_data: {
 				currency: offer.currency,
 				unit_amount: line.price.amount,

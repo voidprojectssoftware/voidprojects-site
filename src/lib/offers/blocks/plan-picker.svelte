@@ -33,11 +33,33 @@
 
 	let chosen = $derived(offer.plans.find((p) => p.id === selection.planId));
 	let total = $derived(
-		[chosen, ...offer.addOns.filter((a) => selection.addOnIds.includes(a.id))].reduce(
-			(sum, item) => sum + (item ? (priceFor(item, selection.interval)?.amount ?? 0) : 0),
-			0
-		)
+		offer.addOns
+			.filter((a) => selection.addOnIds.includes(a.id))
+			.reduce(
+				(sum, a) => sum + (priceFor(a, selection.interval)?.amount ?? 0) * seatCount(a),
+				chosen ? (priceFor(chosen, selection.interval)?.amount ?? 0) : 0
+			)
 	);
+
+	function seatCount(addOn: AddOn): number {
+		return addOn.seats ? (selection.seats[addOn.id] ?? addOn.seats.default) : 1;
+	}
+
+	// Sets the chosen add-ons and keeps a seat count for each per-seat one among them only,
+	// since checkout refuses a count for an add-on that is not chosen.
+	function withAddOns(addOnIds: string[]): Pick<Selection, 'addOnIds' | 'seats'> {
+		const seats: Record<string, number> = {};
+		for (const addOn of offer.addOns) {
+			if (addOn.seats && addOnIds.includes(addOn.id)) seats[addOn.id] = seatCount(addOn);
+		}
+		return { addOnIds, seats };
+	}
+
+	function setSeats(addOn: AddOn, count: number) {
+		if (!addOn.seats || !Number.isInteger(count)) return;
+		const n = Math.min(addOn.seats.max, Math.max(addOn.seats.min, count));
+		selection = { ...selection, seats: { ...selection.seats, [addOn.id]: n } };
+	}
 
 	// The annual saving against twelve monthly payments, when a plan sells both.
 	function saving(prices: Price[]): string | undefined {
@@ -58,12 +80,12 @@
 			const addOn = offer.addOns.find((a) => a.id === id);
 			return addOn && priceFor(addOn, interval);
 		});
-		selection = { planId, interval, addOnIds };
+		selection = { planId, interval, ...withAddOns(addOnIds) };
 	}
 
 	function toggleAddOn(id: string, on: boolean) {
 		const rest = selection.addOnIds.filter((a) => a !== id);
-		selection = { ...selection, addOnIds: on ? [...rest, id] : rest };
+		selection = { ...selection, ...withAddOns(on ? [...rest, id] : rest) };
 	}
 
 	// Add-ons that share a `group` are alternatives: shown together, where the first of
@@ -81,7 +103,7 @@
 
 	function chooseInGroup(members: AddOn[], id: string | null) {
 		const rest = selection.addOnIds.filter((a) => !members.some((m) => m.id === a));
-		selection = { ...selection, addOnIds: id ? [...rest, id] : rest };
+		selection = { ...selection, ...withAddOns(id ? [...rest, id] : rest) };
 	}
 </script>
 
@@ -107,11 +129,59 @@
 		<span class="label">{addOn.label}</span>
 		{#if price}
 			<span class="price"
-				>+{formatAmount(price.amount, offer.currency)}<small>{PER[price.interval]}</small></span
+				>+{formatAmount(price.amount, offer.currency)}<small
+					>{addOn.seats ? `/${addOn.seats.unit}` : ''}{PER[price.interval]}</small
+				></span
 			>
 		{/if}
 		{#if addOn.summary}<span class="summary">{addOn.summary}</span>{/if}
 	</label>
+	{#if addOn.seats && price && selection.addOnIds.includes(addOn.id)}
+		{@const count = seatCount(addOn)}
+		{@const { min, max, unit, units } = addOn.seats}
+		<div class="seats" role="group" aria-labelledby="offer-seats-{addOn.id}">
+			<span class="seats-label" id="offer-seats-{addOn.id}">How many {units}?</span>
+			<span class="stepper">
+				<button
+					type="button"
+					aria-label="One fewer {unit}"
+					disabled={count <= min}
+					onclick={() => setSeats(addOn, count - 1)}>&minus;</button
+				>
+				<input
+					type="number"
+					inputmode="numeric"
+					{min}
+					{max}
+					step="1"
+					value={count}
+					aria-label="Number of {units}, {min} to {max}"
+					oninput={(e) => {
+						const n = e.currentTarget.valueAsNumber;
+						if (Number.isInteger(n) && n >= min && n <= max) setSeats(addOn, n);
+					}}
+					onchange={(e) => {
+						const n = Math.round(e.currentTarget.valueAsNumber);
+						setSeats(addOn, Number.isNaN(n) ? count : n);
+						e.currentTarget.value = String(seatCount(addOn));
+					}}
+				/>
+				<button
+					type="button"
+					aria-label="One more {unit}"
+					disabled={count >= max}
+					onclick={() => setSeats(addOn, count + 1)}>+</button
+				>
+			</span>
+			<span class="seats-total"
+				>{count}
+				{count === 1 ? unit : units} &times; {formatAmount(price.amount, offer.currency)} =
+				<strong>{formatAmount(price.amount * count, offer.currency)}</strong>{PER[
+					price.interval
+				]}</span
+			>
+		</div>
+	{/if}
 {/snippet}
 
 <section class={className} aria-labelledby="offer-plans">
@@ -344,6 +414,75 @@
 	}
 	.addon .price {
 		font-size: 1rem;
+	}
+	.seats {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.5rem 1rem;
+		margin-top: -0.5rem;
+		padding: 0.75rem 1.25rem 1rem;
+		border: 1px solid var(--offer-accent, #111);
+		border-top: 0;
+		border-radius: 0 0 var(--offer-radius, 0.75rem) var(--offer-radius, 0.75rem);
+		background: var(--offer-surface, #fff);
+		box-shadow: 0 0 0 1px var(--offer-accent, #111);
+		clip-path: inset(0 -2px -2px -2px);
+	}
+	.seats-label {
+		font-weight: 600;
+	}
+	.stepper {
+		display: inline-flex;
+		align-items: stretch;
+	}
+	.stepper button,
+	.stepper input {
+		min-width: 2.75rem;
+		height: 2.75rem;
+		border: 1px solid var(--offer-border, rgb(0 0 0 / 0.2));
+		background: var(--offer-surface, #fff);
+		color: inherit;
+		font: inherit;
+		font-weight: 700;
+		text-align: center;
+	}
+	.stepper button {
+		font-size: 1.25rem;
+		cursor: pointer;
+	}
+	.stepper button:first-child {
+		border-radius: var(--offer-radius, 0.75rem) 0 0 var(--offer-radius, 0.75rem);
+	}
+	.stepper button:last-child {
+		border-radius: 0 var(--offer-radius, 0.75rem) var(--offer-radius, 0.75rem) 0;
+	}
+	.stepper input {
+		width: 3.5rem;
+		border-inline: 0;
+		font-variant-numeric: tabular-nums;
+		-moz-appearance: textfield;
+		appearance: textfield;
+	}
+	.stepper input::-webkit-inner-spin-button,
+	.stepper input::-webkit-outer-spin-button {
+		margin: 0;
+		-webkit-appearance: none;
+	}
+	.stepper button:disabled {
+		opacity: 0.4;
+		cursor: not-allowed;
+	}
+	.stepper button:focus-visible,
+	.stepper input:focus-visible {
+		position: relative;
+		outline: 2px solid var(--offer-accent, #111);
+		outline-offset: 1px;
+	}
+	.seats-total {
+		font-size: 0.9375rem;
+		color: var(--offer-muted, #555);
+		font-variant-numeric: tabular-nums;
 	}
 	.total {
 		margin: 1rem 0 0;

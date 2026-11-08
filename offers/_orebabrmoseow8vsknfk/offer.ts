@@ -87,17 +87,22 @@ export default defineOffer({
 		{
 			id: 'email-microsoft-365',
 			group: 'Business email',
-			label: 'Microsoft 365 Business Standard, one person',
+			label: 'Microsoft 365 Business Standard',
 			summary:
-				'A Microsoft 365 business subscription for one person, with email at your own domain. We set it up and manage the subscription for you.',
-			// OWNER: confirm price. Recommended $25/month (annual default 10 x: $250).
+				'A Microsoft 365 business subscription for each person you choose, each with email at your own domain. Priced per person. We set it up and manage the subscription for you.',
+			// OWNER: confirm price and seat cap. Recommended $25 per person per month (annual
+			// default 10 x: $250 per person). The price is per seat: checkout bills this line
+			// with the chosen count as its quantity.
 			// Cost basis: Microsoft 365 Business Standard per user per month, which could not be
 			// checked on 2026-11-07 because microsoft.com refused the request ("Your request has
 			// been blocked"), so it is unverified here: from memory, $12.50 on an annual
 			// commitment, announced to rise to $14.00 on 2026-07-01, a few percent more when an
 			// annual commitment is paid monthly, and more again on a monthly commitment.
 			// The rest covers setup (MX, SPF, DKIM, DMARC on the domain) and looking after it.
-			monthly: 2500
+			// Seats: 1 by default; the cap of 25 is a small shop's ceiling (the coordinator's
+			// suggestion, 2026-11-07), not a count of Howard's users, which no public source gives.
+			monthly: 2500,
+			seats: { min: 1, max: 25, default: 1, unit: 'person', units: 'people' }
 		},
 		{
 			id: 'email-mailbox-or-forwarding',

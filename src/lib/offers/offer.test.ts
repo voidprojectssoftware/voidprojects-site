@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { acceptedPlan, groupConflicts, isExpired, resolveOffer, type OfferInput } from './offer.js';
+import {
+	acceptedPlan,
+	groupConflicts,
+	isExpired,
+	resolveOffer,
+	seatCountError,
+	type OfferInput
+} from './offer.js';
 
 // A made-up offer for the tests only; no real offer id appears in src/.
 const INPUT: OfferInput = {
@@ -89,5 +96,45 @@ describe('add-on groups', () => {
 	it('names every id after the first from one group', () => {
 		const offer = resolveOffer(ID, { ...INPUT, addOns });
 		expect(groupConflicts(offer.addOns, ['box', 'gbp', 'suite'])).toEqual(['suite']);
+	});
+});
+
+describe('per-seat add-ons', () => {
+	const seat = (seats: NonNullable<OfferInput['addOns']>[number]['seats']) =>
+		resolveOffer(ID, { ...INPUT, addOns: [{ id: 'suite', label: 'Suite', monthly: 1500, seats }] })
+			.addOns[0];
+
+	it('fills min 1 and default min, and leaves seats off other add-ons', () => {
+		expect(seat({ max: 25, unit: 'person', units: 'people' }).seats).toEqual({
+			min: 1,
+			max: 25,
+			default: 1,
+			unit: 'person',
+			units: 'people'
+		});
+		const plain = resolveOffer(ID, {
+			...INPUT,
+			addOns: [{ id: 'x', label: 'X', monthly: 100 }]
+		}).addOns[0];
+		expect('seats' in plain).toBe(false);
+	});
+
+	it.each([
+		[{ max: 0, unit: 'person', units: 'people' }, /whole numbers/],
+		[{ max: 2.5, unit: 'person', units: 'people' }, /whole numbers/],
+		[{ min: 3, max: 2, unit: 'person', units: 'people' }, /min <= default <= max/],
+		[{ max: 5, default: 6, unit: 'person', units: 'people' }, /min <= default <= max/],
+		[{ max: 5, unit: ' ', units: 'people' }, /unit and units/]
+	])('fails the build on %o', (seats, error) => {
+		expect(() => seat(seats)).toThrow(error);
+	});
+
+	it('allows whole counts from min to max only', () => {
+		const addOn = seat({ min: 1, max: 25, unit: 'person', units: 'people' });
+		for (const n of [1, 3, 25]) expect(seatCountError(addOn, n)).toBeUndefined();
+		for (const n of [0, 26, 2.5, '3', null, undefined, NaN]) {
+			expect(seatCountError(addOn, n)).toMatch(/whole number of people from 1 to 25/);
+		}
+		expect(seatCountError({}, 1)).toMatch(/not sold per seat/);
 	});
 });
