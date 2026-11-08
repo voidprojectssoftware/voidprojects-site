@@ -149,7 +149,7 @@ export const PRICING: {
 	},
 	{
 		figure: 'Quote',
-		body: 'for anything dynamic, like live data, accounts, or bookings. Billed by the hour for engineering time and support, plus what it costs to host.',
+		body: 'for anything dynamic, like live data, accounts, or bookings we build and host. Billed by the hour for engineering time and support, plus what it costs to host. Linking to a booking service you already use is fine on a static site.',
 		link: { href: '/websites?preset=quote#contact', label: 'Ask for a quote' },
 		offer: { name: 'Dynamic website' }
 	}

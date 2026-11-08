@@ -55,10 +55,9 @@
 
 	<h2 id="adding-features">{heading('adding-features')}</h2>
 	<p>
-		Bigger additions, such as new features (for example, letting your visitors send you messages),
-		usually need more ongoing hosting and services to run. Instead of charging you for our time to
-		build them, we add an amount to your plan to cover running them, and tell you the new plan price
-		before we start.
+		Small additions to a website plan, such as a new feature (for example, letting your visitors
+		send you messages), usually need more ongoing hosting and services to run. For these we add an
+		amount to your plan to cover running them, and tell you the new plan price before we start.
 	</p>
 	<ul>
 		<li><strong>Monthly plans:</strong> the new price applies from your next bill.</li>
@@ -71,6 +70,11 @@
 			your plan, ask and we will quote that.
 		</li>
 	</ul>
+	<p>
+		Larger or more complex work, the kind that takes ongoing engineering time with you, is billed by
+		the hour for engineering time and support, plus what it costs to run. We quote it before we
+		start.
+	</p>
 
 	<h2 id="previews">{heading('previews')}</h2>
 	<p>

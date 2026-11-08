@@ -470,6 +470,14 @@
 		let last = measure();
 		let autoReturning = false;
 		let returnTo = 0;
+		// 0 while the services section's text is still below the header line, rising to 1
+		// over the next 150px of scroll; its bottom padding (pb-24) holds no text.
+		const servicesCleared = () => {
+			if (!servicesRef) return 1;
+			const header = document.querySelector('header')?.offsetHeight ?? 0;
+			const bottom = servicesRef.getBoundingClientRect().bottom;
+			return Math.max(0, Math.min(1, (header + 96 - bottom) / 150));
+		};
 		// Share of the viewport below the header that the services section covers (0-1).
 		const servicesCoverage = () => {
 			if (!servicesRef) return 0;
@@ -492,10 +500,13 @@
 			if (sectionVisible) graph.deactivate(); // the team takes over; no labels behind it
 			startPhysics();
 			stage.setScrollProgress(progress);
-			// Past the services the scattered title stays hidden until the card brings it
-			// into the Constellation scene, so the hero never reappears on its own.
-			heroFade =
-				progress >= driftAt && cardsOnScreen === 0 ? 0 : 1 - Math.min(1, servicesCoverage() * 3);
+			// Before the drift the hero dims as the services section covers it. Past it the
+			// scattered title stays hidden until the card brings it into the Constellation
+			// scene, and the letters and labels fade in only once the section's text has
+			// cleared the header, so they never sit over "Why it costs less".
+			if (progress < driftAt) heroFade = 1 - Math.min(1, servicesCoverage() * 3);
+			else if (cardsOnScreen === 0) heroFade = 0;
+			else heroFade = servicesCleared();
 			graph.setOpacity(heroFade);
 			// Re-evaluate after setScrollProgress: a card's onStateChange (fired above)
 			// may have just changed cardsOnScreen, and sectionVisible already reflects
@@ -521,15 +532,15 @@
 
 		// Ties the scene to the services section: the glyphs start drifting once it covers
 		// the hero, and the card tosses in as it leaves, so the scroll goes services, then
-		// straight into the Constellation scene. Desktop pins the card mid-left, so it waits
-		// for the section to clear the header; phones pin it low, so it can come in while the
-		// section's last lines are still leaving the top, with no empty screen between.
+		// straight into the Constellation scene. The card comes in while the section's last
+		// lines are still leaving the top, so there is no empty screen between: desktop pins
+		// it mid-left, below the leaving text, and phones pin it low.
 		const measureScene = () => {
 			const scrollable = document.documentElement.scrollHeight - window.innerHeight;
 			if (scrollable <= 0 || !servicesRef) return;
 			const header = document.querySelector('header')?.offsetHeight ?? 0;
 			const top = servicesTop();
-			const clearAt = window.innerWidth >= 768 ? header : window.innerHeight * 0.55;
+			const clearAt = window.innerHeight * (window.innerWidth >= 768 ? 0.3 : 0.55);
 			const bottom = top + header + servicesRef.offsetHeight - clearAt;
 			driftAt = Math.min(EXIT_THRESHOLD - 0.2, Math.max(0.02, top / scrollable));
 			cardAt = Math.min(EXIT_THRESHOLD - 0.15, Math.max(driftAt + 0.02, bottom / scrollable));
