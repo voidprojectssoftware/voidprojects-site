@@ -75,7 +75,7 @@ export interface Acceptance {
 
 export interface OfferInput {
 	prospect: string; // business name, shown on the page
-	sent: string; // ISO date the link was sent; expiry and retention count from it
+	sent?: string; // ISO date the link was sent; expiry and retention count from it. Only a `_` draft, which is never built, may leave it out
 	expires?: string; // ISO date, last day the offer stands; defaults to sent + DEFAULT_VALID_DAYS
 	previewUrl: string; // the site we built for them
 	currency?: string; // ISO 4217, lowercase as Stripe expects; defaults to 'usd'
@@ -196,6 +196,10 @@ export function resolveOffer(id: string, input: OfferInput): Offer {
 	if (!OFFER_ID.test(id)) {
 		throw new Error(`${where}: id must be 16 or more lowercase letters and digits`);
 	}
+	const sent = input.sent;
+	if (sent === undefined) {
+		throw new Error(`${where}: sent is not set; set it to the day the link is sent`);
+	}
 	for (const [key, value] of [
 		['sent', input.sent],
 		['expires', input.expires],
@@ -247,8 +251,8 @@ export function resolveOffer(id: string, input: OfferInput): Offer {
 	return {
 		id,
 		prospect: input.prospect,
-		sent: input.sent,
-		expires: input.expires ?? addDays(input.sent, DEFAULT_VALID_DAYS),
+		sent,
+		expires: input.expires ?? addDays(sent, DEFAULT_VALID_DAYS),
 		previewUrl: input.previewUrl,
 		currency: input.currency ?? 'usd',
 		concerns: input.concerns,
