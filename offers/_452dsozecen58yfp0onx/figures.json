@@ -1,0 +1,106 @@
+{
+	"name": "Spirit Hill Maple Nursery",
+	"current": "https://www.spirithillmaplenursery.com/",
+	"preview": "https://spirithillmaplenursery-website.pages.dev/",
+	"comparison": "https://spirithillmaplenursery-website.pages.dev/site-comparison/",
+	"previewMeasured": false,
+	"sides": {
+		"before": "Your site today",
+		"after": "Your new site"
+	},
+	"measured": {
+		"before": "November 8, 2026",
+		"after": null,
+		"pages": 7,
+		"phone": "iPhone 15",
+		"lighthouse": "13.6.0",
+		"axe": "4.14.0",
+		"runs": 3
+	},
+	"source": {
+		"commit": "ea5f46b",
+		"audit": "docs/discovery/seo-audit/2026-11-08-baseline/result.json",
+		"aeo": "docs/discovery/aeo/2026-11-08-baseline/result.json",
+		"assistants": "docs/discovery/aeo/2026-11-08-baseline/assistants/result.json"
+	},
+	"glance": {
+		"cards": [
+			{
+				"id": "performance",
+				"title": "Speed score on a phone",
+				"before": "71",
+				"after": null,
+				"note": "Google Lighthouse, out of 100, averaged over 7 pages. Google Lighthouse marks 90 or more as good."
+			},
+			{
+				"id": "lcp",
+				"title": "Time until the main content shows",
+				"before": "2.7 s",
+				"after": null,
+				"note": "On a phone. 5 of 7 pages showed it within Google’s good mark of 2.5 s."
+			},
+			{
+				"id": "kilobytes",
+				"title": "Data downloaded per page",
+				"before": "2,372 KB",
+				"after": null,
+				"note": "What a phone downloads to show one page, on average."
+			},
+			{
+				"id": "requests",
+				"title": "Files requested per page",
+				"before": "228",
+				"after": null,
+				"note": "Each one is a separate trip to a server before the page is complete."
+			},
+			{
+				"id": "seo",
+				"title": "Search score",
+				"before": "95",
+				"after": null,
+				"note": "Google Lighthouse’s search check, out of 100. 3 of 7 pages scored 100; 3 of 7 pages have no description for search results."
+			},
+			{
+				"id": "axe",
+				"title": "Accessibility problems found",
+				"before": "128",
+				"after": null,
+				"note": "Places on the page that fail WCAG 2.2 A and AA in an automated test (axe) on a laptop screen, across 7 pages; 42 more on a phone. Text too faint to read was found on 7 of 7 pages."
+			}
+		]
+	},
+	"ai": {
+		"expected": 99,
+		"today": "Asked about the nursery by name, an AI assistant that searches the web gave 22 of 46 facts on average over 3 tries. 3 assistants answering from memory alone gave at most 1 of 46.",
+		"cards": [
+			{
+				"id": "structured",
+				"title": "Facts in structured data",
+				"before": "1 of 99",
+				"after": null,
+				"note": "The labelled data search engines and AI tools read first: address, phone, hours and the like."
+			},
+			{
+				"id": "text",
+				"title": "Facts in the page text",
+				"before": "88 of 99",
+				"after": null,
+				"note": "What a program reading the page without running its scripts finds (89%)."
+			},
+			{
+				"id": "summary",
+				"title": "Facts in the summary for AI tools",
+				"before": "14 of 99",
+				"after": null,
+				"note": "The llms.txt file and plain-text copies of each page, written for AI assistants."
+			},
+			{
+				"id": "model",
+				"title": "Facts an AI model gives after reading the page",
+				"before": "81 of 99",
+				"after": null,
+				"note": "3 runs of an AI model answering questions from each page."
+			}
+		]
+	}
+}
