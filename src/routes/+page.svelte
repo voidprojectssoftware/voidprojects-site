@@ -2,7 +2,13 @@
 	import { onMount } from 'svelte';
 	import { Button } from '$lib/components/shadcn/ui/button/index.js';
 	import { Section } from '$lib/components/section/index.js';
-	import { ChevronDown } from '@lucide/svelte';
+	import {
+		Blocks,
+		ChevronDown,
+		GraduationCap,
+		MessagesSquare,
+		PanelsTopLeft
+	} from '@lucide/svelte';
 	import {
 		PhysicsStage,
 		GlyphField,
@@ -17,6 +23,8 @@
 	import { SiteHeader } from '$lib/components/site-header/index.js';
 	import { ProfileCard } from '$lib/components/profile-card/index.js';
 	import { GlassCard } from '$lib/components/voidprojects/glass-card/index.js';
+	import { Section as PageSection } from '$lib/components/voidprojects/section/index.js';
+	import type { Component } from 'svelte';
 	import { headshots } from '$lib/assets/headshots.js';
 	import { JsonLd } from '$lib/components/json-ld/index.js';
 	import { PageMeta } from '$lib/components/page-meta/index.js';
@@ -26,6 +34,7 @@
 		HERO_LINE,
 		SERVICES,
 		SERVICES_HEADING,
+		SERVICES_INTRO,
 		WHY_LESS
 	} from '$lib/content/services.js';
 
@@ -62,6 +71,14 @@
 	let heroRef = $state<HTMLElement | null>(null);
 	let githubRef = $state<HTMLElement | null>(null);
 	let servicesRef = $state<HTMLElement | null>(null);
+	let heroFade = $state(1); // hero opacity; drops as the services section scrolls over it
+
+	const SERVICE_ICONS: Record<string, Component> = {
+		consulting: MessagesSquare,
+		software: Blocks,
+		website: PanelsTopLeft,
+		training: GraduationCap
+	};
 	let scrolled = $state(false);
 	// Total page-scroll progress (0-1), mirrored into state so the timeline rail can
 	// track it; the same value is fanned to the physics stage in onScroll.
@@ -441,6 +458,14 @@
 		let last = measure();
 		let autoReturning = false;
 		let returnTo = 0;
+		// Share of the viewport below the header that the services section covers (0-1).
+		const servicesCoverage = () => {
+			if (!servicesRef) return 0;
+			const header = document.querySelector('header')?.offsetHeight ?? 0;
+			const r = servicesRef.getBoundingClientRect();
+			const seen = Math.min(r.bottom, window.innerHeight) - Math.max(r.top, header);
+			return Math.max(0, seen) / (window.innerHeight - header);
+		};
 		// The services section sits between the hero and the scene, below the sticky header.
 		const servicesTop = () => {
 			if (!servicesRef) return 0;
@@ -452,6 +477,7 @@
 			const { y, progress } = measure();
 			scrolled = y > 0;
 			scrollProgress = progress;
+			heroFade = 1 - Math.min(1, servicesCoverage() * 1.4);
 			startPhysics();
 			stage.setScrollProgress(progress);
 			// Re-evaluate after setScrollProgress: a card's onStateChange (fired above)
@@ -584,20 +610,20 @@
 		glass={false}
 		class="relative sticky top-16 h-[calc(100dvh-4rem)] items-center justify-center gap-3 overflow-clip"
 	>
-		<div class="flex flex-col items-center gap-4">
+		<div class="flex flex-col items-center gap-4" style:opacity={heroFade}>
 			<div
 				class="flex flex-col items-center gap-4 transition-opacity duration-700"
 				class:opacity-0={sectionVisible}
 				class:pointer-events-none={sectionVisible}
 			>
 				<h1
-					class="pointer-events-none text-center text-5xl font-bold select-none max-[600px]:text-4xl sm:text-7xl lg:text-8xl"
+					class="pointer-events-none text-5xl font-bold select-none max-[600px]:text-4xl sm:text-7xl lg:text-8xl"
 					aria-label={heroTitle}
 				>
 					{#each titleRuns as run, r (r)}{@render glyphRun(titleChars, titleMeta, run)}{/each}
 				</h1>
 				<p
-					class="pointer-events-none max-w-[22ch] px-2 text-center text-xl font-medium select-none sm:max-w-none sm:text-2xl"
+					class="pointer-events-none px-2 text-center text-lg select-none sm:text-2xl"
 					aria-label={heroSubtitle}
 				>
 					{#each subtitleRuns as run, r (r)}{@render glyphRun(
@@ -606,47 +632,49 @@
 							run
 						)}{/each}
 				</p>
-				<!-- Fades once the title scatters: the button does not drift with the letters. -->
+			</div>
+			<div class="flex flex-wrap items-center justify-center gap-3 pt-2">
+				<!-- Fades once the title scatters: unlike the GitHub button it does not drift. -->
 				<a
 					href="/contact"
-					class="mt-4 inline-flex h-12 items-center rounded-full bg-primary-strong px-7 text-base font-semibold text-white transition-opacity duration-300 hover:bg-primary-strong/85 focus-visible:ring-3 focus-visible:ring-primary/40 focus-visible:outline-none"
+					class="inline-flex h-11 items-center rounded-full bg-primary-strong px-6 text-sm font-semibold text-white transition-opacity duration-300 hover:bg-primary-strong/85"
 					class:opacity-0={drifting}
 					class:pointer-events-none={drifting}
 					tabindex={drifting ? -1 : undefined}>{HERO_CTA}</a
 				>
-			</div>
-			<!-- Deliberately outside the fading div above: unlike the title/subtitle, the
+				<!-- Deliberately outside the fading div above: unlike the title/subtitle, the
 			     GitHub button should stay up (and clickable) through the Meet The Team
 			     section - z-20 lifts it above that section's own z-10 panel. Below lg the
 			     stacked team cards fill the screen, so it fades there instead of covering one. -->
-			<div
-				use:drift
-				bind:this={githubRef}
-				class="relative z-20 inline-block transition-opacity duration-500 {sectionVisible
-					? 'max-lg:pointer-events-none max-lg:opacity-0'
-					: ''}"
-			>
-				<Button
-					href={GITHUB_URL}
-					target="_blank"
-					rel="noopener noreferrer"
-					draggable={false}
-					variant="ghost"
-					class="group/github h-11 cursor-pointer gap-2 px-4 text-sm font-medium text-foreground/70 hover:bg-primary/10 hover:text-primary"
-					onclick={warpToGithub}
+				<div
+					use:drift
+					bind:this={githubRef}
+					class="relative z-20 inline-block transition-opacity duration-500 {sectionVisible
+						? 'max-lg:pointer-events-none max-lg:opacity-0'
+						: ''}"
 				>
-					<svg
-						class="size-4 transition-transform group-hover/github:scale-110"
-						viewBox="0 0 24 24"
-						fill="currentColor"
-						aria-hidden="true"
+					<Button
+						href={GITHUB_URL}
+						target="_blank"
+						rel="noopener noreferrer"
+						draggable={false}
+						variant="ghost"
+						class="group/github h-11 cursor-pointer gap-2 rounded-full border border-foreground/15 px-6 text-sm font-semibold text-foreground hover:bg-foreground/5 hover:text-foreground"
+						onclick={warpToGithub}
 					>
-						<path
-							d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"
-						/>
-					</svg>
-					Warp to Github
-				</Button>
+						<svg
+							class="size-4 transition-transform group-hover/github:scale-110"
+							viewBox="0 0 24 24"
+							fill="currentColor"
+							aria-hidden="true"
+						>
+							<path
+								d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"
+							/>
+						</svg>
+						Warp to Github
+					</Button>
+				</div>
 			</div>
 		</div>
 		{#each cards as card (card.title)}
@@ -696,46 +724,47 @@
 			</div>
 		</div>
 	</Section>
-	<!-- In flow after the sticky hero, so it scrolls up over it; z-1 and the opaque
-	     panel keep the hero glyphs hidden behind it. -->
-	<section
-		bind:this={servicesRef}
-		id="services"
-		aria-labelledby="services-heading"
-		class="relative z-1 border-y border-foreground/8 bg-background px-6 py-16 sm:px-12 sm:py-20 lg:px-35"
-	>
-		<div class="mx-auto flex max-w-6xl flex-col gap-8">
-			<h2 id="services-heading" class="text-3xl font-bold tracking-tight sm:text-4xl">
-				{SERVICES_HEADING}
-			</h2>
-			<ul class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-				{#each SERVICES as service (service.key)}
-					<li class="flex flex-col gap-3 rounded-2xl bg-foreground/4 p-5 ring-1 ring-foreground/10">
-						<h3 class="text-lg font-semibold">{service.title}</h3>
-						<p class="flex-1 leading-relaxed text-foreground/75">{service.body}</p>
-						<div class="flex flex-wrap gap-x-4 gap-y-1 text-sm font-medium">
-							{#if service.link}
-								<a
-									href={service.link.href}
-									class="inline-flex min-h-11 items-center text-primary underline-offset-4 hover:underline"
-									>{service.link.label}</a
-								>
-							{/if}
-							<a
-								href="/contact?kind={service.key}"
-								class="inline-flex min-h-11 items-center text-primary underline-offset-4 hover:underline"
-								>{service.ask}</a
-							>
-						</div>
-					</li>
-				{/each}
-			</ul>
-			<div class="flex max-w-3xl flex-col gap-2">
-				<h3 class="text-lg font-semibold">{WHY_LESS.title}</h3>
-				<p class="leading-relaxed text-foreground/75">{WHY_LESS.body}</p>
-			</div>
+	<!-- In flow after the sticky hero, so it scrolls up over it (z-1); the hero fades as it
+	     is covered (heroFade), so the sky shows between the cards and not the title. -->
+	<PageSection bind:ref={servicesRef} wide class="relative z-1 pt-24 pb-24">
+		<div
+			id="services"
+			class="mx-auto flex max-w-2xl scroll-mt-24 flex-col items-center gap-3 pb-10 text-center"
+		>
+			<h2 class="text-3xl font-bold tracking-tight">{SERVICES_HEADING}</h2>
+			<p class="text-lg leading-relaxed text-balance text-foreground/65">{SERVICES_INTRO}</p>
 		</div>
-	</section>
+		<div class="grid w-full gap-5 md:grid-cols-2 xl:grid-cols-4">
+			{#each SERVICES as service (service.key)}
+				{@const Icon = SERVICE_ICONS[service.key]}
+				<GlassCard class="h-full gap-3 p-6">
+					<span class="grid size-10 place-items-center rounded-xl bg-primary/15 text-primary">
+						<Icon class="size-5" aria-hidden="true" />
+					</span>
+					<h3 class="pt-1 text-lg font-semibold">{service.title}</h3>
+					<p class="text-sm leading-relaxed text-foreground/65">{service.body}</p>
+					<div class="mt-auto flex flex-wrap gap-x-4 text-sm">
+						{#if service.link}
+							<a
+								href={service.link.href}
+								class="inline-flex min-h-11 items-center font-medium text-primary underline-offset-4 hover:underline"
+								>{service.link.label}</a
+							>
+						{/if}
+						<a
+							href="/contact?kind={service.key}"
+							class="inline-flex min-h-11 items-center font-medium text-primary underline-offset-4 hover:underline"
+							>{service.ask}</a
+						>
+					</div>
+				</GlassCard>
+			{/each}
+		</div>
+		<div class="mx-auto flex max-w-3xl flex-col items-center gap-3 pt-16 text-center">
+			<h3 class="text-2xl font-bold tracking-tight">{WHY_LESS.title}</h3>
+			<p class="text-lg leading-relaxed text-balance text-foreground/65">{WHY_LESS.body}</p>
+		</div>
+	</PageSection>
 	<div class="h-1250"></div>
 </main>
 

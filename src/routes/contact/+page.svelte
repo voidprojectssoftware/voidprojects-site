@@ -20,41 +20,34 @@
 <main id="main-content" class="flex flex-col">
 	<Section wide class="items-center pt-16 pb-28 sm:pt-24">
 		<div class="w-full max-w-2xl">
-			<GlassCard class="gap-6 bg-background/70 p-6 sm:p-10">
+			<GlassCard class="gap-6 p-6 sm:p-10">
 				{#if !contactSent}
-					<div class="flex flex-col gap-3">
-						<h1 class="text-3xl font-bold tracking-tight sm:text-4xl">{CONTACT_PAGE.title}</h1>
-						<p class="leading-relaxed text-foreground/75">{CONTACT_PAGE.body}</p>
-						<p class="text-sm leading-relaxed text-foreground/65">{CONTACT_PAGE.unsure}</p>
+					<div class="flex flex-col gap-2">
+						<h1 class="text-3xl font-bold tracking-tight">{CONTACT_PAGE.title}</h1>
+						<p class="text-foreground/65">{CONTACT_PAGE.body}</p>
+						<p class="text-foreground/65">{CONTACT_PAGE.unsure}</p>
 					</div>
 				{/if}
 				<ContactForm bind:sent={contactSent} initialKind={CONTACT_KIND_KEYS.unsure} />
 			</GlassCard>
 		</div>
-		<section aria-labelledby="services-heading" class="w-full max-w-2xl pt-12">
-			<h2
-				id="services-heading"
-				class="pb-4 text-sm font-semibold tracking-[0.14em] text-primary uppercase"
-			>
-				{SERVICES_HEADING}
-			</h2>
-			<ul class="grid gap-3 sm:grid-cols-2">
+		<div class="w-full max-w-2xl pt-16">
+			<h2 class="pb-6 text-center text-3xl font-bold tracking-tight">{SERVICES_HEADING}</h2>
+			<div class="grid gap-5 sm:grid-cols-2">
 				{#each SERVICES as service (service.key)}
-					<li
-						class="flex flex-col gap-1 rounded-2xl bg-background/60 p-4 ring-1 ring-foreground/10"
-					>
-						<span class="font-semibold">{service.title}</span>
-						<span class="text-sm leading-relaxed text-foreground/70">{service.body}</span>
+					<GlassCard class="gap-3 p-6">
+						<h3 class="text-lg font-semibold">{service.title}</h3>
+						<p class="text-sm leading-relaxed text-foreground/65">{service.body}</p>
 						{#if service.link}
 							<a
 								href={service.link.href}
-								class="pt-1 text-sm font-medium text-primary underline-offset-4 hover:underline"
+								class="mt-auto inline-flex min-h-11 items-center text-sm font-medium text-primary underline-offset-4 hover:underline"
 								>{service.link.label}</a
 							>
 						{/if}
-					</li>
+					</GlassCard>
 				{/each}
-			</ul>
-		</section>
+			</div>
+		</div>
 	</Section>
 </main>

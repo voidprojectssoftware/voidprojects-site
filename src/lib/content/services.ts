@@ -17,6 +17,7 @@ export const HERO_LINE = 'Consulting, custom software, websites and AI training.
 export const HERO_CTA = 'Tell us what you need';
 
 export const SERVICES_HEADING = 'What we do';
+export const SERVICES_INTRO = 'Four ways we help, from the same engineers.';
 
 export const SERVICES: Service[] = [
 	{
