@@ -137,8 +137,8 @@ export default defineOffer({
 		}
 	],
 	// Figures: figures.json beside this file, computed by figures.mjs from the client
-	// repo's committed runs. Part 1 fills the current site's side only; part 2 fills the
-	// new site's after the client repo's launch-build audit.
+	// repo's committed runs (main bb655dd) with that repo's own comparison code, so the
+	// page shows what its /site-comparison/ page shows (issue #9, part 2).
 	contact: {
 		name: 'Scot and Michelle Cowan', // business-profile.md, Owners: first names on the site, surname from one 2025 interview
 		email: 'spirithillmaples@gmail.com', // client src/config/site.ts `site.email.display`, evidenced

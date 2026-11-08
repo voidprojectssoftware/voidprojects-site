@@ -3,14 +3,15 @@
 	"current": "https://www.spirithillmaplenursery.com/",
 	"preview": "https://spirithillmaplenursery-website.pages.dev/",
 	"comparison": "https://spirithillmaplenursery-website.pages.dev/site-comparison/",
-	"previewMeasured": false,
+	"previewMeasured": true,
+	"didNotLoad": "Did not load",
 	"sides": {
-		"before": "Your site today",
-		"after": "Your new site"
+		"before": "Current site",
+		"after": "New site"
 	},
 	"measured": {
 		"before": "November 8, 2026",
-		"after": null,
+		"after": "November 8, 2026",
 		"pages": 7,
 		"phone": "iPhone 15",
 		"lighthouse": "13.6.0",
@@ -18,89 +19,97 @@
 		"runs": 3
 	},
 	"source": {
-		"commit": "ea5f46b",
-		"audit": "docs/discovery/seo-audit/2026-11-08-baseline/result.json",
-		"aeo": "docs/discovery/aeo/2026-11-08-baseline/result.json",
+		"commit": "bb655dd",
+		"audit": "docs/discovery/seo-audit/2026-11-08-relisted/result.json",
+		"liveFacts": "docs/discovery/aeo/2026-11-08-baseline/result.json",
+		"launchFacts": "docs/discovery/aeo/2026-11-08-relisted/result.json",
 		"assistants": "docs/discovery/aeo/2026-11-08-baseline/assistants/result.json"
 	},
 	"glance": {
 		"cards": [
 			{
 				"id": "performance",
-				"title": "Speed score on a phone",
+				"title": "Speed score on phones",
 				"before": "71",
-				"after": null,
-				"note": "Google Lighthouse, out of 100, averaged over 7 pages. Google Lighthouse marks 90 or more as good."
+				"after": "98",
+				"note": "Google Lighthouse’s performance score, out of 100."
 			},
 			{
 				"id": "lcp",
-				"title": "Time until the main content shows",
+				"title": "Time until the page’s main content shows",
 				"before": "2.7 s",
-				"after": null,
-				"note": "On a phone. 5 of 7 pages showed it within Google’s good mark of 2.5 s."
+				"after": "1.9 s",
+				"note": "Google counts 2.5 seconds or less as good. Pages under that line: 5 of 7 on the current site, 4 of 7 on the new one."
 			},
 			{
 				"id": "kilobytes",
 				"title": "Data downloaded per page",
 				"before": "2,372 KB",
-				"after": null,
-				"note": "What a phone downloads to show one page, on average."
+				"after": "285 KB",
+				"note": "The new pages are about an eighth of the size of the current ones. A small page matters most on a weak signal."
 			},
 			{
 				"id": "requests",
 				"title": "Files requested per page",
 				"before": "228",
-				"after": null,
-				"note": "Each one is a separate trip to a server before the page is complete."
+				"after": "8",
+				"note": "Each file is another trip to a server before the page is complete."
 			},
 			{
 				"id": "seo",
-				"title": "Search score",
+				"title": "Search engine score",
 				"before": "95",
-				"after": null,
-				"note": "Google Lighthouse’s search check, out of 100. 3 of 7 pages scored 100; 3 of 7 pages have no description for search results."
+				"after": "100",
+				"note": "Lighthouse SEO, out of 100, the new site measured with its launch switch on. 100 on 7 of 7 new pages."
+			},
+			{
+				"id": "accessibility",
+				"title": "Accessibility score",
+				"before": "95",
+				"after": "100",
+				"note": "Lighthouse accessibility, out of 100: how well a page works with a screen reader, a keyboard or large text."
 			},
 			{
 				"id": "axe",
 				"title": "Accessibility problems found",
 				"before": "128",
-				"after": null,
-				"note": "Places on the page that fail WCAG 2.2 A and AA in an automated test (axe) on a laptop screen, across 7 pages; 42 more on a phone. Text too faint to read was found on 7 of 7 pages."
+				"after": "0",
+				"note": "Page elements failing WCAG 2.2 A and AA, the accessibility standard, on a computer screen. On a phone: 42 on the current site, 0 on the new one."
 			}
 		]
 	},
 	"ai": {
-		"expected": 99,
-		"today": "Asked about the nursery by name, an AI assistant that searches the web gave 22 of 46 facts on average over 3 tries. 3 assistants answering from memory alone gave at most 1 of 46.",
+		"today": "An AI assistant with web search, asked about the nursery by name three times, gave on average 22 of 46 facts. Without search, three assistants knew on average 0.4 of 46. (The name is not counted: the question gives it.) Search cannot reach the new site until it is live, so this test is repeated after launch.",
 		"cards": [
 			{
-				"id": "structured",
-				"title": "Facts in structured data",
-				"before": "1 of 99",
-				"after": null,
-				"note": "The labelled data search engines and AI tools read first: address, phone, hours and the like."
+				"id": "model",
+				"title": "An AI model given each page",
+				"before": "81 of 99",
+				"after": "69 of 99",
+				"note": "An AI model given only a page’s text, asked the questions each fact answers, three runs, averaged."
 			},
 			{
 				"id": "text",
-				"title": "Facts in the page text",
+				"title": "From the words on the page",
 				"before": "88 of 99",
-				"after": null,
-				"note": "What a program reading the page without running its scripts finds (89%)."
+				"after": "75 of 99",
+				"note": "What a program reads from a page’s text without running any script, the way many crawlers do."
+			},
+			{
+				"id": "structured",
+				"title": "From business details for search engines",
+				"before": "1 of 99",
+				"after": "25 of 99",
+				"note": "Structured data (JSON-LD), the details written for programs rather than people."
 			},
 			{
 				"id": "summary",
-				"title": "Facts in the summary for AI tools",
+				"title": "From the summary files for AI tools",
 				"before": "14 of 99",
-				"after": null,
-				"note": "The llms.txt file and plain-text copies of each page, written for AI assistants."
-			},
-			{
-				"id": "model",
-				"title": "Facts an AI model gives after reading the page",
-				"before": "81 of 99",
-				"after": null,
-				"note": "3 runs of an AI model answering questions from each page."
+				"after": "73 of 99",
+				"note": "An llms.txt file, a plain summary of the site for AI tools, and a plain-text copy of each page beside it."
 			}
-		]
+		],
+		"hoursGap": "Of the facts the new pages do not state in their text, 14 of 24 are your opening hours, which the new site leaves out until you confirm them (see “What the new site does differently”). The other 10 are named page by page in the measurement listed under “How it was measured”."
 	}
 }

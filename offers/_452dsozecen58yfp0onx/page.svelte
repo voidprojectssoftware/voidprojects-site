@@ -48,14 +48,14 @@
 		heading.focus({ preventScroll: true });
 	}
 
-	// A card from figures.json, which figures.mjs computes from the client repo's committed
-	// runs. `after` stays null until the new site is measured (part 2 of the client's #9);
-	// a card without it shows the current site's figure alone.
+	// A card from figures.json, which figures.mjs computes with spirithillmaplenursery-
+	// website's own comparison code, so each title, figure and note is the string its
+	// /site-comparison/ page prints.
 	interface Card {
 		id: string;
 		title: string;
 		before: string;
-		after: string | null;
+		after: string;
 		note: string;
 	}
 	const glance: Card[] = figures.glance.cards;
@@ -69,17 +69,15 @@
 		{#each list as card (card.id)}
 			<li class="card">
 				<p class="card-title">{card.title}</p>
-				<dl class="pair" class:single={card.after === null}>
+				<dl class="pair">
 					<div class="side">
 						<dt>{figures.sides.before}</dt>
 						<dd class="val">{card.before}</dd>
 					</div>
-					{#if card.after !== null}
-						<div class="side">
-							<dt>{figures.sides.after}</dt>
-							<dd class="val after">{card.after}</dd>
-						</div>
-					{/if}
+					<div class="side">
+						<dt>{figures.sides.after}</dt>
+						<dd class="val after">{card.after}</dd>
+					</div>
 				</dl>
 				<p class="fine">{card.note}</p>
 			</li>
@@ -158,18 +156,12 @@
 		<section class="grid gap-6" aria-labelledby="offer-figures">
 			<div class="grid gap-2">
 				<p class="eyebrow">Measured</p>
-				<h2 id="offer-figures">
-					{figures.previewMeasured ? 'Your website today, and the new one' : 'Your website today'}
-				</h2>
+				<h2 id="offer-figures">Your website today, and the new one</h2>
 				<p class="max-w-2xl text-(--offer-muted)">
 					We tested {figures.measured.pages} pages of your current site on {figures.measured
 						.before}, as a phone loads them, with the same tools Google and accessibility reviewers
-					use.
-					{#if figures.previewMeasured}
-						The new site was tested the same way on {figures.measured.after}.
-					{:else}
-						The new site’s figures join these once it is tested the same way.
-					{/if}
+					use. The new site’s {figures.measured.pages} matching pages were tested the same way on {figures
+						.measured.after}.
 				</p>
 			</div>
 			{@render cards(glance)}
@@ -178,6 +170,7 @@
 				<h3 class="sub">What AI assistants can find out about your nursery</h3>
 				{#if figures.ai.today}<p class="max-w-2xl">{figures.ai.today}</p>{/if}
 				{@render cards(aiCards)}
+				{#if figures.ai.hoursGap}<p class="fine max-w-2xl">{figures.ai.hoursGap}</p>{/if}
 			</div>
 
 			<p>
@@ -335,7 +328,7 @@
 	}
 	.cards {
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+		grid-template-columns: repeat(auto-fill, minmax(min(18rem, 100%), 1fr));
 		gap: 1rem;
 		margin: 0;
 		padding: 0;
@@ -362,9 +355,6 @@
 		gap: 0.75rem;
 		margin: 0;
 	}
-	.pair.single {
-		grid-template-columns: 1fr;
-	}
 	.side {
 		display: grid;
 		align-content: start;
@@ -382,6 +372,7 @@
 		font-weight: 600;
 		line-height: 1.05;
 		font-variant-numeric: tabular-nums;
+		white-space: nowrap; /* "2,372 KB" and "81 of 99" stay on one line; the 18rem cards leave room */
 	}
 	.val.after {
 		color: var(--canopy-amber);
