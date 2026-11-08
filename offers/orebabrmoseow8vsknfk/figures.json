@@ -1,0 +1,152 @@
+{
+	"name": "Howard’s Tinting",
+	"current": "https://www.howardstinting.com/",
+	"preview": "https://howards-tinting-website.pages.dev/",
+	"comparison": "https://howards-tinting-website.pages.dev/site-comparison/",
+	"didNotLoad": "Did not load",
+	"sides": {
+		"before": "Current site",
+		"after": "New site"
+	},
+	"measured": {
+		"before": "November 6, 2026",
+		"after": "November 7, 2026",
+		"pages": 7,
+		"addresses": 4,
+		"phone": "iPhone 15",
+		"lighthouse": "13.6.0",
+		"runs": 3
+	},
+	"source": {
+		"commit": "e8c866a",
+		"audit": "docs/discovery/seo-audit/2026-11-08-final-2/result.json",
+		"aeo": "docs/discovery/aeo/2026-11-08-final-2/result.json",
+		"assistants": "docs/discovery/aeo/2026-11-06-baseline/assistants/result.json"
+	},
+	"glance": {
+		"cards": [
+			{
+				"title": "Addresses that open a page",
+				"before": "0 of 4",
+				"after": "7 of 7",
+				"note": "For the current site, the four ways of typing its address: with and without “www”, secure and not. For the new site, its seven pages.",
+				"hasFigure": true
+			},
+			{
+				"title": "Speed score on phones",
+				"before": "Did not load",
+				"after": "86",
+				"note": "Google Lighthouse’s performance score, out of 100, averaged over seven pages.",
+				"bar": {
+					"before": null,
+					"after": 86,
+					"max": 100
+				},
+				"target": {
+					"value": 90,
+					"label": "Good",
+					"good": "higher",
+					"text": "Good is 90 or more",
+					"source": "The green “good” band of Google Lighthouse’s score (Chrome developer docs)."
+				},
+				"hasFigure": false
+			},
+			{
+				"title": "Time until the page’s main content shows",
+				"before": "Did not load",
+				"after": "1.2 s",
+				"note": "On a phone. Google counts 2.5 seconds or less as good; the new site is under it on all 7 pages.",
+				"bar": {
+					"before": null,
+					"after": 1.2338923571428573,
+					"max": 3.125
+				},
+				"target": {
+					"value": 2.5,
+					"label": "Good",
+					"good": "lower",
+					"text": "Good is 2.5 seconds or less",
+					"source": "Google’s Core Web Vitals mark for a good page load (web.dev)."
+				},
+				"hasFigure": false
+			},
+			{
+				"title": "Data downloaded per page",
+				"before": "Did not load",
+				"after": "117 KB",
+				"note": "On a phone. A small page matters most on a weak signal.",
+				"hasFigure": false
+			},
+			{
+				"title": "Files requested per page",
+				"before": "Did not load",
+				"after": "8",
+				"note": "Each file is another trip to a server before the page is complete.",
+				"hasFigure": false
+			},
+			{
+				"title": "Search engine score",
+				"before": "Did not load",
+				"after": "65",
+				"note": "Lighthouse SEO, out of 100, on phones, measured with the launch switch on. Every page still asks search engines not to list it, because each waits on answers from you, and Lighthouse takes a large share of the score off for that. That part of the score depends on a page being approved to be listed. No page reaches 100 yet.",
+				"bar": {
+					"before": null,
+					"after": 65,
+					"max": 100
+				},
+				"target": {
+					"value": 90,
+					"label": "Good",
+					"good": "higher",
+					"text": "Good is 90 or more",
+					"source": "The green “good” band of Google Lighthouse’s score (Chrome developer docs)."
+				},
+				"hasFigure": false
+			},
+			{
+				"title": "Accessibility problems found",
+				"before": "Did not load",
+				"after": "0",
+				"note": "Page elements failing WCAG 2.2 A and AA, the accessibility standard, on a computer screen across seven pages; 0 on a phone. Lighthouse accessibility score: 100 out of 100.",
+				"hasFigure": false
+			}
+		],
+		"failedNote": "What the current site answered instead: two addresses an error page (HTTP 409, Cloudflare error 1001: the address still points at your former web host, which no longer serves it) and two addresses no connection at all. Lighthouse tried six times and stopped each time (CHROME_INTERSTITIAL_ERROR), so the current site has no speed, search or accessibility score."
+	},
+	"ai": {
+		"facts": 23,
+		"today": "An AI assistant with web search, asked about the shop by name three times, gave on average 14 of 21 facts, from listings and directories. Without search, three assistants knew on average 0.7 of 21. (The name and the town are not counted: the question gives them.)",
+		"hours": "Asked your opening hours, the assistant cited howardstinting.com, the site that does not open, in 9 of its 9 answers about hours, and gave weekday hours as “8am to 5pm” and “8 a.m. to 5 p.m.”. Search results still carry the old site, so an assistant repeats hours from a page your customers cannot open, which may no longer be right.",
+		"hoursAfter": "The new site states no hours until you confirm them, and asks visitors to call; once you do, the site can state them for people and assistants alike.",
+		"cards": [
+			{
+				"title": "An AI model given the home page",
+				"before": "Did not load",
+				"after": "7 of 21",
+				"note": "The same questions as the assistant above, answered from the new home page alone, three runs: 7 of 21 facts on average. The current site has no page to give it.",
+				"hasFigure": false
+			},
+			{
+				"title": "From the words on the page",
+				"before": "Did not load",
+				"after": "9 of 23",
+				"note": "What a program reads from the home page’s text without running any script, the way many crawlers do: 9 of 23 facts.",
+				"hasFigure": false
+			},
+			{
+				"title": "From business details for search engines",
+				"before": "Did not load",
+				"after": "7 of 23",
+				"note": "Structured data (JSON-LD), the details written for programs: 7 of 23 facts.",
+				"hasFigure": false
+			},
+			{
+				"title": "From a summary file for AI tools",
+				"before": "Did not load",
+				"after": "10 of 23",
+				"note": "An llms.txt file: a plain summary of the site for AI tools.",
+				"hasFigure": false
+			}
+		]
+	}
+}

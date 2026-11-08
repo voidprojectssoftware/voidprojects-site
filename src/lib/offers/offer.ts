@@ -32,6 +32,24 @@ export interface AddOnInput extends Pricing {
 	id: string; // unique within the offer
 	label: string;
 	summary?: string;
+	group?: string; // add-ons sharing a group are alternatives: pick at most one; the group is also the picker's heading for them
+	seats?: SeatsInput; // priced per seat: the amounts are per seat and the visitor picks how many
+}
+
+export interface SeatsInput {
+	min?: number; // defaults to 1
+	max: number;
+	default?: number; // defaults to min
+	unit: string; // one seat, as in "per person"
+	units: string; // several, as in "3 people"
+}
+
+export interface Seats {
+	min: number;
+	max: number;
+	default: number;
+	unit: string;
+	units: string;
 }
 
 export interface Concern {
@@ -85,6 +103,8 @@ export interface AddOn {
 	id: string;
 	label: string;
 	summary?: string;
+	group?: string;
+	seats?: Seats;
 	prices: Price[];
 }
 
@@ -132,6 +152,36 @@ function prices(pricing: Pricing, where: string): Price[] {
 	return out;
 }
 
+function seats(input: SeatsInput, where: string): Seats {
+	const min = input.min ?? 1;
+	const out = {
+		min,
+		max: input.max,
+		default: input.default ?? min,
+		unit: input.unit,
+		units: input.units
+	};
+	if (![out.min, out.max, out.default].every((n) => Number.isInteger(n) && n >= 1)) {
+		throw new Error(`${where}: seats min, max and default must be whole numbers of at least 1`);
+	}
+	if (out.min > out.max || out.default < out.min || out.default > out.max) {
+		throw new Error(`${where}: seats need min <= default <= max`);
+	}
+	if (!out.unit.trim() || !out.units.trim())
+		throw new Error(`${where}: seats need a unit and units`);
+	return out;
+}
+
+/** Why a seat count is refused for an add-on, or undefined when it is allowed. */
+export function seatCountError(addOn: Pick<AddOn, 'seats'>, count: unknown): string | undefined {
+	if (!addOn.seats) return 'That add-on is not sold per seat.';
+	const { min, max, units } = addOn.seats;
+	if (typeof count !== 'number' || !Number.isInteger(count) || count < min || count > max) {
+		return `Choose a whole number of ${units} from ${min} to ${max}.`;
+	}
+	return undefined;
+}
+
 function uniqueIds(items: { id: string }[], where: string) {
 	const seen = new Set<string>();
 	for (const { id } of items) {
@@ -170,8 +220,15 @@ export function resolveOffer(id: string, input: OfferInput): Offer {
 		id: a.id,
 		label: a.label,
 		summary: a.summary,
+		...(a.group === undefined ? {} : { group: a.group }),
+		...(a.seats === undefined ? {} : { seats: seats(a.seats, `${where} add-on ${a.id}`) }),
 		prices: prices(a, `${where} add-on ${a.id}`)
 	}));
+	for (const a of addOns) {
+		if (a.group !== undefined && !a.group.trim()) {
+			throw new Error(`${where} add-on ${a.id}: group must not be blank`);
+		}
+	}
 	const sold = new Set(plans.flatMap((p) => p.prices.map((price) => price.interval)));
 
 	const accepted = input.accepted ?? null;
@@ -230,6 +287,19 @@ export function acceptedPlan(
 
 export function retentionEnds(offer: Pick<Offer, 'sent'>): string {
 	return addDays(offer.sent, RETENTION_DAYS);
+}
+
+/** Add-on ids that share a group with another chosen id, after the first of that group; empty when the choice is allowed. */
+export function groupConflicts(addOns: Pick<AddOn, 'id' | 'group'>[], ids: string[]): string[] {
+	const taken = new Set<string>();
+	const conflicts: string[] = [];
+	for (const id of ids) {
+		const group = addOns.find((a) => a.id === id)?.group;
+		if (group === undefined) continue;
+		if (taken.has(group)) conflicts.push(id);
+		taken.add(group);
+	}
+	return conflicts;
 }
 
 export function priceFor(item: { prices: Price[] }, interval: Interval): Price | undefined {

@@ -4,8 +4,10 @@
 import { SITE_ORIGIN } from '$lib/seo/site.js';
 import {
 	INTERVALS,
+	groupConflicts,
 	isExpired,
 	priceFor,
+	seatCountError,
 	type AddOn,
 	type Interval,
 	type Offer,
@@ -21,6 +23,7 @@ export interface CheckoutRequest {
 	planId: string;
 	interval: Interval;
 	addOnIds: string[];
+	seats: Record<string, unknown>; // seat count per chosen per-seat add-on id; checked against the offer in selectCheckout
 }
 
 export interface CheckoutSelection {
@@ -28,8 +31,8 @@ export interface CheckoutSelection {
 	plan: Plan;
 	interval: Interval;
 	addOns: AddOn[];
-	lines: { id: string; price: Price }[]; // plan first, then each add-on, all on `interval`
-	total: number; // whole cents per interval
+	lines: { id: string; price: Price; quantity: number }[]; // plan first, then each add-on, all on `interval`; quantity is the seat count, else 1
+	total: number; // whole cents per interval, quantities included
 }
 
 // What the page reads back: `url` on success, otherwise `message` to show.
@@ -79,6 +82,15 @@ export function parseCheckoutRequest(input: unknown): CheckoutRequest | undefine
 	if (typeof input !== 'object' || input === null || Array.isArray(input)) return undefined;
 	const raw = input as Record<string, unknown>;
 	const addOnIds = raw.addOnIds ?? [];
+	const seats = raw.seats ?? {};
+	if (
+		typeof seats !== 'object' ||
+		seats === null ||
+		Array.isArray(seats) ||
+		Object.keys(seats).length > 50
+	) {
+		return undefined;
+	}
 	if (
 		typeof raw.offerId !== 'string' ||
 		typeof raw.planId !== 'string' ||
@@ -92,7 +104,8 @@ export function parseCheckoutRequest(input: unknown): CheckoutRequest | undefine
 		offerId: raw.offerId,
 		planId: raw.planId,
 		interval: raw.interval as Interval,
-		addOnIds: [...new Set(addOnIds as string[])]
+		addOnIds: [...new Set(addOnIds as string[])],
+		seats: { ...(seats as Record<string, unknown>) }
 	};
 }
 
@@ -110,14 +123,29 @@ export function selectCheckout(
 	const planPrice = plan && priceFor(plan, request.interval);
 	if (!plan || !planPrice) return { status: 400, message: 'That plan is not part of this offer.' };
 
-	const lines = [{ id: plan.id, price: planPrice }];
+	const lines = [{ id: plan.id, price: planPrice, quantity: 1 }];
 	const addOns: AddOn[] = [];
 	for (const id of request.addOnIds) {
 		const addOn = offer.addOns.find((a) => a.id === id);
 		const price = addOn && priceFor(addOn, request.interval);
 		if (!addOn || !price) return { status: 400, message: 'That add-on is not part of this offer.' };
+		let quantity = 1;
+		if (addOn.seats) {
+			const count = Object.hasOwn(request.seats, id) ? request.seats[id] : addOn.seats.default;
+			const error = seatCountError(addOn, count);
+			if (error) return { status: 400, message: error };
+			quantity = count as number;
+		}
 		addOns.push(addOn);
-		lines.push({ id, price });
+		lines.push({ id, price, quantity });
+	}
+	for (const id of Object.keys(request.seats)) {
+		if (!addOns.some((a) => a.id === id && a.seats)) {
+			return { status: 400, message: 'A seat count was sent for an add-on not chosen per seat.' };
+		}
+	}
+	if (groupConflicts(addOns, request.addOnIds).length) {
+		return { status: 400, message: 'Choose only one option from each group of add-ons.' };
 	}
 	return {
 		selection: {
@@ -126,7 +154,7 @@ export function selectCheckout(
 			interval: request.interval,
 			addOns,
 			lines,
-			total: lines.reduce((sum, l) => sum + l.price.amount, 0)
+			total: lines.reduce((sum, l) => sum + l.price.amount * l.quantity, 0)
 		}
 	};
 }
