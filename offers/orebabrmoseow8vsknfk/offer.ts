@@ -1,16 +1,14 @@
 // Howard's Tinting (Atoka, TN): hosting and upkeep for the rebuilt site at
-// howards-tinting-website.pages.dev. A draft: the leading "_" on this folder keeps it
-// out of the build until the owner sets the price and `sent` (howards-tinting-website
-// issue #8). Facts are from that repo at commit 1b6e233: docs/discovery/ and its
-// 2026-11-06 baseline runs, cited per concern below.
+// howards-tinting-website.pages.dev. Published 2026-11-08 at the owner's request
+// (howards-tinting-website issue #8). Facts are from that repo at commit 1b6e233:
+// docs/discovery/ and its 2026-11-06 baseline runs, cited per concern below.
 import { defineOffer } from '$lib/offers/offer.js';
 
 export default defineOffer({
 	prospect: 'Howard’s Tinting', // the storefront sign's name, src/config/site.ts `site.name`
-	// OWNER: set on the day the link is sent. `sent` is a required ISO date in OfferInput
-	// (src/lib/offers/offer.ts), so this is a placeholder (the day the draft was written),
-	// not a send date. Expiry (sent + 30 days) and the 90-day purge count from it.
-	sent: '2026-11-06',
+	// The day the owner asked for the live link. Expiry (sent + 30 days) and the 90-day
+	// purge count from it; move it if the link goes out on a later day.
+	sent: '2026-11-08',
 	previewUrl: 'https://howards-tinting-website.pages.dev',
 	concerns: [
 		{

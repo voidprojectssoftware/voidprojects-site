@@ -3,9 +3,9 @@
 // repository, so the offer shows what its /site-comparison/ page shows and nothing here
 // is typed in by hand. Model: offers/9p2by3s8x3x1l4jd60ci/figures.mjs. Not part of the
 // build: run it again when that repository commits a newer run, then
-// `npx prettier --write offers/_orebabrmoseow8vsknfk/figures.json`.
+// `npx prettier --write offers/orebabrmoseow8vsknfk/figures.json`.
 //
-//   node offers/_orebabrmoseow8vsknfk/figures.mjs <howards-tinting-website>
+//   node offers/orebabrmoseow8vsknfk/figures.mjs <howards-tinting-website>
 //
 // Node 22.18 or later, which loads the repository's TypeScript modules directly.
 //
