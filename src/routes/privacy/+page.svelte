@@ -57,13 +57,13 @@
 	meta={PAGES.privacy}
 	title="Privacy Policy"
 	dateLabel="Effective date"
-	updated="2026-11-05"
+	updated="2026-11-07"
 	sections={SECTIONS}
 >
 	<p>
 		This policy explains what personal information Void Projects LLC, doing business as Void
 		Projects ("we", "us"), collects through voidprojects.ai and our services, what we do with it,
-		and the choices you have. We are a small studio in Nashville, Tennessee. We collect as little as
+		and the choices you have. We are a small studio in Memphis, Tennessee. We collect as little as
 		we can, we don't sell it, and we don't use advertising trackers. Questions go to {@render mail()}.
 	</p>
 
@@ -199,8 +199,9 @@
 		<strong>What "remove" and "delete" mean here.</strong> We keep our sites, offer pages, and preview
 		sites in version-controlled code repositories, which keep a history of past versions. Removing something
 		takes it off the live site and out of our working files. Copies can remain in that version history,
-		which only we can access, and we don't use them. We don't run separate backups. Our providers (Azure,
-		Microsoft 365, Stripe, and Cloudflare) may keep their own copies for a time under their own policies.
+		which only we can access, and we don't use them. All code and sites are also backed up and versioned,
+		so copies can remain in those backups too. Our providers (Azure, Microsoft 365, Stripe, and Cloudflare)
+		may keep their own copies for a time under their own policies.
 	</p>
 
 	<h2 id="your-choices-and-rights">{heading('your-choices-and-rights')}</h2>

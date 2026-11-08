@@ -74,7 +74,7 @@
 	let heroFade = $state(1); // hero opacity; drops as the services section scrolls over it
 
 	const SERVICE_ICONS: Record<string, Component> = {
-		consulting: MessagesSquare,
+		strategy: MessagesSquare,
 		software: Blocks,
 		website: PanelsTopLeft,
 		training: GraduationCap
@@ -86,7 +86,12 @@
 	const DRIFT_THRESHOLD = 0.25;
 	const EXIT_THRESHOLD = 0.75;
 	const sectionVisible = $derived(scrollProgress >= EXIT_THRESHOLD);
-	const drifting = $derived(scrollProgress >= DRIFT_THRESHOLD);
+	// Where the glyphs start drifting: re-measured on mount and resize to the point the
+	// services section has covered the hero, so the title scatters out of view instead of
+	// reappearing whole and breaking apart after the visitor has scrolled past it.
+	let driftAt = $state(DRIFT_THRESHOLD);
+	let cardAt = $state(0.5); // the Constellation card's arrival, re-measured with driftAt
+	const drifting = $derived(scrollProgress >= driftAt);
 
 	const heroTitle = 'Void Projects';
 	const titleChars = [...heroTitle];
@@ -176,14 +181,14 @@
 	// only slightly past its threshold on a normal scroll. Tune to taste.
 	const CARD_ARRIVAL_OFFSET = 0.02;
 
-	// The timeline waypoints, in scroll order: first "The Void" — where the title glyphs
-	// begin drifting apart (the glyph drift threshold), an instant trigger so it takes no
-	// arrival nudge — then one marker per project at the scroll fraction it tosses in at.
-	const timelinePoints = [
-		{ title: 'The Void', threshold: DRIFT_THRESHOLD },
+	// The timeline waypoints, in scroll order: first the services section, which is also
+	// where the title glyphs begin drifting apart (an instant trigger, so no arrival
+	// nudge), then one marker per project at the scroll fraction it tosses in at.
+	const timelinePoints = $derived([
+		{ title: SERVICES_HEADING, threshold: driftAt },
 		...cardDefs.map((d) => ({
 			title: d.title,
-			threshold: d.threshold,
+			threshold: cardAt,
 			arrivalOffset: CARD_ARRIVAL_OFFSET
 		})),
 		// Also needs the arrival nudge, but for the opposite reason: exiting a card is a
@@ -191,7 +196,7 @@
 		// exactly on the threshold — same value as this marker's own — never actually
 		// crosses it and leaves the Constellation graph stuck formed.
 		{ title: 'Meet The Team', threshold: EXIT_THRESHOLD, arrivalOffset: CARD_ARRIVAL_OFFSET }
-	];
+	]);
 
 	// Subtle cursor-repel-with-spring-back at rest. It and the drift take turns on
 	// the same glyphs: drift owns them while free-floating/warping, the nudge owns
@@ -219,7 +224,9 @@
 	// centered on it; tear it down when it leaves. RelationGraph is generic over
 	// bodies, so it links the glyphs, the GitHub button, and the card without any of
 	// them knowing about each other — the composition root wires them up here.
-	const graph = new RelationGraph();
+	// Phones stack the words tightly, so the per-letter "precedes" labels are dropped there.
+	const narrowGraph = typeof window !== 'undefined' && window.innerWidth < 768;
+	const graph = new RelationGraph(narrowGraph ? { intraLabelOpacity: 0, hubLabelSize: 14 } : {});
 	stage.add(graph);
 
 	// Pin the card and blow the glyphs off it in a direction, so the graph stays clear
@@ -257,16 +264,17 @@
 
 	// The spine: the relationship between each consecutive pair of words, a
 	// dependency-grammar reading ("language as a graph"). Aligned to word order
-	// (Void, Projects, Consulting, custom, software, websites, and, AI, training).
+	// (Void, Projects, AI, strategy, and, training, custom, software, and, websites).
 	const LINK_LABELS = [
 		'modifies', // Void -> Projects
-		'offers', // Projects -> Consulting
-		'lists', // Consulting -> custom
+		'offers', // Projects -> AI
+		'modifies', // AI -> strategy
+		'joins', // strategy -> and
+		'joins', // and -> training
+		'lists', // training -> custom
 		'modifies', // custom -> software
-		'lists', // software -> websites
-		'joins', // websites -> and
-		'joins', // and -> AI
-		'modifies' // AI -> training
+		'joins', // software -> and
+		'joins' // and -> websites
 	];
 	const constellationCard = cards.find((c) => c.title === 'Constellation');
 
@@ -437,7 +445,8 @@
 		// down keeps that give (a beat of scattered glyphs before the projects arrive);
 		// scrolling back up past it means the projects have all left, so we glide home to
 		// the origin instead of stranding the user in the empty limbo with a broken title.
-		const firstCardThreshold = Math.min(...cards.map((c) => c.actor.threshold));
+		// Re-measured with the services section (measureScene).
+		let firstCardThreshold = Math.min(...cards.map((c) => c.actor.threshold));
 
 		const measure = () => {
 			const y = window.scrollY;
@@ -477,9 +486,13 @@
 			const { y, progress } = measure();
 			scrolled = y > 0;
 			scrollProgress = progress;
-			heroFade = 1 - Math.min(1, servicesCoverage() * 1.4);
+			if (sectionVisible) graph.deactivate(); // the team takes over; no labels behind it
 			startPhysics();
 			stage.setScrollProgress(progress);
+			// Past the services the scattered title stays hidden until the card brings it
+			// into the Constellation scene, so the hero never reappears on its own.
+			heroFade =
+				progress >= driftAt && cardsOnScreen === 0 ? 0 : 1 - Math.min(1, servicesCoverage() * 1.4);
 			// Re-evaluate after setScrollProgress: a card's onStateChange (fired above)
 			// may have just changed cardsOnScreen, and sectionVisible already reflects
 			// the scrollProgress write above.
@@ -501,6 +514,24 @@
 
 			last = { y, progress };
 		};
+
+		// Ties the scene to the services section: the glyphs start drifting once it covers
+		// the hero, and the card tosses in as it leaves (its bottom near the top fifth), so
+		// the scroll goes services, then straight into the Constellation scene.
+		const measureScene = () => {
+			const scrollable = document.documentElement.scrollHeight - window.innerHeight;
+			if (scrollable <= 0 || !servicesRef) return;
+			const header = document.querySelector('header')?.offsetHeight ?? 0;
+			const top = servicesTop();
+			const bottom = top + header + servicesRef.offsetHeight - window.innerHeight * 0.2;
+			driftAt = Math.min(EXIT_THRESHOLD - 0.2, Math.max(0.02, top / scrollable));
+			cardAt = Math.min(EXIT_THRESHOLD - 0.15, Math.max(driftAt + 0.02, bottom / scrollable));
+			glyphs.setDriftThreshold(driftAt);
+			if (constellationCard) constellationCard.actor.threshold = cardAt;
+			firstCardThreshold = cardAt;
+		};
+		measureScene();
+		window.addEventListener('resize', measureScene);
 
 		window.addEventListener('scroll', onScroll, { passive: true });
 
@@ -542,6 +573,7 @@
 
 		return () => {
 			window.removeEventListener('scroll', onScroll);
+			window.removeEventListener('resize', measureScene);
 			cancelIdle();
 			delete w.driftDebug;
 			delete w.driftState;
@@ -610,7 +642,10 @@
 		glass={false}
 		class="relative sticky top-16 h-[calc(100dvh-4rem)] items-center justify-center gap-3 overflow-clip"
 	>
-		<div class="flex flex-col items-center gap-4" style:opacity={heroFade}>
+		<div
+			class="flex flex-col items-center gap-4 transition-opacity duration-500"
+			style:opacity={heroFade}
+		>
 			<div
 				class="flex flex-col items-center gap-4 transition-opacity duration-700"
 				class:opacity-0={sectionVisible}
@@ -677,24 +712,38 @@
 				</div>
 			</div>
 		</div>
-		{#each cards as card (card.title)}
-			<ProjectCard
-				actor={card.actor}
-				title={card.title}
-				desc={card.desc}
-				repo={card.repo}
-				class={card.class}
-			/>
-		{/each}
+		<!-- Fades as the team arrives, so the ejecting card never shows between their cards. -->
 		<div
-			class="absolute bottom-8 left-1/2 flex -translate-x-1/2 flex-col items-center gap-1 transition-opacity duration-300 select-none"
+			class="pointer-events-none absolute inset-0 transition-opacity duration-500"
+			class:opacity-0={sectionVisible}
+		>
+			{#each cards as card (card.title)}
+				<ProjectCard
+					actor={card.actor}
+					title={card.title}
+					desc={card.desc}
+					repo={card.repo}
+					class={card.class}
+				/>
+			{/each}
+		</div>
+		<a
+			href="#services"
+			onclick={(e) => {
+				e.preventDefault();
+				seekTo(driftAt);
+			}}
+			class="absolute bottom-8 left-1/2 flex min-h-11 -translate-x-1/2 flex-col items-center gap-1 transition-opacity duration-300 select-none hover:text-primary"
 			class:opacity-0={scrolled}
 			class:pointer-events-none={scrolled}
 			aria-hidden={scrolled}
+			tabindex={scrolled ? -1 : undefined}
 		>
-			<span class="text-sm tracking-wide opacity-70">Scroll for what we do</span>
+			<span class="text-sm tracking-wide opacity-70"
+				>Scroll for {SERVICES_HEADING.toLowerCase()}</span
+			>
 			<ChevronDown class="size-6 animate-bounce opacity-70" />
-		</div>
+		</a>
 		<div
 			class="absolute inset-0 z-10 mb-10 flex flex-col items-center justify-center transition-opacity duration-700"
 			class:opacity-0={!sectionVisible}
@@ -744,13 +793,13 @@
 					<h3 class="pt-1 text-lg font-semibold">{service.title}</h3>
 					<p class="text-sm leading-relaxed text-foreground/65">{service.body}</p>
 					<div class="mt-auto flex flex-wrap gap-x-4 text-sm">
-						{#if service.link}
+						{#each service.links ?? [] as link (link.href)}
 							<a
-								href={service.link.href}
+								href={link.href}
 								class="inline-flex min-h-11 items-center font-medium text-primary underline-offset-4 hover:underline"
-								>{service.link.label}</a
+								>{link.label}</a
 							>
-						{/if}
+						{/each}
 						<a
 							href="/contact?kind={service.key}"
 							class="inline-flex min-h-11 items-center font-medium text-primary underline-offset-4 hover:underline"

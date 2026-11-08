@@ -7,6 +7,7 @@
 		CONTACT_KINDS,
 		CONTACT_KIND_KEYS,
 		CONTACT_PRESETS,
+		REPLY_TIME,
 		type ContactKind
 	} from '$lib/content/websites.js';
 
@@ -99,7 +100,7 @@
 		<p class="pt-1 text-2xl font-bold tracking-tight text-foreground">Message sent</p>
 		<p class="text-lg text-foreground/80">Thanks, {name}. We got your message.</p>
 		<p class="max-w-md text-sm text-foreground/65">
-			We will reply to {email} soon. Anything else in the meantime, write us at
+			We reply to {email} within one business day. Anything else in the meantime, write us at
 			<a class="text-foreground/80 underline underline-offset-4" href="mailto:{CONTACT_EMAIL}"
 				>{CONTACT_EMAIL}</a
 			>.
@@ -156,7 +157,7 @@
 				Start the conversation
 			</button>
 			<p class="text-sm text-foreground/65">
-				Goes straight to us, or write us at
+				Goes straight to us. {REPLY_TIME} Or write us at
 				<a class="text-foreground/80 underline underline-offset-4" href="mailto:{CONTACT_EMAIL}"
 					>{CONTACT_EMAIL}</a
 				>.

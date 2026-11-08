@@ -3,8 +3,8 @@
 	import { Section } from '$lib/components/voidprojects/section/index.js';
 	import { GlassCard } from '$lib/components/voidprojects/glass-card/index.js';
 	import { ContactForm } from '$lib/components/contact-form/index.js';
-	import { CONTACT_KIND_KEYS } from '$lib/content/websites.js';
-	import { CONTACT_PAGE, SERVICES, SERVICES_HEADING } from '$lib/content/services.js';
+	import { CONTACT_KIND_KEYS, REPLY_TIME } from '$lib/content/websites.js';
+	import { CONTACT_PAGE, LOCATION, SERVICES, SERVICES_HEADING } from '$lib/content/services.js';
 	import { PageMeta } from '$lib/components/page-meta/index.js';
 	import { PAGES } from '$lib/seo/site.js';
 
@@ -26,6 +26,7 @@
 						<h1 class="text-3xl font-bold tracking-tight">{CONTACT_PAGE.title}</h1>
 						<p class="text-foreground/65">{CONTACT_PAGE.body}</p>
 						<p class="text-foreground/65">{CONTACT_PAGE.unsure}</p>
+						<p class="text-sm text-foreground/65">{REPLY_TIME} Void Projects, {LOCATION}.</p>
 					</div>
 				{/if}
 				<ContactForm bind:sent={contactSent} initialKind={CONTACT_KIND_KEYS.unsure} />
@@ -38,12 +39,16 @@
 					<GlassCard class="gap-3 p-6">
 						<h3 class="text-lg font-semibold">{service.title}</h3>
 						<p class="text-sm leading-relaxed text-foreground/65">{service.body}</p>
-						{#if service.link}
-							<a
-								href={service.link.href}
-								class="mt-auto inline-flex min-h-11 items-center text-sm font-medium text-primary underline-offset-4 hover:underline"
-								>{service.link.label}</a
-							>
+						{#if service.links}
+							<div class="mt-auto flex flex-wrap gap-x-4">
+								{#each service.links as link (link.href)}
+									<a
+										href={link.href}
+										class="inline-flex min-h-11 items-center text-sm font-medium text-primary underline-offset-4 hover:underline"
+										>{link.label}</a
+									>
+								{/each}
+							</div>
 						{/if}
 					</GlassCard>
 				{/each}

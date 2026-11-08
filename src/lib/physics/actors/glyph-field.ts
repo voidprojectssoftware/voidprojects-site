@@ -287,6 +287,11 @@ export class GlyphField implements Actor {
 		};
 	}
 
+	/** Move the scroll fraction the glyphs start drifting at; applies from the next scroll. */
+	setDriftThreshold(threshold: number) {
+		this.cfg.driftThreshold = threshold;
+	}
+
 	onScroll(progress: number) {
 		if (progress > this.cfg.driftThreshold) this.start();
 		else this.return_();

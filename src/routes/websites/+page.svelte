@@ -1,5 +1,20 @@
 <script lang="ts">
-	import { ArrowRight, Bot, Check, HandHeart, MessagesSquare, Zap } from '@lucide/svelte';
+	import {
+		ArrowRight,
+		Bot,
+		CalendarCheck,
+		Check,
+		Eye,
+		Globe,
+		HandHeart,
+		History,
+		MessagesSquare,
+		PencilLine,
+		PiggyBank,
+		Server,
+		Zap
+	} from '@lucide/svelte';
+	import type { Component } from 'svelte';
 	import { SiteHeader } from '$lib/components/site-header/index.js';
 	import OrbitMark from '$lib/brand/OrbitMark.svelte';
 	import { Section } from '$lib/components/voidprojects/section/index.js';
@@ -20,8 +35,8 @@
 		CAUSES,
 		INSTEAD,
 		ENGINEER,
-		STATIC_SITE,
-		STATIC_SITE_INCLUDES
+		STATIC_SITE_INCLUDES,
+		SWITCHING
 	} from '$lib/content/websites.js';
 	import { CAUSE_ICONS } from '$lib/content/cause-icons.js';
 	import { JsonLd } from '$lib/components/json-ld/index.js';
@@ -29,6 +44,16 @@
 	import { PAGES, websitesJsonLd } from '$lib/seo/site.js';
 
 	const HOW_ICONS = [Bot, Zap, MessagesSquare];
+	const INCLUDE_ICONS: Record<string, Component> = {
+		build: PiggyBank,
+		firstPass: Zap,
+		preview: Eye,
+		edits: PencilLine,
+		hosting: Server,
+		backups: History,
+		domain: Globe,
+		contract: CalendarCheck
+	};
 
 	let contactSent = $state(false);
 </script>
@@ -158,21 +183,51 @@
 									>{row.link.label}</a
 								>
 							{/if}
-							{#if row === STATIC_SITE}
-								<p class="pt-3 text-sm font-semibold text-foreground/85">What’s included</p>
-								<ul class="flex flex-col gap-1.5 pt-2 text-sm">
-									{#each STATIC_SITE_INCLUDES as item (item)}
-										<li class="flex gap-2">
-											<Check class="mt-0.5 size-4 shrink-0 text-primary" aria-hidden="true" />
-											<span>{item}</span>
-										</li>
-									{/each}
-								</ul>
-							{/if}
 						</dd>
 					</div>
 				{/each}
 			</dl>
+		</GlassCard>
+	</Section>
+
+	<Section wide class="items-center pb-24">
+		<div class="mx-auto flex max-w-2xl flex-col items-center gap-3 pb-10 text-center">
+			<h2 class="text-3xl font-bold tracking-tight">{STATIC_SITE_INCLUDES.title}</h2>
+			<p class="text-lg leading-relaxed text-balance text-foreground/65">
+				{STATIC_SITE_INCLUDES.subtitle}
+			</p>
+		</div>
+		<div class="grid w-full grid-cols-2 gap-4 lg:grid-cols-4">
+			{#each STATIC_SITE_INCLUDES.items as item (item.key)}
+				{@const Icon = INCLUDE_ICONS[item.key]}
+				<GlassCard class="gap-2 p-4 sm:gap-3 sm:p-5">
+					<span class="grid size-9 place-items-center rounded-xl bg-primary/15 text-primary">
+						<Icon class="size-4.5" aria-hidden="true" />
+					</span>
+					<span class="text-sm leading-snug font-semibold">{item.label}</span>
+				</GlassCard>
+			{/each}
+		</div>
+		<p class="max-w-2xl pt-8 text-center leading-relaxed text-balance text-foreground/65">
+			{STATIC_SITE_INCLUDES.note}
+		</p>
+	</Section>
+
+	<Section wide class="items-center pb-24">
+		<GlassCard class="w-full max-w-3xl gap-6 p-6 sm:p-10">
+			<h2 class="text-3xl font-bold tracking-tight">{SWITCHING.title}</h2>
+			<ul class="flex flex-col gap-4">
+				{#each SWITCHING.points as point (point)}
+					<li class="flex items-start gap-3">
+						<span
+							class="mt-0.5 grid size-6 shrink-0 place-items-center rounded-full bg-primary/20 text-primary"
+							><Check class="size-3.5" aria-hidden="true" /></span
+						>
+						<span class="text-lg leading-relaxed text-foreground/80">{point}</span>
+					</li>
+				{/each}
+			</ul>
+			<p class="leading-relaxed text-foreground/65">{SWITCHING.noRights}</p>
 		</GlassCard>
 	</Section>
 

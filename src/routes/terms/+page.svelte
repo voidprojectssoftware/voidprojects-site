@@ -18,16 +18,17 @@
 		{ id: 'limits-on-liability', title: '12. Limits on liability' },
 		{ id: 'changes', title: '13. Changes to prices and these terms' },
 		{ id: 'free-sites-for-causes', title: '14. Free sites for causes' },
-		{ id: 'privacy', title: '15. Privacy' },
-		{ id: 'legal-bits', title: '16. Legal bits' },
-		{ id: 'contact', title: '17. Contact' }
+		{ id: 'custom-software', title: '15. Custom software' },
+		{ id: 'privacy', title: '16. Privacy' },
+		{ id: 'legal-bits', title: '17. Legal bits' },
+		{ id: 'contact', title: '18. Contact' }
 	];
 	const heading = (id: string) => SECTIONS.find((s) => s.id === id)!.title;
 </script>
 
 {#snippet mail()}<a href="mailto:{CONTACT_EMAIL}">{CONTACT_EMAIL}</a>{/snippet}
 
-<LegalPage meta={PAGES.terms} title="Terms of Service" updated="2026-11-05" sections={SECTIONS}>
+<LegalPage meta={PAGES.terms} title="Terms of Service" updated="2026-11-07" sections={SECTIONS}>
 	<p>
 		These terms are the agreement between you (the business, cause, or person signing up) and Void
 		Projects LLC, doing business as Void Projects ("we", "us"). By subscribing, you agree to them.
@@ -254,6 +255,14 @@
 		your domain in your name, a year of keeping your files after the service ends, and your site
 		files on request. These terms apply to free sites too; only the billing, refund, and late
 		payment sections don't. We may end a free site with 30 days notice, and we will help you move.
+	</p>
+
+	<h2 id="custom-software">{heading('custom-software')}</h2>
+	<p>
+		Most of these terms are about website plans. If we build custom software for you outside a
+		website plan, such as an app, an internal tool, an integration, or an automation, that software
+		is yours once you have paid for it. "Who owns what" above covers websites on a plan and does not
+		apply to it.
 	</p>
 
 	<h2 id="privacy">{heading('privacy')}</h2>

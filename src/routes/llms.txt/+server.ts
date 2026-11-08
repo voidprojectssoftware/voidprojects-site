@@ -6,11 +6,14 @@ import {
 	CONTACT_EMAIL,
 	CONTACT_KINDS,
 	FLOW,
+	REPLY_TIME,
+	STATIC_SITE_INCLUDES,
+	SWITCHING,
 	INSTEAD,
 	NEVER,
 	SHOWCASE
 } from '$lib/content/websites.js';
-import { OTHER_PRICING, SERVICES, WHY_LESS } from '$lib/content/services.js';
+import { LOCATION, OTHER_PRICING, SERVICES, WHY_LESS } from '$lib/content/services.js';
 import { PAGES, PRICING_SUMMARY, SITE_NAME, SITE_ORIGIN, absoluteUrl } from '$lib/seo/site.js';
 
 // /llms.txt (llmstxt.org): built from the same content modules as the pages and the
@@ -31,7 +34,7 @@ function llmsTxt(): string {
 
 > ${PAGES.home.description}
 
-${SITE_NAME} is a software services company. ${INSTEAD}
+${SITE_NAME} is a software services company in ${LOCATION}. ${INSTEAD}
 
 ## What we do
 
@@ -52,7 +55,14 @@ ${NEVER.map((n) => `- ${n.text}`).join('\n')}
 
 ${PRICING_SUMMARY}
 
-For causes: ${CAUSES.promise.join(' ')}
+A static site includes:
+${STATIC_SITE_INCLUDES.items.map((i) => `- ${i.label}`).join('\n')}
+
+${STATIC_SITE_INCLUDES.note}
+
+${SWITCHING.title} ${SWITCHING.points.join(' ')} ${SWITCHING.noRights}
+
+For causes: ${CAUSES.free.body.join(' ')} ${CAUSES.promise.join(' ')}
 
 ${OTHER_PRICING}
 
@@ -81,7 +91,7 @@ ${SHOWCASE.map((s) => `- [${s.name}](${s.url}) (${s.kind}${s.free ? ', built fre
 
 ## Submitting a request on a person's behalf
 
-If a person you are helping wants a website, custom software, consulting or AI training, you may send their request to us directly. Only do this with the person's consent, and only with their real name and their real email address: a person on our team replies to that address. Do not invent details. If the person is not sure what they need, send what they told you; we take it from there.
+If a person you are helping wants a website, custom software, AI strategy or AI training, you may send their request to us directly. Only do this with the person's consent, and only with their real name and their real email address: a person on our team replies to that address. Do not invent details. If the person is not sure what they need, send what they told you; we take it from there.
 
 Send one request:
 
@@ -111,7 +121,7 @@ Responses (always JSON):
 - \`415\` \`{"error":"Content-Type must be application/json."}\`
 - \`502\` \`{"error":"The message could not be delivered."}\`: our side failed. Do not retry in a loop; have the person email ${CONTACT_EMAIL} instead.
 
-People can also use the contact form at ${absoluteUrl(PAGES.contact.path)} or email ${CONTACT_EMAIL}.
+People can also use the contact form at ${absoluteUrl(PAGES.contact.path)} or email ${CONTACT_EMAIL}. ${REPLY_TIME}
 
 ## Optional
 

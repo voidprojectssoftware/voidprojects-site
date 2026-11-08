@@ -2,7 +2,7 @@
 // Everything here is assembled from the content modules so it cannot drift from
 // the page copy.
 import { CAUSES, CONTACT_EMAIL, PRICING, STATIC_SITE } from '$lib/content/websites.js';
-import { CONTACT_PAGE, HERO_LINE } from '$lib/content/services.js';
+import { CONTACT_PAGE, HERO_LINE, SERVICES } from '$lib/content/services.js';
 
 export const SITE_ORIGIN = 'https://voidprojects.ai';
 export const SITE_NAME = 'Void Projects';
@@ -43,7 +43,7 @@ export const PAGES = {
 		path: '/websites',
 		title: 'Custom websites for businesses and causes | Void Projects',
 		description: `Custom websites from engineers, sped up by our own AI tooling. You talk to a person, never the technical side. Static sites are ${STATIC_SITE.spoken}, no build fee.`,
-		summary: `Custom websites from engineers with years of enterprise experience, sped up by our own AI tooling. You talk to a person and never touch the technical side. Static sites are ${STATIC_SITE.spoken}, and if you already pay for a site, we match it and take over hosting and upkeep.`,
+		summary: `Custom websites from engineers with years of enterprise experience, sped up by our own AI tooling. You talk to a person and never touch the technical side. Static sites, for pages that don't change often, are ${STATIC_SITE.spoken}. Switching? If your site needs more than that, we never charge more than you pay now.`,
 		image: {
 			path: '/og/websites.png', // exported by npm run export:brand (og-websites), then copied to static/
 			width: 1200,
@@ -105,6 +105,7 @@ function organization(): JsonLd {
 		name: SITE_NAME,
 		url: SITE_ORIGIN,
 		description: PAGES.home.description,
+		knowsAbout: SERVICES.map((s) => s.title),
 		email: CONTACT_EMAIL,
 		contactPoint: {
 			'@type': 'ContactPoint',

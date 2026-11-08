@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { PAGES } from '$lib/seo/site.js';
 	import { CONTACT_EMAIL } from '$lib/content/websites.js';
+	import { LOCATION } from '$lib/content/services.js';
 
 	const SITE_LINKS = [
 		{ href: PAGES.contact.path, label: 'Contact' },
@@ -17,7 +18,7 @@
 <footer
 	class="relative z-1 flex flex-wrap items-center gap-x-6 gap-y-1 border-t border-foreground/8 bg-background/70 px-6 py-4 text-sm text-foreground/70 backdrop-blur-md sm:justify-end sm:px-8 lg:px-10"
 >
-	<p>Void Projects LLC</p>
+	<p>Void Projects LLC, {LOCATION}</p>
 	<a class={link} href="mailto:{CONTACT_EMAIL}">{CONTACT_EMAIL}</a>
 	<nav aria-label="Site" class="flex flex-wrap gap-x-5">
 		{#each SITE_LINKS as item (item.href)}

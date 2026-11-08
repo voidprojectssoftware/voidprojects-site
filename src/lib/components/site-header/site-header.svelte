@@ -147,7 +147,7 @@
 								>
 							</button>
 						</span>
-						<!-- Sub-pages hang below on a string. Shown on demand: always-on would sit over page titles just under the header. -->
+						<!-- Sub-pages hang below on a string, each on the GlassCard panel look (.glass-panel). Shown on demand: always-on would sit over page titles just under the header. -->
 						<div
 							class="absolute top-full left-0 flex-col pt-1 group-hover:flex {branchOpen ||
 							keyboardOpen
@@ -175,7 +175,7 @@
 									aria-current={isCurrent(child.href) ? 'page' : undefined}
 									class="{linkClass(
 										isCurrent(child.href)
-									)} bg-background/85 backdrop-blur-sm [text-shadow:0_0_2px_rgb(8_10_20/0.85),0_0_8px_rgb(8_10_20/0.85)]"
+									)} glass-panel rounded-2xl bg-background/70 px-4 backdrop-blur-md"
 									use:hang={child.href}>{child.label}</a
 								>
 							{/each}
