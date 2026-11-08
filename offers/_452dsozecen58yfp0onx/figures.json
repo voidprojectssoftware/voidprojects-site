@@ -19,10 +19,10 @@
 		"runs": 3
 	},
 	"source": {
-		"commit": "bb655dd",
-		"audit": "docs/discovery/seo-audit/2026-11-08-relisted/result.json",
+		"commit": "095aa0d",
+		"audit": "docs/discovery/seo-audit/2026-11-08-final/result.json",
 		"liveFacts": "docs/discovery/aeo/2026-11-08-baseline/result.json",
-		"launchFacts": "docs/discovery/aeo/2026-11-08-relisted/result.json",
+		"launchFacts": "docs/discovery/aeo/2026-11-08-final/result.json",
 		"assistants": "docs/discovery/aeo/2026-11-08-baseline/assistants/result.json"
 	},
 	"glance": {
@@ -31,22 +31,22 @@
 				"id": "performance",
 				"title": "Speed score on phones",
 				"before": "71",
-				"after": "98",
+				"after": "99",
 				"note": "Google Lighthouse’s performance score, out of 100."
 			},
 			{
 				"id": "lcp",
 				"title": "Time until the page’s main content shows",
 				"before": "2.7 s",
-				"after": "1.9 s",
-				"note": "Google counts 2.5 seconds or less as good. Pages under that line: 5 of 7 on the current site, 4 of 7 on the new one."
+				"after": "1.7 s",
+				"note": "Google counts 2.5 seconds or less as good. Pages under that line: 5 of 7 on the current site, all 7 on the new one."
 			},
 			{
 				"id": "kilobytes",
 				"title": "Data downloaded per page",
 				"before": "2,372 KB",
-				"after": "285 KB",
-				"note": "The new pages are about an eighth of the size of the current ones. A small page matters most on a weak signal."
+				"after": "243 KB",
+				"note": "The new pages are about a tenth of the size of the current ones. A small page matters most on a weak signal."
 			},
 			{
 				"id": "requests",
