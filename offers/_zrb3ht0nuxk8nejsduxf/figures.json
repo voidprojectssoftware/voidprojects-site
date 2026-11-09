@@ -1,0 +1,115 @@
+{
+	"name": "Dronex",
+	"current": "https://www.dronex92.com/",
+	"preview": "https://dronex92-website.pages.dev/",
+	"comparison": "https://dronex92-website.pages.dev/site-comparison/",
+	"didNotLoad": "Did not load",
+	"sides": {
+		"before": "Current site",
+		"after": "New site"
+	},
+	"measured": {
+		"before": "November 9, 2026",
+		"after": "November 9, 2026",
+		"pages": 7,
+		"phone": "iPhone 15",
+		"lighthouse": "13.6.0",
+		"axe": "4.14.0",
+		"runs": 3
+	},
+	"source": {
+		"commit": "265dee4",
+		"audit": "docs/discovery/seo-audit/2026-11-09-after-38/result.json",
+		"liveFacts": "docs/discovery/aeo/2026-11-09-baseline/result.json",
+		"launchFacts": "docs/discovery/aeo/2026-11-09-after-38/result.json",
+		"assistants": "docs/discovery/aeo/2026-11-09-baseline/assistants/result.json"
+	},
+	"glance": {
+		"lead": "The current site first, the new site second. Each figure is an average or a total over the same seven pages of your current site, each set against the new page it now leads to, measured on a phone unless it says otherwise.",
+		"cards": [
+			{
+				"id": "performance",
+				"title": "Speed score on phones",
+				"before": "61",
+				"after": "99",
+				"note": "Lighthouse’s performance score, out of 100."
+			},
+			{
+				"id": "lcp",
+				"title": "Time until the page’s main content shows",
+				"before": "5.3 s",
+				"after": "2.0 s",
+				"note": "Google counts 2.5 seconds or less as good. Pages under that line: 0 of 7 on the current site, all 7 on the new one."
+			},
+			{
+				"id": "kilobytes",
+				"title": "Data downloaded per page",
+				"before": "2,142 KB",
+				"after": "169 KB",
+				"note": "The new pages are about a thirteenth of the size of the current ones. A small page matters most on a weak signal."
+			},
+			{
+				"id": "requests",
+				"title": "Files requested per page",
+				"before": "68",
+				"after": "8",
+				"note": "Each file is another trip to a server before the page is complete."
+			},
+			{
+				"id": "seo",
+				"title": "Search engine score",
+				"before": "99",
+				"after": "100",
+				"note": "Lighthouse SEO, out of 100, the new site measured with its launch switch on. 100 on 7 of 7 new pages."
+			},
+			{
+				"id": "accessibility",
+				"title": "Accessibility score",
+				"before": "98",
+				"after": "100",
+				"note": "Lighthouse accessibility, out of 100: how well a page works with a screen reader, a keyboard or large text."
+			},
+			{
+				"id": "axe",
+				"title": "Accessibility problems found",
+				"before": "8",
+				"after": "0",
+				"note": "Page elements failing WCAG 2.2 A and AA, the accessibility standard, on a computer screen. On a phone: 8 on the current site, 0 on the new one."
+			}
+		]
+	},
+	"ai": {
+		"today": "An AI assistant with web search, asked about Dronex by name three times, gave on average 0 of 37 facts. Without search, three assistants knew on average 0 of 37. (The name and the website are not counted: the question gives them.) Search cannot reach the new site until it is live, so this test is repeated after launch.",
+		"cards": [
+			{
+				"id": "model",
+				"title": "An AI model given each page",
+				"before": "90.7 of 105",
+				"after": "93.7 of 105",
+				"note": "An AI model given only a page’s text, asked the questions each fact answers, three runs, averaged."
+			},
+			{
+				"id": "text",
+				"title": "From the words on the page",
+				"before": "94 of 105",
+				"after": "99 of 105",
+				"note": "What a program reads from a page’s text without running any script, the way many crawlers do."
+			},
+			{
+				"id": "structured",
+				"title": "From details written for search engines",
+				"before": "23 of 105",
+				"after": "0 of 105",
+				"note": "Structured data (JSON-LD), the details written for programs rather than people."
+			},
+			{
+				"id": "summary",
+				"title": "From the summary files for AI tools",
+				"before": "None",
+				"after": "None",
+				"note": "An llms.txt file, a plain summary of the site for AI tools, and a plain-text copy of each page beside it."
+			}
+		],
+		"siteWide": "Counted once each across all the pages instead of page by page, the words of the current site give 38 of the 39 facts, and the new site’s 38. The new site puts the monthly packages and the one-time shoots on pages of their own rather than listing every one on the home page, so a fact can leave one page’s count and still be on the site."
+	}
+}

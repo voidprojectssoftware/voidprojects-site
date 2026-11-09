@@ -1,0 +1,76 @@
+/* "Altitude", the system the owner moved the rebuild to (dronex92-website #41; tokens in
+   src/design/systems/altitude/index.ts at main 265dee4), drawn from the live site's palette
+   in docs/discovery/atlas/brand.md: the theme's dark olive #3d4435 taken down to near black
+   #0e100c as the page, #181b15 for cards and #070806 for the darkest band; the live beige
+   #e7d9cb as the text, the cool grey #c2c8cc muted; olive #3d4435 for rules; and the graded
+   earth tan #d9b892 (measured off the subdivision photographs) as the one accent, with the
+   near black on it. Small radii (2px controls, 4px cards) and 1px rules, as the system sets
+   them. Dark only, as the system is. Barlow Condensed 600 is declared by page.svelte from the
+   page URL, because a font URL in this file would carry the offer id into the CSS. The pass
+   and fail tones are this page's own, light enough to read on near black. */
+@import 'tailwindcss' source('.');
+@source not './public';
+
+:root {
+	--dx-ground: #0e100c;
+	--dx-raised: #181b15;
+	--dx-sunk: #070806;
+	--dx-beige: #e7d9cb;
+	--dx-grey: #c2c8cc;
+	--dx-olive: #3d4435;
+	--dx-earth: #d9b892;
+	--dx-display: 'Barlow Condensed', 'Arial Narrow', system-ui, sans-serif;
+	--offer-bg: var(--dx-ground);
+	--offer-fg: var(--dx-beige);
+	--offer-muted: var(--dx-grey);
+	--offer-surface: var(--dx-raised);
+	--offer-border: var(--dx-olive);
+	--offer-accent: var(--dx-earth);
+	--offer-accent-fg: var(--dx-ground);
+	--offer-good: #9fd8a8;
+	--offer-warn: #f0d08a;
+	--offer-bad: #ffa395;
+	--offer-radius: 4px;
+	--offer-callout: var(--dx-earth);
+	--offer-link: var(--dx-earth);
+	color-scheme: dark;
+}
+
+body {
+	margin: 0;
+	background: var(--offer-bg);
+	color: var(--offer-fg);
+	font-family:
+		system-ui,
+		-apple-system,
+		'Segoe UI',
+		Roboto,
+		'Helvetica Neue',
+		Arial,
+		sans-serif;
+	font-size: 1.0625rem;
+	line-height: 1.65;
+}
+
+h1,
+h2 {
+	font-family: var(--dx-display);
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.01em;
+	line-height: 1;
+}
+
+h2 {
+	margin-bottom: 0.75rem;
+	font-size: clamp(2rem, 2.8vw + 1rem, 3.25rem);
+}
+
+a {
+	color: var(--dx-earth);
+}
+
+/* 44px tap targets for the plan picker's Monthly / Annual toggle on this page. */
+:root .toggle button[role='radio'] {
+	min-height: 2.75rem;
+}
