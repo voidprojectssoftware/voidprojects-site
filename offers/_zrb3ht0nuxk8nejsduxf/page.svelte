@@ -1,6 +1,7 @@
 <script lang="ts">
 	import './theme.css';
 	import { ENGINEER } from '$lib/content/websites.js';
+	import figures from './figures.json';
 	import {
 		ConcernsList,
 		OfferGate,
@@ -18,13 +19,13 @@
 	// offer id is in the HTML but never in the page script or CSS.
 	const asset = (path: string) => new URL(path, context.url).pathname;
 
-	// Syne, the live site's heading face and the one the rebuild's chosen "Field record"
-	// system sets in capitals, as that system ships it: one variable file, weights 400 to 800
-	// (dronex92-website src/design/systems/field-record/fonts/, SIL OFL; the licence is
-	// beside the file in public/fonts/).
+	// Barlow Condensed 600, the face of "Altitude", the system the owner moved the rebuild to
+	// (dronex92-website #41), as that system ships it: one file, weight 600
+	// (dronex92-website src/design/systems/altitude/fonts/, SIL OFL; the licence is beside
+	// the file in public/fonts/).
 	const FONT_FACES =
 		'<style>' +
-		`@font-face{font-family:'Syne';font-weight:400 800;font-style:normal;font-display:swap;src:url(${asset('fonts/syne-latin-wght-normal.woff2')}) format('woff2')}` +
+		`@font-face{font-family:'Barlow Condensed';font-weight:600;font-style:normal;font-display:swap;src:url(${asset('fonts/barlow-condensed-latin-600-normal.woff2')}) format('woff2')}` +
 		'</style>';
 
 	// svelte-ignore state_referenced_locally
@@ -48,8 +49,42 @@
 		heading.focus({ preventScroll: true });
 	}
 
-	const QR_INK = '#000000'; // the brand's black (brand.md --black-hsl), dark on white so phones read it
+	// A card from figures.json, which figures.mjs computes with dronex92-website's own
+	// comparison code, so each title, figure and note is the string its /site-comparison/
+	// page prints.
+	interface Card {
+		id: string;
+		title: string;
+		before: string;
+		after: string;
+		note: string;
+	}
+	const glance: Card[] = figures.glance.cards;
+	const aiCards: Card[] = figures.ai.cards;
+
+	const QR_INK = '#0e100c'; // Altitude's near-black ground, dark on white so phones read it
 </script>
+
+{#snippet cards(list: Card[])}
+	<ul class="cards">
+		{#each list as card (card.id)}
+			<li class="card">
+				<p class="card-title">{card.title}</p>
+				<dl class="pair">
+					<div class="side">
+						<dt>{figures.sides.before}</dt>
+						<dd class="val">{card.before}</dd>
+					</div>
+					<div class="side">
+						<dt>{figures.sides.after}</dt>
+						<dd class="val">{card.after}</dd>
+					</div>
+				</dl>
+				<p class="fine">{card.note}</p>
+			</li>
+		{/each}
+	</ul>
+{/snippet}
 
 <svelte:head>
 	<!-- eslint-disable-next-line svelte/no-at-html-tags -->
@@ -69,25 +104,24 @@
 			<h1 id="offer-title" class="text-[2.5rem] min-[30rem]:text-5xl sm:text-6xl">
 				A new website for {offer.prospect}
 			</h1>
-			<!-- The preview carries every page, drawn in "Field record" (client PR #19; client
-			     src/theme/choice.ts: the owner's choice, 2026-11-09), which keeps the live beige,
-			     black and Syne and leads with the photographs. -->
+			<!-- The preview carries every page (client PR #19) and leads with the photographs. The
+			     owner is moving it to "Altitude" (client #41), a dark page where the photographs are
+			     the light; this sentence names no palette, so it holds before and after #41. -->
 			<p class="max-w-2xl text-lg text-(--offer-muted)">
-				We have built a new website for Dronex, led by your aerial photographs and kept in the
-				beige, black and lettering you already use. It is live as a preview now, so you can see how
-				it looks and how quickly it opens on a phone before you decide anything. We would host it,
-				keep it secure and up to date, and make your changes.
+				We have built a new website for Dronex, led by your aerial photographs. It is live as a
+				preview now, so you can see how it looks and how quickly it opens on a phone before you
+				decide anything. We would host it, keep it secure and up to date, and make your changes.
 			</p>
 			<p class="links">
 				<a class="preview" href={offer.previewUrl} rel="noreferrer"
 					>See your new site at {previewHost}</a
 				>
-				<!-- Part 2 (dronex92-website issue #10, after client #7 part 2): a second link here
-				     to {previewUrl}/site-comparison/, and the figures section below. -->
+				<a href={figures.comparison} rel="noreferrer">Your current site and the new one, compared</a
+				>
 			</p>
 			<p class="max-w-2xl">
-				Open it on your phone first. Below is what we found about your website today, and what the
-				plan includes.
+				Open it on your phone first. Below are the two sites measured side by side, what we found
+				about your website today, and what the plan includes.
 			</p>
 			<!-- OWNER: the price is offer.ts's placeholder. "Domain at cost", "no build fee" and
 			     "no contract": /terms #who-owns-what and #what-you-get. -->
@@ -127,8 +161,32 @@
 			</div>
 		</section>
 
-		<!-- Part 2: the "Measured" figures section goes here, from figures.json, as in
-		     offers/orebabrmoseow8vsknfk/page.svelte. -->
+		<section class="grid gap-6" aria-labelledby="offer-figures">
+			<div class="grid gap-2">
+				<p class="eyebrow">Measured</p>
+				<h2 id="offer-figures">Your website today, and the new one</h2>
+				<p class="max-w-2xl text-(--offer-muted)">
+					We tested your current site on {figures.measured.before} and the new one on {figures
+						.measured.after}, as a phone ({figures.measured.phone}) loads them, with the same tools
+					Google and accessibility reviewers use.
+					{figures.glance.lead}
+				</p>
+			</div>
+			{@render cards(glance)}
+
+			<div class="grid gap-3">
+				<h3 class="sub">What AI assistants can find out about Dronex</h3>
+				{#if figures.ai.today}<p class="max-w-2xl">{figures.ai.today}</p>{/if}
+				{@render cards(aiCards)}
+				<p class="fine max-w-2xl">{figures.ai.siteWide}</p>
+			</div>
+
+			<p>
+				<a class="preview" href={figures.comparison} rel="noreferrer"
+					>Every figure, page by page, on the full comparison</a
+				>
+			</p>
+		</section>
 
 		<ConcernsList concerns={offer.concerns} title="What we found" />
 
@@ -156,7 +214,7 @@
 	</OfferGate>
 
 	<footer
-		class="flex flex-wrap items-center justify-between gap-3 border-t-2 border-(--offer-border) pt-6 text-sm text-(--offer-muted)"
+		class="flex flex-wrap items-center justify-between gap-3 border-t border-(--offer-border) pt-6 text-sm text-(--offer-muted)"
 	>
 		<p>Offer open through {formatDate(offer.expires)}.</p>
 		<!-- The standard footer badge, as docs/websites/how-to/add-the-footer-badge.md gives it. -->
@@ -171,20 +229,22 @@
 </main>
 
 <style>
-	/* A black band, as Field record paints its footer and the live site its logo tiles, the
-	   name in Syne capitals in beige, the byline in spaced Syne capitals in the cool grey, as
-	   the system sets its labels (dronex92-website src/design/systems/field-record/index.ts). */
+	/* The darkest step, as Altitude paints its footer and credentials band, with an olive
+	   rule under it; the name in tall Barlow Condensed capitals in beige, the byline and
+	   eyebrows in widely spaced capitals, as the system sets its labels (0.22em; dronex92-
+	   website src/design/systems/altitude/index.ts). */
 	.band {
 		padding: 1.5rem 1rem 1.25rem;
-		background: var(--dx-black);
+		background: var(--dx-sunk);
 		color: var(--dx-beige);
+		border-bottom: 1px solid var(--dx-olive);
 		text-align: center;
 	}
 	.name {
 		margin: 0;
 		font-family: var(--dx-display);
-		font-size: clamp(2.25rem, 6vw + 1rem, 4.5rem);
-		font-weight: 700;
+		font-size: clamp(2.75rem, 7vw + 1rem, 5.5rem);
+		font-weight: 600;
 		text-transform: uppercase;
 		line-height: 1.05;
 		letter-spacing: 0.01em;
@@ -196,8 +256,8 @@
 		font-size: 0.8125rem;
 		font-weight: 600;
 		text-transform: uppercase;
-		letter-spacing: 0.12em;
-		color: var(--dx-olive);
+		letter-spacing: 0.22em;
+		color: var(--dx-earth);
 	}
 	.byline {
 		margin-top: 0.5rem;
@@ -207,11 +267,11 @@
 		margin: 0;
 	}
 	a {
-		color: var(--dx-black);
+		color: var(--dx-earth);
 		text-underline-offset: 0.15em;
 	}
 	a:focus-visible {
-		outline: 3px solid var(--dx-black);
+		outline: 2px solid var(--dx-earth);
 		outline-offset: 3px;
 	}
 	.preview {
@@ -224,7 +284,8 @@
 	.price strong {
 		font-family: var(--dx-display);
 		font-size: 2.5rem;
-		font-weight: 700;
+		font-weight: 600;
+		color: var(--dx-earth);
 	}
 	.cta {
 		display: flex;
@@ -237,10 +298,11 @@
 		align-items: center;
 		min-height: 2.75rem;
 		padding: 0 1.75rem;
-		background: var(--dx-black);
-		color: var(--dx-white);
+		background: var(--dx-earth);
+		color: var(--dx-ground);
+		border-radius: 2px;
 		font-family: var(--dx-display);
-		font-weight: 700;
+		font-weight: 600;
 		text-decoration: none;
 		text-transform: uppercase;
 		letter-spacing: 0.08em;
@@ -251,7 +313,7 @@
 		align-items: flex-start;
 		gap: 1.25rem;
 		padding: 1.25rem 1.5rem;
-		border: 2px solid var(--offer-border);
+		border: 1px solid var(--offer-border);
 		border-radius: var(--offer-radius);
 		background: var(--offer-surface);
 	}
@@ -273,6 +335,67 @@
 		display: flex;
 		flex-wrap: wrap;
 		gap: 0.25rem 1.5rem;
+	}
+	.sub {
+		margin: 0.5rem 0 0;
+		font-family: var(--dx-display);
+		font-size: 1.375rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		line-height: 1.15;
+	}
+	.cards {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(min(18rem, 100%), 1fr));
+		gap: 1rem;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+	.card {
+		display: grid;
+		align-content: start;
+		gap: 0.75rem;
+		padding: 1.125rem 1.25rem;
+		border: 1px solid var(--offer-border);
+		border-radius: var(--offer-radius);
+		background: var(--offer-surface);
+	}
+	.card-title {
+		margin: 0;
+		font-size: 1.0625rem;
+		font-weight: 700;
+		line-height: 1.3;
+	}
+	.pair {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 0.75rem;
+		margin: 0;
+	}
+	.side {
+		display: grid;
+		align-content: start;
+		gap: 0.25rem;
+	}
+	.side dt {
+		font-size: 0.8125rem;
+		font-weight: 600;
+		color: var(--offer-muted);
+	}
+	.val {
+		margin: 0;
+		font-family: var(--dx-display);
+		font-size: 2rem;
+		font-weight: 600;
+		line-height: 1.05;
+		font-variant-numeric: tabular-nums;
+		white-space: nowrap; /* "2,142 KB" and "90.7 of 105" stay on one line; the 18rem cards leave room */
+	}
+	.fine {
+		margin: 0;
+		font-size: 0.875rem;
+		color: var(--offer-muted);
 	}
 	.renewal {
 		max-width: 42rem;

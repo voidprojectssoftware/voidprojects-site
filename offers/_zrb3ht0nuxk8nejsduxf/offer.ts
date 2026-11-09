@@ -168,9 +168,9 @@ const draft = {
 			monthly: 2000
 		}
 	],
-	// Figures: part 2 of issue #10 adds figures.json beside this file, computed from the
-	// client repo's committed runs with that repo's own comparison code, once its
-	// /site-comparison/ page exists (issue #7, part 2).
+	// Figures: figures.json beside this file, computed by figures.mjs from the client
+	// repo's committed runs (main 265dee4) with that repo's own comparison code, so the
+	// page shows what its /site-comparison/ page shows (issue #10, part 2).
 	contact: {
 		name: 'Dronex (no owner named in any public source)', // business-profile.md, "Owner or pilot: Not found"; open question 10
 		email: 'Dronexservices92@gmail.com', // facts.md §3: every page's footer, plain text; evidenced
