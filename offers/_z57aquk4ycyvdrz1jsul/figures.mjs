@@ -162,7 +162,8 @@ const summaryCards = [
 		note: g.axe.note(
 			method.wcag,
 			about(h.axePhonePerPage.before ?? 0),
-			about(h.axePhonePerPage.after ?? 0)
+			about(h.axePhonePerPage.after ?? 0),
+			(h.axeRules.after ?? []).length > 0
 		)
 	}
 ];

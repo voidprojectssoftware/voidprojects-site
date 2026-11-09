@@ -12,21 +12,21 @@
 		"before": "November 9, 2026",
 		"after": "November 9, 2026",
 		"pagesBefore": 1,
-		"pagesAfter": 7,
+		"pagesAfter": 9,
 		"phone": "iPhone 15",
 		"lighthouse": "13.6.0",
 		"axe": "4.14.0",
 		"runs": 3
 	},
 	"source": {
-		"commit": "ac012d0",
-		"audit": "docs/discovery/seo-audit/2026-11-09-preview/result.json",
+		"commit": "c726450",
+		"audit": "docs/discovery/seo-audit/2026-11-09-audit-fixes/result.json",
 		"liveFacts": "docs/discovery/aeo/2026-11-09-baseline/result.json",
-		"launchFacts": "docs/discovery/aeo/2026-11-09-preview/result.json",
+		"launchFacts": "docs/discovery/aeo/2026-11-09-audit-fixes/result.json",
 		"assistants": "docs/discovery/aeo/2026-11-09-baseline/assistants/result.json"
 	},
 	"glance": {
-		"lead": "The current site first, the new site second. Your current site is one page, so its figures are that page; the new site’s are the average over the seven pages measured, on a phone unless it says otherwise.",
+		"lead": "The current site first, the new site second. Your current site is one page, so its figures are that page; the new site’s are the average over the nine pages measured, on a phone unless it says otherwise.",
 		"cards": [
 			{
 				"id": "lcp",
@@ -53,7 +53,7 @@
 				"id": "requests",
 				"title": "Files requested per page",
 				"before": "46",
-				"after": "12",
+				"after": "10",
 				"note": "Each file is another trip to a server before the page is complete."
 			},
 			{
@@ -67,15 +67,15 @@
 				"id": "accessibility",
 				"title": "Accessibility score",
 				"before": "81",
-				"after": "99",
+				"after": "100",
 				"note": "Lighthouse accessibility, out of 100: how well a page works with a screen reader, a keyboard or large text."
 			},
 			{
 				"id": "axe",
 				"title": "Accessibility problems per page",
 				"before": "1",
-				"after": "1.9",
-				"note": "Page elements failing WCAG 2.2 A and AA, the accessibility standard, on a computer screen, on average per page. On a phone: 2 on the current site, 1.9 on the new one. What is left on the new site is listed under “Still to do”."
+				"after": "0",
+				"note": "Page elements failing WCAG 2.2 A and AA, the accessibility standard, on a computer screen, on average per page. On a phone: 2 on the current site, 0 on the new one."
 			}
 		]
 	},
