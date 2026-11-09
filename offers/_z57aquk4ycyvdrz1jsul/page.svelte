@@ -1,6 +1,7 @@
 <script lang="ts">
 	import './theme.css';
 	import { ENGINEER } from '$lib/content/websites.js';
+	import figures from './figures.json';
 	import {
 		ConcernsList,
 		OfferGate,
@@ -48,8 +49,42 @@
 		heading.focus({ preventScroll: true });
 	}
 
+	// A card from figures.json, which figures.mjs computes with integrityrealestateservices-
+	// website's own comparison code, so each title, figure and note is the string its
+	// /site-comparison/ page prints.
+	interface Card {
+		id: string;
+		title: string;
+		before: string;
+		after: string;
+		note: string;
+	}
+	const glance: Card[] = figures.glance.cards;
+	const aiCards: Card[] = figures.ai.cards;
+
 	const QR_INK = '#0a0a0a'; // the brand's black, dark on white so phones read it
 </script>
+
+{#snippet cards(list: Card[])}
+	<ul class="cards">
+		{#each list as card (card.id)}
+			<li class="card">
+				<p class="card-title">{card.title}</p>
+				<dl class="pair">
+					<div class="side">
+						<dt>{figures.sides.before}</dt>
+						<dd class="val">{card.before}</dd>
+					</div>
+					<div class="side">
+						<dt>{figures.sides.after}</dt>
+						<dd class="val after">{card.after}</dd>
+					</div>
+				</dl>
+				<p class="fine">{card.note}</p>
+			</li>
+		{/each}
+	</ul>
+{/snippet}
 
 <svelte:head>
 	<!-- eslint-disable-next-line svelte/no-at-html-tags -->
@@ -69,10 +104,9 @@
 			<h1 id="offer-title" class="text-[2.5rem] min-[30rem]:text-5xl sm:text-6xl">
 				A new website for {offer.prospect}
 			</h1>
-			<!-- OWNER: the owner's framing for this client (issue #10) is look and feel plus speed,
-			     pointing at the preview. True only once the preview carries the rebuilt pages
-			     (client issue #5; today its home page is a placeholder) and a design system is
-			     chosen (client ADR 0010). Reword the look sentence to the chosen system. -->
+			<!-- The owner's framing for this client (issue #10): look and feel plus speed, pointing
+			     at the preview (client #5 put the rebuilt pages on it). The look is a draft until
+			     the owner picks a design (client ADR 0010); the sentence holds either way. -->
 			<p class="max-w-2xl text-lg text-(--offer-muted)">
 				We have built a new website for your brokerage. It is live as a preview now, so you can see
 				how it looks and feels, and how quickly it opens on a phone, before you decide anything. We
@@ -82,12 +116,12 @@
 				<a class="preview" href={offer.previewUrl} rel="noreferrer"
 					>See your new site at {previewHost}</a
 				>
-				<!-- Part 2 (issue #10, after client #7 part 2): a second link here to
-				     {previewUrl}/site-comparison/, and the figures section below. -->
+				<a href={figures.comparison} rel="noreferrer">Your current site and the new one, compared</a
+				>
 			</p>
 			<p class="max-w-2xl">
-				Open it on your phone first. Below is what we found about your website today, and what the
-				plan includes.
+				Open it on your phone first. Below are the two sites measured side by side, what we found
+				about your website today, and what the plan includes.
 			</p>
 			<!-- OWNER: the price is offer.ts's placeholder. "Domain at cost", "no build fee" and
 			     "no contract": /terms #who-owns-what and #what-you-get. -->
@@ -127,8 +161,32 @@
 			</div>
 		</section>
 
-		<!-- Part 2: the "Measured" figures section goes here, from figures.json, as in
-		     offers/orebabrmoseow8vsknfk/page.svelte. -->
+		<section class="grid gap-6" aria-labelledby="offer-figures">
+			<div class="grid gap-2">
+				<p class="eyebrow">Measured</p>
+				<h2 id="offer-figures">Your website today, and the new one</h2>
+				<p class="max-w-2xl text-(--offer-muted)">
+					We tested your current site on {figures.measured.before} and the new one on {figures
+						.measured.after}, as a phone ({figures.measured.phone}) loads them, with the same tools
+					Google and accessibility reviewers use.
+					{figures.glance.lead}
+				</p>
+			</div>
+			{@render cards(glance)}
+
+			<div class="grid gap-3">
+				<h3 class="sub">What AI assistants can find out about your brokerage</h3>
+				{#if figures.ai.today}<p class="max-w-2xl">{figures.ai.today}</p>{/if}
+				{@render cards(aiCards)}
+				{#if figures.ai.missed}<p class="fine max-w-2xl">{figures.ai.missed}</p>{/if}
+			</div>
+
+			<p>
+				<a class="preview" href={figures.comparison} rel="noreferrer"
+					>Every figure, page by page, on the full comparison</a
+				>
+			</p>
+		</section>
 
 		<ConcernsList concerns={offer.concerns} title="What we found" />
 
@@ -270,6 +328,69 @@
 		display: flex;
 		flex-wrap: wrap;
 		gap: 0.25rem 1.5rem;
+	}
+	.sub {
+		margin: 0.5rem 0 0;
+		font-family: var(--ires-display);
+		font-size: 1.625rem;
+		font-weight: 600;
+		line-height: 1.15;
+	}
+	.cards {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(min(18rem, 100%), 1fr));
+		gap: 1rem;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+	.card {
+		display: grid;
+		align-content: start;
+		gap: 0.75rem;
+		padding: 1.125rem 1.25rem;
+		border: 1px solid var(--offer-border);
+		border-radius: var(--offer-radius);
+		background: var(--offer-surface);
+	}
+	.card-title {
+		margin: 0;
+		font-size: 1.0625rem;
+		font-weight: 700;
+		line-height: 1.3;
+	}
+	.pair {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 0.75rem;
+		margin: 0;
+	}
+	.side {
+		display: grid;
+		align-content: start;
+		gap: 0.25rem;
+	}
+	.side dt {
+		font-size: 0.8125rem;
+		font-weight: 600;
+		color: var(--offer-muted);
+	}
+	.val {
+		margin: 0;
+		font-family: var(--ires-display);
+		font-size: 2.25rem;
+		font-weight: 600;
+		line-height: 1.05;
+		font-variant-numeric: tabular-nums;
+		white-space: nowrap; /* "4,034 KB" and "82.7 of 92" stay on one line; the 18rem cards leave room */
+	}
+	.val.after {
+		color: var(--ires-gold);
+	}
+	.fine {
+		margin: 0;
+		font-size: 0.875rem;
+		color: var(--offer-muted);
 	}
 	.renewal {
 		max-width: 42rem;

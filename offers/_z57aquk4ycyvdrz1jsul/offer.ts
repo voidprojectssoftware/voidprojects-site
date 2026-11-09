@@ -169,9 +169,9 @@ const draft = {
 			monthly: 2000
 		}
 	],
-	// Figures: part 2 of issue #10 adds figures.json beside this file, computed from the
-	// client repo's committed runs with that repo's own comparison code, once its
-	// /site-comparison/ page exists (issue #7, part 2).
+	// Figures: figures.json beside this file, computed by figures.mjs from the client
+	// repo's committed runs (main ac012d0) with that repo's own comparison code, so the
+	// page shows what its /site-comparison/ page shows (issue #10, part 2).
 	contact: {
 		name: 'Lawrence and Courtney Perkins', // business-profile.md, Owners: "Lawrence & Courtney Perkins" (SITE); Courtney is the principal broker
 		phone: '662-510-8001', // facts.md §2, "Office: 662-510-8001", the only number the site calls the office; evidenced
