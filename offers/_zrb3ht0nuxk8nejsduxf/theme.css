@@ -1,0 +1,74 @@
+/* "Field record", the system the rebuild is drawn in (dronex92-website
+   src/design/systems/field-record/index.ts, named in src/theme/choice.ts, main 6a60299),
+   which takes the live site's own palette from docs/discovery/atlas/brand.md: beige
+   #e7d9cb as the page (--lightAccent-hsl), white #ffffff for cards (--white-hsl), black
+   #000000 for text, rules, buttons and the band (--black-hsl), the cool grey #c2c8cc
+   (--accent-hsl) on black, and the dark olive #3d4435 (--darkAccent-hsl) for quiet text.
+   Square corners and two-pixel rules, as the system sets them. Light only, as the system
+   is. Syne is declared by page.svelte from the page URL, because a font URL in this file
+   would carry the offer id into the CSS. The pass and fail tones are this page's own,
+   dark enough to read on beige and white. */
+@import 'tailwindcss' source('.');
+@source not './public';
+
+:root {
+	--dx-beige: #e7d9cb;
+	--dx-white: #ffffff;
+	--dx-grey: #c2c8cc;
+	--dx-black: #000000;
+	--dx-olive: #3d4435;
+	--dx-display: 'Syne', 'Arial Black', system-ui, sans-serif;
+	--offer-bg: var(--dx-beige);
+	--offer-fg: var(--dx-black);
+	--offer-muted: var(--dx-olive);
+	--offer-surface: var(--dx-white);
+	--offer-border: var(--dx-black);
+	--offer-accent: var(--dx-black);
+	--offer-accent-fg: var(--dx-white);
+	--offer-good: #1d5e2c;
+	--offer-warn: #6b4a00;
+	--offer-bad: #8f1d12;
+	--offer-radius: 0;
+	--offer-callout: var(--dx-black);
+	--offer-link: var(--dx-black);
+	color-scheme: light;
+}
+
+body {
+	margin: 0;
+	background: var(--offer-bg);
+	color: var(--offer-fg);
+	font-family:
+		system-ui,
+		-apple-system,
+		'Segoe UI',
+		Roboto,
+		'Helvetica Neue',
+		Arial,
+		sans-serif;
+	font-size: 1.0625rem;
+	line-height: 1.6;
+}
+
+h1,
+h2 {
+	font-family: var(--dx-display);
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.01em;
+	line-height: 1.05;
+}
+
+h2 {
+	margin-bottom: 0.75rem;
+	font-size: clamp(1.75rem, 2.2vw + 1rem, 2.75rem);
+}
+
+a {
+	color: var(--dx-black);
+}
+
+/* 44px tap targets for the plan picker's Monthly / Annual toggle on this page. */
+:root .toggle button[role='radio'] {
+	min-height: 2.75rem;
+}
