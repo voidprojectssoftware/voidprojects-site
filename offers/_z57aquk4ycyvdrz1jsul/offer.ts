@@ -170,7 +170,7 @@ const draft = {
 		}
 	],
 	// Figures: figures.json beside this file, computed by figures.mjs from the client
-	// repo's committed runs (main c726450) with that repo's own comparison code, so the
+	// repo's committed runs (main 7f9063d) with that repo's own comparison code, so the
 	// page shows what its /site-comparison/ page shows (issue #10, part 2).
 	contact: {
 		name: 'Lawrence and Courtney Perkins', // business-profile.md, Owners: "Lawrence & Courtney Perkins" (SITE); Courtney is the principal broker
