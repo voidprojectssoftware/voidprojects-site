@@ -12,13 +12,13 @@
 		"after": "With the new site"
 	},
 	"source": {
-		"commit": "1838d12",
+		"commit": "282dd34",
 		"figures": "docs/discovery/site-comparison/figures.json",
-		"audit": "docs/discovery/seo-audit/2026-11-10-launch/result.json",
-		"factRecall": "docs/discovery/aeo/2026-11-10-launch/result.json",
+		"audit": "docs/discovery/seo-audit/2026-11-10-launch-2/result.json",
+		"factRecall": "docs/discovery/aeo/2026-11-10-launch-2/result.json",
 		"before": "docs/discovery/aeo/2026-11-09-baseline",
-		"auditCommit": "1b5972a",
-		"factRecallCommit": "89121f9"
+		"auditCommit": "cb26023",
+		"factRecallCommit": "4f9d305"
 	},
 	"site": [
 		{
@@ -55,7 +55,7 @@
 			"impact": null,
 			"fine": "Google Lighthouse accessibility score on phones, mean of 6 pages.",
 			"before": "No website today",
-			"after": "98"
+			"after": "100"
 		},
 		{
 			"id": "site-4",
@@ -75,7 +75,7 @@
 			"impact": "Today an assistant that searches finds a few of your facts. The new site writes them down where an assistant can read them.",
 			"fine": "Two measures, not one. Before: what Claude Sonnet with web search found, mean of its runs, of 36 facts (name and town were in the question). After: facts the launch build states in text or JSON-LD, of 40. No assistant has been asked about the new site; it is not live.",
 			"before": "8.3 of 36 found by an assistant with web search",
-			"after": "38 of 40 written on the site where an assistant can read them"
+			"after": "40 of 40 written on the site where an assistant can read them"
 		},
 		{
 			"id": "ai-1",
@@ -93,7 +93,7 @@
 			"impact": null,
 			"fine": "Before: stated as text on Facebook, Instagram or Google Maps. After: in the launch build’s text, scripts off, across 6 pages. Of 40 facts.",
 			"before": "27 of 40",
-			"after": "34 of 40"
+			"after": "40 of 40"
 		},
 		{
 			"id": "ai-3",
@@ -102,7 +102,7 @@
 			"impact": null,
 			"fine": "Facts readable today only inside a photo that the launch build states in text or JSON-LD.",
 			"before": "13 only in photos",
-			"after": "11 of 13 written out"
+			"after": "13 of 13 written out"
 		},
 		{
 			"id": "ai-4",
