@@ -10,7 +10,7 @@
 	},
 	"measured": {
 		"before": "November 9, 2026",
-		"after": "November 9, 2026",
+		"after": "November 10, 2026",
 		"pagesBefore": 1,
 		"pagesAfter": 9,
 		"phone": "iPhone 15",
@@ -19,10 +19,10 @@
 		"runs": 3
 	},
 	"source": {
-		"commit": "35acc6b",
-		"audit": "docs/discovery/seo-audit/2026-11-09-signature-port/result.json",
+		"commit": "43f989a",
+		"audit": "docs/discovery/seo-audit/2026-11-10-wave/result.json",
 		"liveFacts": "docs/discovery/aeo/2026-11-09-baseline/result.json",
-		"launchFacts": "docs/discovery/aeo/2026-11-09-audit-fixes/result.json",
+		"launchFacts": "docs/discovery/aeo/2026-11-10-after-47/result.json",
 		"assistants": "docs/discovery/aeo/2026-11-09-baseline/assistants/result.json"
 	},
 	"glance": {
@@ -46,14 +46,14 @@
 				"id": "kilobytes",
 				"title": "Data downloaded per page",
 				"before": "4,034 KB",
-				"after": "117 KB",
-				"note": "A new page is about a thirty-fourth of the size of your current one. A small page matters most on a weak signal."
+				"after": "115 KB",
+				"note": "A new page is about a thirty-fifth of the size of your current one. A small page matters most on a weak signal."
 			},
 			{
 				"id": "requests",
 				"title": "Files requested per page",
 				"before": "46",
-				"after": "10",
+				"after": "11",
 				"note": "Each file is another trip to a server before the page is complete."
 			},
 			{
@@ -86,7 +86,7 @@
 				"id": "model",
 				"title": "An AI model given the pages",
 				"before": "82.7 of 92",
-				"after": "84 of 92",
+				"after": "83.7 of 92",
 				"note": "An AI model given one page at a time, only its words, asked the question each fact answers, three runs; each fact counted by its best page, averaged over the runs."
 			},
 			{
@@ -100,14 +100,14 @@
 				"id": "structured",
 				"title": "From business details for search engines",
 				"before": "0 of 92",
-				"after": "16 of 92",
+				"after": "77 of 92",
 				"note": "Structured data (JSON-LD), the details written for programs rather than people."
 			},
 			{
 				"id": "summary",
 				"title": "From the summary files for AI tools",
 				"before": "None",
-				"after": "86 of 92",
+				"after": "87 of 92",
 				"note": "An llms.txt file, a plain summary of the site for AI tools, and a plain-text copy of each page beside it."
 			}
 		],
