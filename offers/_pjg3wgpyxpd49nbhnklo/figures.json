@@ -1,0 +1,117 @@
+{
+	"name": "Aunt Mimi’s Cake Pops & More",
+	"preview": "https://auntmimiscakepops-website.pages.dev/",
+	"comparison": "https://auntmimiscakepops-website.pages.dev/site-comparison/",
+	"measured": "2026-11-10",
+	"pages": 6,
+	"currentNote": "No website and no domain. Before is what assistants, a web search and the Facebook, Instagram and Google Maps pages give (ADR 0012).",
+	"facts": 40,
+	"assistantFacts": 36,
+	"sides": {
+		"before": "Today",
+		"after": "With the new site"
+	},
+	"source": {
+		"commit": "282dd34",
+		"figures": "docs/discovery/site-comparison/figures.json",
+		"audit": "docs/discovery/seo-audit/2026-11-10-launch-2/result.json",
+		"factRecall": "docs/discovery/aeo/2026-11-10-launch-2/result.json",
+		"before": "docs/discovery/aeo/2026-11-09-baseline",
+		"auditCommit": "cb26023",
+		"factRecallCommit": "4f9d305"
+	},
+	"site": [
+		{
+			"id": "site-0",
+			"label": "Wait before the page shows on a phone",
+			"why": "Visitors see each page in 1.0 s on average.",
+			"impact": "People leave slow pages before they find your number.",
+			"fine": "Largest Contentful Paint, mean of 6 pages; 6 of 6 within 2.5 s.",
+			"before": "No website today",
+			"after": "1.0 s"
+		},
+		{
+			"id": "site-1",
+			"label": "Speed on a phone, out of 100",
+			"why": "Most people check out a business on a phone first.",
+			"impact": null,
+			"fine": "Google Lighthouse performance score, mean of 6 pages.",
+			"before": "No website today",
+			"after": "100"
+		},
+		{
+			"id": "site-2",
+			"label": "Ready for Google, out of 100",
+			"why": "Nothing basic is missing when Google decides how to list you.",
+			"impact": null,
+			"fine": "Google Lighthouse SEO score on phones, mean of 6 pages.",
+			"before": "No website today",
+			"after": "100"
+		},
+		{
+			"id": "site-3",
+			"label": "Usable by every visitor, out of 100",
+			"why": "Customers using a screen reader or large text can read and use every page.",
+			"impact": null,
+			"fine": "Google Lighthouse accessibility score on phones, mean of 6 pages.",
+			"before": "No website today",
+			"after": "100"
+		},
+		{
+			"id": "site-4",
+			"label": "Pages with your business details for Google",
+			"why": "Your name, address, phones and menu, in the form search engines read.",
+			"impact": null,
+			"fine": "Structured data (JSON-LD), valid against schema.org with Google’s required local business properties.",
+			"before": "No website today",
+			"after": "6 of 6"
+		}
+	],
+	"ai": [
+		{
+			"id": "ai-0",
+			"label": "Your facts within an AI assistant’s reach",
+			"why": "People ask ChatGPT, Gemini or Claude instead of searching.",
+			"impact": "Today an assistant that searches finds a few of your facts. The new site writes them down where an assistant can read them.",
+			"fine": "Two measures, not one. Before: what Claude Sonnet with web search found, mean of its runs, of 36 facts (name and town were in the question). After: facts the launch build states in text or JSON-LD, of 40. No assistant has been asked about the new site; it is not live.",
+			"before": "8.3 of 36 found by an assistant with web search",
+			"after": "40 of 40 written on the site where an assistant can read them"
+		},
+		{
+			"id": "ai-1",
+			"label": "Facts an assistant knows without searching",
+			"why": "From memory, no assistant knows the shop yet.",
+			"impact": null,
+			"fine": "The best of 3 Claude models with no tools, of 36 facts.",
+			"before": "0 of 36",
+			"after": null
+		},
+		{
+			"id": "ai-2",
+			"label": "Your facts readable as words",
+			"why": "Search engines and assistants read words, not photos.",
+			"impact": null,
+			"fine": "Before: stated as text on Facebook, Instagram or Google Maps. After: in the launch build’s text, scripts off, across 6 pages. Of 40 facts.",
+			"before": "27 of 40",
+			"after": "40 of 40"
+		},
+		{
+			"id": "ai-3",
+			"label": "Facts only in photos, now written out",
+			"why": "Flavors and prices live in photos today, where no program can read them.",
+			"impact": null,
+			"fine": "Facts readable today only inside a photo that the launch build states in text or JSON-LD.",
+			"before": "13 only in photos",
+			"after": "13 of 13 written out"
+		},
+		{
+			"id": "ai-4",
+			"label": "Web search: found today, and ready to be listed",
+			"why": "Today a customer searching for cake pops in Bartlett does not find you.",
+			"impact": "The new site lets search engines index every page and lists each one for them; where it ranks is up to them.",
+			"fine": "Two measures, not one. Before: searches run once each, observed; one search tool, not Google. After: pages search engines are allowed to index and the sitemap lists. Ranking cannot be measured before the site is live.",
+			"before": "Found in 0 of 4 searches (73 results)",
+			"after": "6 of 6 pages search engines may index, all in the sitemap"
+		}
+	]
+}

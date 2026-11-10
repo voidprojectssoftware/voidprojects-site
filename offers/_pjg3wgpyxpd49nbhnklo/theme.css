@@ -1,0 +1,73 @@
+/* The Livery, the system the client's preview is drawn in (auntmimiscakepops-website
+   ADR 0015; tokens from src/design/systems/livery/index.ts at main 887a54f, each measured
+   from the truck and the Halloween flyer in docs/discovery/brand-measurement.md): a plum
+   trim along the top, one pink icing drip hanging from it into a lime field, then a warm
+   white page. Text on lime is plum, never white (7.6:1); lime and pink never carry text
+   for each other. Fredoka is the system's one face, self-hosted from the client's system
+   files (SIL OFL, beside it in public/fonts/), declared by page.svelte from the page URL,
+   because a font URL in this file would carry the offer id into the CSS. The pass and
+   fail tones are this page's own, dark enough to read on the warm white. */
+@import 'tailwindcss' source('.');
+@source not './public';
+
+:root {
+	--mimi-ground: #fbf7ef;
+	--mimi-raised: #ffffff;
+	--mimi-ink: #2a1631;
+	--mimi-ink-muted: #5b4762;
+	--mimi-rule: #e6dccb;
+	--mimi-link: #8a2266;
+	--mimi-lime: #8bbe46;
+	--mimi-on-lime-muted: #3d2a45;
+	--mimi-drip: #f03bab;
+	--mimi-pink: #a02d75;
+	--mimi-on-plum: #f4fae9;
+	--mimi-on-plum-muted: #c8b8cc;
+	--mimi-face: 'Fredoka', ui-rounded, 'Arial Rounded MT Bold', system-ui, sans-serif;
+	--offer-bg: var(--mimi-ground);
+	--offer-fg: var(--mimi-ink);
+	--offer-muted: var(--mimi-ink-muted);
+	--offer-surface: var(--mimi-raised);
+	--offer-border: var(--mimi-rule);
+	--offer-accent: var(--mimi-ink);
+	--offer-accent-fg: var(--mimi-on-plum);
+	--offer-good: #2f6b1e;
+	--offer-warn: #7a4d00;
+	--offer-bad: #a3202b;
+	--offer-radius: 1.5rem;
+	--offer-callout: var(--mimi-pink);
+	--offer-link: var(--mimi-link);
+	color-scheme: light;
+}
+
+body {
+	margin: 0;
+	background: var(--offer-bg);
+	color: var(--offer-fg);
+	font-family: var(--mimi-face);
+	font-size: 1.0625rem;
+	line-height: 1.55;
+}
+
+h1,
+h2,
+h3 {
+	font-family: var(--mimi-face);
+	font-weight: 650;
+	letter-spacing: -0.01em;
+	line-height: 1.1;
+}
+
+h2 {
+	margin-bottom: 0.75rem;
+	font-size: clamp(1.75rem, 2.5vw + 0.9rem, 2.6rem);
+}
+
+a {
+	color: var(--mimi-link);
+}
+
+/* 44px tap targets for the plan picker's Monthly / Annual toggle on this page. */
+:root .toggle button[role='radio'] {
+	min-height: 2.75rem;
+}
