@@ -1,0 +1,58 @@
+{
+	"name": "Aunt Mimi’s Cake Pops & More",
+	"preview": "https://auntmimiscakepops-website.pages.dev/",
+	"comparison": null,
+	"sides": {
+		"before": "Today, with no website",
+		"after": "With the new site"
+	},
+	"measured": {
+		"assistants": "2026-11-10",
+		"presence": "2026-11-09",
+		"facts": 38
+	},
+	"source": {
+		"commit": "887a54f",
+		"assistants": "docs/discovery/aeo/2026-11-09-baseline/assistants/result.json",
+		"presence": "docs/discovery/aeo/2026-11-09-baseline/presence/result.json",
+		"search": "docs/discovery/aeo/2026-11-09-baseline/search-observed.md",
+		"after": null
+	},
+	"cards": [
+		{
+			"id": "search",
+			"title": "Searches that show you",
+			"before": "0 of 4",
+			"after": null,
+			"note": "We searched four ways a customer might, including “Aunt Mimi's Cake Pops Bartlett TN” and “cake pops Bartlett TN”. None of the 73 results was you: other Bartlett bakeries and wedding directories came up instead."
+		},
+		{
+			"id": "memory",
+			"title": "What AI assistants know about you",
+			"before": "0 of 34",
+			"after": null,
+			"note": "Three AI assistants were asked about Aunt Mimi’s by name and town, three times each, with no web access. Out of 34 things a customer might ask, from your phone number to your flavors, they knew none."
+		},
+		{
+			"id": "search-assistant",
+			"title": "What an AI assistant finds by searching the web",
+			"before": "6.3 of 34",
+			"after": null,
+			"note": "Across three tries it found your street address, your ZIP code, a phone number, that you make custom cakes, that you have a food truck, your Facebook page and your Instagram. It found no flavor, no price and no way to order."
+		},
+		{
+			"id": "facebook",
+			"title": "Facts a search engine can read on your Facebook page",
+			"before": "10 of 38",
+			"after": null,
+			"note": "Another 16 are on the page only inside photos, where a person can read them and a search engine cannot."
+		},
+		{
+			"id": "photo-only",
+			"title": "Facts that are only in photos, anywhere",
+			"before": "11 of 38",
+			"after": null,
+			"note": "Across Facebook, Instagram and Google: all eight cake pop flavors, both cake pop prices and the ice cream."
+		}
+	]
+}
