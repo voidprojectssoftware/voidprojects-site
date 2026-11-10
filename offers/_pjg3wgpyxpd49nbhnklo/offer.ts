@@ -3,8 +3,9 @@
 // #10), never built. A greenfield build: the business has no website and no domain, only
 // a Facebook page, an Instagram profile and an unclaimed Google Maps listing (client
 // docs/discovery/business-profile.md, "Contact"). Facts are from that repo at main
-// `887a54f`: docs/discovery/ and the before side of client ADR 0012, measured at
-// `9ed9e37` into docs/discovery/aeo/2026-11-09-baseline/, cited per concern below. No
+// `1838d12`: docs/discovery/ and the before side of client ADR 0012 in
+// docs/discovery/aeo/2026-11-09-baseline/ (the key now 40 facts, 36 scored for
+// assistants), cited per concern below. No
 // concern scores a site, because there is none (ADR 0012, "No site score is recorded for
 // the before side").
 import { defineOffer, type OfferInput } from '$lib/offers/offer.js';
@@ -30,10 +31,11 @@ const draft = {
 				'A customer who has not already met you at the shop or the truck has no way to find you, and the ones who search for you by name land on someone else.'
 		},
 		{
-			// docs/discovery/aeo/2026-11-09-baseline/assistants/result.json and summary.md:
-			// memory-opus, memory-sonnet, memory-haiku each recalled 0 of 34 facts in 3 runs;
-			// search-sonnet recalled 6.33 of 34 (address, ZIP, one phone number, custom cakes,
-			// the truck once, Facebook, Instagram) and no flavor, price or way to order.
+			// docs/discovery/aeo/2026-11-09-baseline/assistants/result.json and summary.md (run
+			// at 62840a2): memory-opus, memory-sonnet, memory-haiku each recalled 0 of 36 facts
+			// in 3 runs; search-sonnet recalled 8.3 of 36 (address, ZIP, one phone number, custom
+			// cakes, banana pudding, strawberry shortcake, the truck once, Facebook, Instagram)
+			// and no flavor, price or way to order (no flavors.*, price.* or order.message).
 			// docs/discovery/baseline-2026-11-09.md, "In short".
 			title: 'AI assistants cannot tell anyone about you',
 			detail:
@@ -43,8 +45,9 @@ const draft = {
 		},
 		{
 			// docs/discovery/aeo/2026-11-09-baseline/presence/result.json: anywhere.photoOnly
-			// is 11 of 38 (all 8 flavors, price.each, price.dozen, products.ice-cream);
-			// sources.FB.text is 10 of 38 with 16 photo-only. menu.md: the flavor card and
+			// is 13 of 40 (all 8 flavors, price.each, price.dozen, products.ice-cream,
+			// products.banana-pudding, products.strawberry-shortcake); sources.FB.text is 10 of
+			// 40 with 18 photo-only. The detail names the first eleven, a true subset. menu.md: the flavor card and
 			// the prices are read off photos. baseline-2026-11-09.md, "Where each fact can be
 			// read today".
 			title: 'Your flavors and prices are only in photos',
@@ -159,9 +162,9 @@ const draft = {
 			monthly: 2000
 		}
 	],
-	// Figures: figures.json beside this file, computed by figures.mjs from the client
-	// repo's committed before-side runs. The after side waits on client #7 part 2 (TODO in
-	// figures.mjs).
+	// Figures: figures.json beside this file, copied by figures.mjs from the client's
+	// docs/discovery/site-comparison/figures.json (client main 1838d12), which the code its
+	// /site-comparison/ page runs writes.
 	contact: {
 		name: 'Aunt Mimi’s Cake Pops & More (owner known publicly only as “Mimi”)', // client docs/discovery/aeo/2026-11-09-baseline/method.md: the business publishes "Mimi" only
 		phone: '(901) 236-7897', // business-profile.md Phone B: the storefront sign, Google, the Halloween flyer; evidenced

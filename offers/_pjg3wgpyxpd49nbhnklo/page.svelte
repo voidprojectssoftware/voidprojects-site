@@ -89,23 +89,57 @@
 		heading.focus({ preventScroll: true });
 	}
 
-	// A card from figures.json, which figures.mjs computes from the client's committed
-	// before-side runs (client ADR 0012). `after` is null on every card until client #7
-	// part 2 measures the launch build; the card then shows both sides.
-	interface Card {
+	// A row from figures.json, which figures.mjs copies from the client's own
+	// docs/discovery/site-comparison/figures.json (written by the code /site-comparison/
+	// runs), so every label, value and line of fine print is the client page's. The site
+	// rows' before is "No website today" (client ADR 0012). Two AI rows set two different
+	// measures side by side and say so in their fine print; no row draws a bar.
+	interface Row {
 		id: string;
-		title: string;
+		label: string;
+		why: string;
+		impact: string | null;
+		fine: string;
 		before: string;
 		after: string | null;
-		note: string;
 	}
-	const cards: Card[] = figures.cards;
-	// TODO(client #7 part 2): figures.comparison is null until the client's /site-comparison/
-	// page exists; the link to it appears by itself once figures.mjs fills it.
-	const comparison: string | null = figures.comparison;
+	const siteRows: Row[] = figures.site;
+	const aiRows: Row[] = figures.ai;
+	const long = (v: string) => v.length > 12; // a sentence, not a figure: smaller and wrapping
+
+	// OWNER: the comparison page and the preview are both on auntmimiscakepops-website's
+	// Pages project, which does not exist yet (client #8, an owner gate), so the comparison
+	// links stay hidden until it does. Set this to true once
+	// https://auntmimiscakepops-website.pages.dev/site-comparison/ answers.
+	const COMPARISON_LIVE = false;
+	const comparison: string | null = COMPARISON_LIVE ? figures.comparison : null;
 
 	const QR_INK = '#2a1631'; // the plum ink, dark on white so phones read it
 </script>
+
+{#snippet rows(list: Row[])}
+	<ul class="cards">
+		{#each list as row (row.id)}
+			<li class="card">
+				<p class="card-title">{row.label}</p>
+				<dl class="pair" class:single={row.after === null}>
+					<div class="side">
+						<dt>{figures.sides.before}</dt>
+						<dd class="val" class:long={long(row.before)}>{row.before}</dd>
+					</div>
+					{#if row.after !== null}
+						<div class="side">
+							<dt>{figures.sides.after}</dt>
+							<dd class="val after" class:long={long(row.after)}>{row.after}</dd>
+						</div>
+					{/if}
+				</dl>
+				<p class="note">{row.impact ? `${row.why} ${row.impact}` : row.why}</p>
+				<p class="fine">{row.fine}</p>
+			</li>
+		{/each}
+	</ul>
+{/snippet}
 
 <svelte:head>
 	<!-- eslint-disable-next-line svelte/no-at-html-tags -->
@@ -185,36 +219,26 @@
 
 		<section class="grid gap-6" aria-labelledby="offer-figures">
 			<div class="grid gap-2">
-				<h2 id="offer-figures">What a customer can find out about you today</h2>
+				<h2 id="offer-figures">Today, and with the new site</h2>
 				<p class="max-w-2xl text-(--offer-muted)">
-					You have no website, so there is no site to score. Instead we measured what a search, an
-					AI assistant and your own pages tell someone about you right now. We read your Facebook,
-					Instagram and Google pages on {formatDate(figures.measured.presence)} and asked the assistants
-					on {formatDate(figures.measured.assistants)}, counting against {figures.measured.facts} things
-					a customer might want to know: your address and phone, what you sell, your flavors and prices,
-					the truck and how to order.
+					You have no website today, so where a site would be scored we say so instead of giving a
+					number. We measured the new site on {formatDate(figures.measured)}, all {figures.pages}
+					pages, as a phone loads them, with the same tools Google uses.
 				</p>
 			</div>
-			<ul class="cards">
-				{#each cards as card (card.id)}
-					<li class="card">
-						<p class="card-title">{card.title}</p>
-						<dl class="pair" class:single={card.after === null}>
-							<div class="side">
-								<dt>{figures.sides.before}</dt>
-								<dd class="val">{card.before}</dd>
-							</div>
-							{#if card.after !== null}
-								<div class="side">
-									<dt>{figures.sides.after}</dt>
-									<dd class="val after">{card.after}</dd>
-								</div>
-							{/if}
-						</dl>
-						<p class="fine">{card.note}</p>
-					</li>
-				{/each}
-			</ul>
+			{@render rows(siteRows)}
+
+			<div class="grid gap-3">
+				<h3 class="sub">What search engines and AI assistants can learn about you</h3>
+				<p class="max-w-2xl text-(--offer-muted)">
+					Counted against {figures.facts} things a customer might want to know: your address and phones,
+					what you sell, your flavors and prices, the truck and how to order. Where a card compares two
+					different things, its small print says so. The new site is not live yet, so nobody can say yet
+					where Google will list it or what an assistant will answer.
+				</p>
+				{@render rows(aiRows)}
+			</div>
+
 			{#if comparison}
 				<p>
 					<a class="preview" href={comparison} rel="noreferrer"
@@ -418,14 +442,27 @@
 		font-weight: 650;
 		line-height: 1.05;
 		font-variant-numeric: tabular-nums;
-		white-space: nowrap; /* "6.3 of 34" stays on one line; the 18rem cards leave room */
+		white-space: nowrap; /* "34 of 40" stays on one line; the 18rem cards leave room */
+	}
+	.val.long {
+		font-size: 1.125rem;
+		font-weight: 600;
+		line-height: 1.3;
+		white-space: normal;
+	}
+	.sub {
+		margin: 0.5rem 0 0;
+		font-size: 1.625rem;
+	}
+	.note {
+		margin: 0;
 	}
 	.val.after {
 		color: var(--mimi-pink);
 	}
 	.fine {
 		margin: 0;
-		font-size: 0.9375rem;
+		font-size: 0.875rem;
 		color: var(--offer-muted);
 	}
 	.renewal {
