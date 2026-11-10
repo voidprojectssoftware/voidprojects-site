@@ -1,0 +1,77 @@
+/* Integrity Real Estate Services' own black and gold, as the live site declares it
+   (integrityrealestateservices-website docs/discovery/atlas/brand.md, main 5d8d483,
+   "Color: what the CSS declares"): --black #0a0a0a as the page, --black-soft #111111 for
+   cards, --black-mid #1a1a1a for the band, --white text, --gray-light #cccccc muted, and
+   --gold #C9A227 as the accent with black on it (8.18:1 both ways, brand.md contrast
+   table). The live site draws gold hairlines with low-alpha gold; #3d3417 is that gold at
+   about a fifth over the page, made solid. Square corners, as the live site and the
+   "Brass and ivory" candidate (client src/design/systems/brass-and-ivory) keep them. No
+   design system is chosen yet (client ADR 0010), so this is the brand they have today.
+   Cormorant Garamond is the live site's heading face, self-hosted from the client's
+   candidate system files (SIL OFL, public/fonts/), declared by page.svelte from the page
+   URL, because a font URL in this file would carry the offer id into the CSS. The pass and
+   fail tones are this page's own, light enough to read on black. */
+@import 'tailwindcss' source('.');
+@source not './public';
+
+:root {
+	--ires-black: #0a0a0a;
+	--ires-soft: #111111;
+	--ires-band: #1a1a1a;
+	--ires-gold: #c9a227;
+	--ires-gold-light: #e8c86a;
+	--ires-rule: #3d3417;
+	--ires-display: 'Cormorant Garamond', Garamond, 'Times New Roman', serif;
+	--offer-bg: var(--ires-black);
+	--offer-fg: #ffffff;
+	--offer-muted: #cccccc;
+	--offer-surface: var(--ires-soft);
+	--offer-border: var(--ires-rule);
+	--offer-accent: var(--ires-gold);
+	--offer-accent-fg: var(--ires-black);
+	--offer-good: #9fd8a8;
+	--offer-warn: var(--ires-gold-light);
+	--offer-bad: #ffa395;
+	--offer-radius: 0;
+	--offer-callout: var(--ires-gold-light);
+	--offer-link: var(--ires-gold);
+	color-scheme: dark;
+}
+
+body {
+	margin: 0;
+	background: var(--offer-bg);
+	color: var(--offer-fg);
+	font-family:
+		system-ui,
+		-apple-system,
+		'Segoe UI',
+		Roboto,
+		'Helvetica Neue',
+		Arial,
+		sans-serif;
+	font-size: 1.0625rem;
+	line-height: 1.65;
+}
+
+h1,
+h2 {
+	font-family: var(--ires-display);
+	font-weight: 600;
+	letter-spacing: -0.005em;
+	line-height: 1.1;
+}
+
+h2 {
+	margin-bottom: 0.75rem;
+	font-size: clamp(2rem, 2.5vw + 1rem, 3rem);
+}
+
+a {
+	color: var(--ires-gold);
+}
+
+/* 44px tap targets for the plan picker's Monthly / Annual toggle on this page. */
+:root .toggle button[role='radio'] {
+	min-height: 2.75rem;
+}

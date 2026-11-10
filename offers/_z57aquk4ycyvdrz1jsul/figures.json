@@ -1,0 +1,116 @@
+{
+	"name": "Integrity Real Estate Services",
+	"current": "https://integrityrealestateservices.net/",
+	"preview": "https://integrityrealestateservices-website.pages.dev/",
+	"comparison": "https://integrityrealestateservices-website.pages.dev/site-comparison/",
+	"didNotLoad": "Did not load",
+	"sides": {
+		"before": "Current site",
+		"after": "New site"
+	},
+	"measured": {
+		"before": "November 9, 2026",
+		"after": "November 10, 2026",
+		"pagesBefore": 1,
+		"pagesAfter": 9,
+		"phone": "iPhone 15",
+		"lighthouse": "13.6.0",
+		"axe": "4.14.0",
+		"runs": 3
+	},
+	"source": {
+		"commit": "43f989a",
+		"audit": "docs/discovery/seo-audit/2026-11-10-wave/result.json",
+		"liveFacts": "docs/discovery/aeo/2026-11-09-baseline/result.json",
+		"launchFacts": "docs/discovery/aeo/2026-11-10-after-47/result.json",
+		"assistants": "docs/discovery/aeo/2026-11-09-baseline/assistants/result.json"
+	},
+	"glance": {
+		"lead": "The current site first, the new site second. Your current site is one page, so its figures are that page; the new site’s are the average over the nine pages measured, on a phone unless it says otherwise.",
+		"cards": [
+			{
+				"id": "lcp",
+				"title": "Time until the page’s main content shows on a phone",
+				"before": "22.5 s",
+				"after": "1.2 s",
+				"note": "Google counts 2.5 seconds or less as good. Pages under that line: none on the current site, all 9 on the new one."
+			},
+			{
+				"id": "performance",
+				"title": "Speed score on phones",
+				"before": "41",
+				"after": "100",
+				"note": "Google Lighthouse’s performance score, out of 100."
+			},
+			{
+				"id": "kilobytes",
+				"title": "Data downloaded per page",
+				"before": "4,034 KB",
+				"after": "115 KB",
+				"note": "A new page is about a thirty-fifth of the size of your current one. A small page matters most on a weak signal."
+			},
+			{
+				"id": "requests",
+				"title": "Files requested per page",
+				"before": "46",
+				"after": "11",
+				"note": "Each file is another trip to a server before the page is complete."
+			},
+			{
+				"id": "seo",
+				"title": "Search engine score",
+				"before": "91",
+				"after": "100",
+				"note": "Lighthouse SEO, out of 100, the new site measured with its launch switch on. 100 on 9 of 9 new pages."
+			},
+			{
+				"id": "accessibility",
+				"title": "Accessibility score",
+				"before": "81",
+				"after": "100",
+				"note": "Lighthouse accessibility, out of 100: how well a page works with a screen reader, a keyboard or large text."
+			},
+			{
+				"id": "axe",
+				"title": "Accessibility problems per page",
+				"before": "1",
+				"after": "0",
+				"note": "Page elements failing WCAG 2.2 A and AA, the accessibility standard, on a computer screen, on average per page. On a phone: 2 on the current site, 0 on the new one."
+			}
+		]
+	},
+	"ai": {
+		"today": "An AI assistant with web search, asked about Integrity Real Estate Services by name three times, gave on average 5.7 of 90 facts. Without search, three assistants knew on average 0 of 90. (The name and the town are not counted: the question gives them.) Search cannot reach the new site until it is live, so this test is repeated after launch.",
+		"cards": [
+			{
+				"id": "model",
+				"title": "An AI model given the pages",
+				"before": "82.7 of 92",
+				"after": "83.7 of 92",
+				"note": "An AI model given one page at a time, only its words, asked the question each fact answers, three runs; each fact counted by its best page, averaged over the runs."
+			},
+			{
+				"id": "text",
+				"title": "From the words on the pages",
+				"before": "86 of 92",
+				"after": "86 of 92",
+				"note": "What a program reads from the pages’ text without running any script, the way many crawlers do."
+			},
+			{
+				"id": "structured",
+				"title": "From business details for search engines",
+				"before": "0 of 92",
+				"after": "77 of 92",
+				"note": "Structured data (JSON-LD), the details written for programs rather than people."
+			},
+			{
+				"id": "summary",
+				"title": "From the summary files for AI tools",
+				"before": "None",
+				"after": "87 of 92",
+				"note": "An llms.txt file, a plain summary of the site for AI tools, and a plain-text copy of each page beside it."
+			}
+		],
+		"missed": "The new pages’ words leave out 6 of the 92. Four of them are details the new site holds back until you confirm them: the broker’s direct number, the email, license numbers and the firm’s legal name (see “What the new site does differently”). Each is named in the measurement listed under “How it was measured”."
+	}
+}
