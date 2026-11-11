@@ -3,10 +3,8 @@
 // from that repo's docs/discovery/ at main 4d497dd, cited per concern below; the measured
 // figures are its 2026-11-11-after-45 runs at main 91b0b5d (figures.json). Nobody at Murphy's has been contacted.
 //
-// A DRAFT: the folder name starts with "_", so the build and the API bundle skip it.
-// `sent` is a required ISO date in OfferInput and only the owner may choose it, so it is
-// left empty here; resolveOffer refuses an empty `sent`, so the folder cannot be
-// published by dropping the "_" alone.
+// Published at the owner's request on 2026-11-11 ("Please get the current proposal deployed."),
+// with the add-on prices marked SUGGESTED below as they stood then. `sent` is that date.
 import { defineOffer } from '$lib/offers/offer.js';
 
 // Group names are the picker's headings. page.svelte finds each group by an add-on id (it
@@ -22,9 +20,8 @@ const dollars = (cents: number) => `$${cents / 100}`;
 
 export default defineOffer({
 	prospect: 'Murphy’s', // murphysmemphis-website src/config/business.ts `business.name`
-	// OWNER: set to the day you send the link (YYYY-MM-DD), then drop the "_" from the folder
-	// name. Expiry (sent + 30 days) and the 90-day purge count from it.
-	sent: '',
+	// The day the owner had it deployed. Expiry (sent + 30 days) and the 90-day purge count from it.
+	sent: '2026-11-11',
 	previewUrl: 'https://murphysmemphis-website.pages.dev/',
 	// Each concern is short on purpose: page.svelte shows a screenshot of it beside the words
 	// (EVIDENCE there, keyed by title) and one line on what the new site does about it.
