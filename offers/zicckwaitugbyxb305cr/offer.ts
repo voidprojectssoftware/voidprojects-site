@@ -1,7 +1,8 @@
 // Murphy's (bar and grill, 1589 Madison Ave, Memphis): hosting and upkeep for the rebuilt
 // site at murphysmemphis-website.pages.dev (murphysmemphis-website issue #11). Facts are
 // from that repo's docs/discovery/ at main 4d497dd, cited per concern below; the measured
-// figures are its 2026-11-11-after-45 runs at main 91b0b5d (figures.json). Nobody at Murphy's has been contacted.
+// figures (figures.json) are its seo-audit 2026-11-11-after-45 run and its fact recall
+// 2026-11-11-after-58 run, read at main 3e5389c. Nobody at Murphy's has been contacted.
 //
 // Published at the owner's request on 2026-11-11 ("Please get the current proposal deployed."),
 // with the add-on prices marked SUGGESTED below as they stood then. `sent` is that date.
@@ -41,7 +42,8 @@ export default defineOffer({
 		{
 			// docs/discovery/atlas/observations.md item 2; fact-validation-2026-11-11.md, the
 			// "Monday-Saturday closes" and "Sunday closes" rows: Wix footer 3am against Google
-			// 1 AM (read 2026-11-10 and 2026-11-11). Disputed; open question 8. Screenshots: the
+			// 1 AM (read 2026-11-10 and 2026-11-11). Still true of the Wix site; the new site now
+			// shows Google's hours by the owner's ruling (ADR 0023, #58). Screenshots: the
 			// atlas home page footer (atlas/screens/home-1280x800-full.png) and the Google Maps
 			// listing (client-assets/research/2026-11-10/evidence/gbp2026-11-10-maps-limited-view.png),
 			// cropped to the hours and website rows.

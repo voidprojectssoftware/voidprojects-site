@@ -46,8 +46,8 @@
 
 	// The hero's side by side. Old: murphysmemphis-website docs/discovery/atlas/screens/
 	// home-1280x800-full.png (the Wix home page at 1280 wide, stored at half scale), its
-	// first 800 rows. New: docs/captures/2026-11-11-issue-8/home-desktop-fold.png (the
-	// rebuild's home page at 1280x800, main 4d497dd), halved to match.
+	// first 800 rows. New: docs/captures/2026-11-11-issue-58/home-desktop-fold.png (the
+	// rebuild's home page at 1280x800 with Google's hours, ADR 0023), halved to match.
 	const currentHost = new URL(figures.current).host;
 	const previewHost = $derived(new URL(offer.previewUrl).host);
 
@@ -142,7 +142,9 @@
 					height: 92
 				}
 			],
-			fix: 'Tell us the right time and we change it on the site the same day.',
+			// murphysmemphis-website ADR 0023: by the owner's ruling the new site publishes
+			// Google's hours (Monday to Saturday 11am to 1am, Sunday noon to 1am).
+			fix: 'The same hours as your Google listing, closing at 1am. If 1am is wrong, tell us and we fix both.',
 			// The owner, offer review 2026-11-11: make the Google listing add-on prominent here,
 			// "Opt in to the google business add on and we will keep google in sync".
 			addOn: 'google-business-profile'
