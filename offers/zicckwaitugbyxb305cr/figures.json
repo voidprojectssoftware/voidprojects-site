@@ -16,9 +16,9 @@
 		"runs": 3
 	},
 	"source": {
-		"commit": "91b0b5d",
+		"commit": "3e5389c",
 		"audit": "docs/discovery/seo-audit/2026-11-11-after-45/result.json",
-		"aeo": "docs/discovery/aeo/2026-11-11-after-45/result.json"
+		"aeo": "docs/discovery/aeo/2026-11-11-after-58/result.json"
 	},
 	"glance": {
 		"lead": "On a phone, averaged or added up over the same six pairs of pages, the Wix site first.",
@@ -121,8 +121,8 @@
 			{
 				"title": "From the details for search engines",
 				"before": "0%",
-				"after": "88%",
-				"note": "The bar’s details written into the page for programs to read (structured data). Wix site: 0 of 113 checks. New site: 99 of 113 checks."
+				"after": "100%",
+				"note": "The bar’s details written into the page for programs to read (structured data). Wix site: 0 of 113 checks. New site: 113 of 113 checks."
 			},
 			{
 				"title": "From the words on the page",
@@ -145,7 +145,7 @@
 					"expected": 113
 				},
 				"after": {
-					"found": 99,
+					"found": 113,
 					"expected": 113
 				}
 			},
