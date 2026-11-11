@@ -1,7 +1,7 @@
 // Murphy's (bar and grill, 1589 Madison Ave, Memphis): hosting and upkeep for the rebuilt
 // site at murphysmemphis-website.pages.dev (murphysmemphis-website issue #11). Facts are
-// from that repo at main 4d497dd: docs/discovery/ and its 2026-11-11-after-8 runs, cited
-// per concern below. Nobody at Murphy's has been contacted.
+// from that repo's docs/discovery/ at main 4d497dd, cited per concern below; the measured
+// figures are its 2026-11-11-after-45 runs at main 91b0b5d (figures.json). Nobody at Murphy's has been contacted.
 //
 // A DRAFT: the folder name starts with "_", so the build and the API bundle skip it.
 // `sent` is a required ISO date in OfferInput and only the owner may choose it, so it is

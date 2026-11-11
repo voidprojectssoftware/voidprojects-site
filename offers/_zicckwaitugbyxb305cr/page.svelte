@@ -494,20 +494,46 @@
 					</p>
 				</li>
 
-				<li class="stat quiet">
-					<h3>One score where Wix is ahead</h3>
-					<p class="lead">
-						Lighthouse’s speed score on a phone: {n.performance.before} for Wix, {n.performance
-							.after}
-						for the new site, out of 100.
-					</p>
-					{#if wixAheadOnScore}
-						<p class="fine">
-							The new site still shows sooner ({g.lcp.after} against {g.lcp.before}). What costs it
-							points is the test phone drawing the brick wall: {oneDecimal(n.tbtSeconds.after)} before
-							it answers a tap, against {oneDecimal(n.tbtSeconds.before)} on Wix. The test draws in software;
-							a phone’s own browser usually draws on its graphics chip.
+				<li class="stat" class:quiet={wixAheadOnScore}>
+					{#if n.performance.after > n.performance.before}
+						<h3>Google’s speed test on a phone</h3>
+						<p class="lead">
+							<strong>{n.performance.after}</strong> out of 100 for the new site, against {n
+								.performance.before}
+							for Wix.
 						</p>
+						<div class="bars" aria-hidden="true">
+							{#each [{ side: sides.before, v: n.performance.before, cls: 'before' }, { side: sides.after, v: n.performance.after, cls: 'after' }] as row (row.cls)}
+								<span class="bar-label">{row.side}</span>
+								<span class="track"
+									><span class="fill {row.cls}" style:width={share(row.v, 100)}></span></span
+								>
+								<span class="bar-value">{row.v}</span>
+							{/each}
+						</div>
+						<p class="fine">
+							Lighthouse’s performance score, averaged over the {n.pages} pages: how soon each page shows,
+							how soon it answers a tap and whether it shifts while it loads.
+						</p>
+					{:else}
+						<h3>
+							{n.performance.after === n.performance.before
+								? 'The same speed score on a phone'
+								: 'One score where Wix is ahead'}
+						</h3>
+						<p class="lead">
+							Lighthouse’s speed score on a phone: {n.performance.before} for Wix, {n.performance
+								.after}
+							for the new site, out of 100.
+						</p>
+						{#if wixAheadOnScore}
+							<p class="fine">
+								The new site still shows sooner ({g.lcp.after} against {g.lcp.before}). What costs
+								it points is the test phone drawing the brick wall: {oneDecimal(n.tbtSeconds.after)} before
+								it answers a tap, against {oneDecimal(n.tbtSeconds.before)} on Wix. The test draws in
+								software; a phone’s own browser usually draws on its graphics chip.
+							</p>
+						{/if}
 					{/if}
 				</li>
 			</ul>

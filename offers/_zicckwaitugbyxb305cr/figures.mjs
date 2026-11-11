@@ -9,9 +9,9 @@
 //
 // Node 22.18 or later, which loads the repository's TypeScript modules directly.
 //
-// The Wix site loads, so every card has a figure on both sides. On one the Wix site
-// is ahead (the speed score on a phone); the card is kept, with the comparison page's
-// own explanation of why, and the page does not lead with it.
+// The Wix site loads, so every card has a figure on both sides. `better` says which
+// side each one favours; page.svelte words the speed score card from it, so a run where
+// the Wix site is ahead gets the comparison page's own explanation of why.
 import { execFileSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
