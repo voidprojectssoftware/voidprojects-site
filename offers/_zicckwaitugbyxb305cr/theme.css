@@ -1,0 +1,64 @@
+/* Murphy's "Storefront" design, from murphysmemphis-website src/styles/palette.ts (main
+   4d497dd): the awning's deep teal (#164c50) for every button and link, the sign's teal
+   (#25787d), the boards' darkest teal (#20393a), the stage wall's mustard plaster
+   (#deb268) and brick (#a36140), and cream (#f2e7c6) as the ground. Brick and the sign's
+   teal are under 4.5:1 on cream, so they draw edges and rules only, never text. Light
+   only, as that site. Bevan is that site's own self-hosted subset (SIL OFL,
+   public/fonts/), declared by page.svelte from the page URL, because a font URL in this
+   file would carry the offer id into the CSS. */
+@import 'tailwindcss' source('.');
+@source not './public';
+
+:root {
+	--m-deep-teal: #164c50;
+	--m-sign-teal: #25787d;
+	--m-board: #20393a;
+	--m-plaster: #deb268;
+	--m-brick: #a36140;
+	--m-cream: #f2e7c6;
+	--m-display: 'Bevan', 'Rockwell Extra Bold', Rockwell, 'Courier New', Georgia, serif;
+	--offer-bg: var(--m-cream);
+	--offer-fg: var(--m-board);
+	--offer-muted: #4f5a55;
+	--offer-surface: #fffaf0;
+	--offer-border: rgb(32 57 58 / 0.22);
+	--offer-accent: var(--m-deep-teal);
+	--offer-accent-fg: #ffffff;
+	--offer-good: #2f6b3a;
+	--offer-warn: #7a5410;
+	--offer-bad: #8a4a2c;
+	--offer-radius: 4px;
+	--offer-callout: var(--m-deep-teal);
+	color-scheme: light;
+}
+
+body {
+	margin: 0;
+	background: var(--offer-bg);
+	color: var(--offer-fg);
+	font-family: Georgia, 'Times New Roman', Times, serif;
+	font-size: 1.0625rem;
+	line-height: 1.6;
+}
+
+h1,
+h2 {
+	font-family: var(--m-display);
+	font-weight: 400;
+	line-height: 1.15;
+}
+
+h2 {
+	margin-bottom: 0.75rem;
+	font-size: clamp(1.5rem, 1.5vw + 1rem, 2.125rem);
+}
+
+/* The shared blocks' cards take a brick top edge, the stage wall's colour. */
+:is(.plans .plan, ol > li) {
+	border-top: 5px solid var(--m-brick);
+}
+
+/* 44px tap targets for the plan picker's Monthly / Annual toggle on this page. */
+:root .toggle button[role='radio'] {
+	min-height: 2.75rem;
+}
