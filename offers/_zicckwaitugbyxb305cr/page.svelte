@@ -110,7 +110,7 @@
 		width: number;
 		height: number;
 	}
-	const EVIDENCE: Record<string, { shots: Shot[]; fix: string }> = {
+	const EVIDENCE: Record<string, { shots: Shot[]; fix: string; addOn?: string }> = {
 		'Your web address leads to an error page': {
 			shots: [
 				{
@@ -142,7 +142,10 @@
 					height: 92
 				}
 			],
-			fix: 'Tell us the right time and we change it on the site the same day. Keeping Google in step is the Google listing add-on.'
+			fix: 'Tell us the right time and we change it on the site the same day.',
+			// The owner, offer review 2026-11-11: make the Google listing add-on prominent here,
+			// "Opt in to the google business add on and we will keep google in sync".
+			addOn: 'google-business-profile'
 		},
 		'Nobody online can find your next show': {
 			shots: [
@@ -183,7 +186,21 @@
 	};
 	// svelte-ignore state_referenced_locally
 	for (const concern of offer.concerns) {
-		if (!EVIDENCE[concern.title]) throw new Error(`no evidence for the concern "${concern.title}"`);
+		const ev = EVIDENCE[concern.title];
+		if (!ev) throw new Error(`no evidence for the concern "${concern.title}"`);
+		if (ev.addOn && !offer.addOns.some((a) => a.id === ev.addOn)) {
+			throw new Error(`no add-on "${ev.addOn}" for the concern "${concern.title}"`);
+		}
+	}
+	const addOnById = (id: string) => offer.addOns.find((a) => a.id === id);
+
+	// A concern's "Add it to my plan": ticks the add-on in the picker below, then scrolls
+	// there. Without JavaScript it is a plain link to the picker.
+	function addAndGo(e: MouseEvent, id: string) {
+		if (!selection.addOnIds.includes(id)) {
+			selection = { ...selection, addOnIds: [...selection.addOnIds, id] };
+		}
+		toPlans(e);
 	}
 
 	// Add-ons, listed under the hero so they are seen before the plan picker; the picker
@@ -234,13 +251,15 @@
 	</div>
 	<div class="band">
 		<p>
-			<!-- src/lib/brand/orbitmark.svg, the primary Void Projects logo (/about/brand). -->
+			<!-- The live mark, a new one on every load, the same endpoint as the footer badge
+			     (the owner, offer review 2026-11-11). Absolute so it also draws under
+			     preview:offers, which serves no /api/mark.svg; no-referrer keeps the id out. -->
 			<img
 				class="mark"
-				src={asset('void-projects-mark.svg')}
+				src="https://voidprojects.ai/api/mark.svg"
 				alt=""
-				width="32"
-				height="32"
+				width="40"
+				height="40"
 				decoding="async"
 			/>
 			A proposal from Void Projects
@@ -262,14 +281,21 @@
 
 			<div class="sites">
 				<figure class="site">
-					<img
-						src={asset('old-site.webp')}
-						alt="Your Wix site’s home page: Wix’s advertisement, your logo, and stock beer taps."
-						width="640"
-						height="400"
-						decoding="async"
-					/>
-					<figcaption>Your site today <span>{currentHost}</span></figcaption>
+					<a href={figures.current} target="_blank" rel="noopener noreferrer">
+						<img
+							src={asset('old-site.webp')}
+							alt="Open your site today. Its home page: Wix’s advertisement, your logo, and stock beer taps."
+							width="640"
+							height="400"
+							decoding="async"
+						/>
+					</a>
+					<figcaption>
+						Your site today
+						<a href={figures.current} target="_blank" rel="noopener noreferrer"
+							>{currentHost}<span class="sr-only"> (opens in a new tab)</span></a
+						>
+					</figcaption>
 				</figure>
 				<figure class="site new">
 					<a href={offer.previewUrl} target="_blank" rel="noopener noreferrer">
@@ -281,7 +307,12 @@
 							decoding="async"
 						/>
 					</a>
-					<figcaption>Your new site <span>{previewHost}</span></figcaption>
+					<figcaption>
+						Your new site
+						<a href={offer.previewUrl} target="_blank" rel="noopener noreferrer"
+							>{previewHost}<span class="sr-only"> (opens in a new tab)</span></a
+						>
+					</figcaption>
 				</figure>
 			</div>
 			<p class="cta">
@@ -570,6 +601,26 @@
 					{/each}
 				</div>
 				<p class="fix"><strong>On the new site:</strong> {ev.fix}</p>
+				{#if ev.addOn}
+					{@const addOn = addOnById(ev.addOn)}
+					{#if addOn}
+						{@const added = selection.addOnIds.includes(addOn.id)}
+						<div class="upsell">
+							<p class="upsell-title">Keep Google in sync too</p>
+							<p>
+								Opt in to our Google listing add-on and we keep Google in sync with your business:
+								the hours, phone and website on your listing match your site, holiday hours
+								included.
+								<span class="upsell-price"
+									>{money(priceFor(addOn, 'month')?.amount ?? 0)} a month.</span
+								>
+							</p>
+							<a class="upsell-add" href="#offer-plans" onclick={(e) => addAndGo(e, addOn.id)}
+								>{added ? 'Added to your plan, see below' : 'Add it to my plan'}</a
+							>
+						</div>
+					{/if}
+				{/if}
 			{/snippet}
 		</ConcernsList>
 
@@ -715,11 +766,11 @@
 		font-family: var(--m-display);
 		font-size: 1.0625rem;
 	}
-	.site figcaption span {
+	.site figcaption a {
 		display: block;
+		width: fit-content;
 		font-family: Georgia, 'Times New Roman', serif;
 		font-size: 0.875rem;
-		color: var(--offer-muted);
 	}
 	.price {
 		margin: 0;
@@ -1047,6 +1098,42 @@
 	}
 	.fix strong {
 		color: var(--m-deep-teal);
+	}
+	/* The Google listing add-on, offered where the hours disagree with Google. */
+	.upsell {
+		display: grid;
+		justify-items: start;
+		gap: 0.5rem;
+		margin-top: 0.875rem;
+		padding: 0.875rem 1rem;
+		border: 1px solid var(--offer-border);
+		border-left: 6px solid var(--m-plaster);
+		border-radius: var(--offer-radius);
+		background: rgb(32 57 58 / 0.04);
+	}
+	.upsell p {
+		margin: 0;
+	}
+	.upsell-title {
+		font-family: var(--m-display);
+		font-size: 1.125rem;
+		line-height: 1.25;
+	}
+	.upsell-price {
+		font-weight: 700;
+		white-space: nowrap;
+		color: var(--m-deep-teal);
+	}
+	.upsell-add {
+		display: inline-flex;
+		align-items: center;
+		min-height: 2.75rem;
+		padding: 0 1.25rem;
+		border-radius: var(--offer-radius);
+		background: var(--m-deep-teal);
+		color: #fff;
+		font-family: var(--m-display);
+		text-decoration: none;
 	}
 
 	.fine {
