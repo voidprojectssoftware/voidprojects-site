@@ -12,12 +12,18 @@
 	} from '../offer.js';
 	import type { Selection } from './selection.js';
 
+	interface GroupCopy {
+		note?: string; // a line under the group's heading, before its choices
+		none?: { label: string; summary?: string }; // replaces the plain "None" choice
+	}
+
 	let {
 		offer,
 		selection = $bindable(),
 		title = 'Choose your plan',
 		renewalNote = true,
 		details,
+		groups = {},
 		class: className = ''
 	}: {
 		offer: PublicOffer;
@@ -25,6 +31,7 @@
 		title?: string;
 		renewalNote?: boolean; // the line under the toggle saying annual plans renew; Checkout states renewal too
 		details?: Snippet<[Plan, Interval]>; // extra content in each plan card, after the summary, for the chosen interval
+		groups?: Record<string, GroupCopy>; // per add-on group, keyed by its `group` name
 		class?: string;
 	} = $props();
 
@@ -253,8 +260,10 @@
 			{#each entries as entry, i ('group' in entry ? `group:${entry.group}` : entry.addOn.id)}
 				{#if 'group' in entry}
 					{@const members = entry.addOns}
+					{@const copy = groups[entry.group]}
 					<fieldset class="group">
 						<legend>{entry.group}</legend>
+						{#if copy?.note}<p class="group-note">{copy.note}</p>{/if}
 						<label class="addon">
 							<input
 								type="radio"
@@ -262,7 +271,8 @@
 								checked={!members.some((m) => selection.addOnIds.includes(m.id))}
 								onchange={() => chooseInGroup(members, null)}
 							/>
-							<span class="label">None</span>
+							<span class="label">{copy?.none?.label ?? 'None'}</span>
+							{#if copy?.none?.summary}<span class="summary">{copy.none.summary}</span>{/if}
 						</label>
 						{#each members as addOn (addOn.id)}
 							{@render addOnRow(addOn, `offer-addon-group-${i}`, () =>
@@ -400,6 +410,11 @@
 	.group legend {
 		margin-bottom: 0.5rem;
 		font-weight: 600;
+	}
+	.group-note {
+		margin: 0;
+		font-size: 0.875rem;
+		color: var(--offer-muted, #555);
 	}
 	.addon {
 		grid-template-columns: auto 1fr auto;

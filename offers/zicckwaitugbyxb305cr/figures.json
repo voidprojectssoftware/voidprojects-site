@@ -1,0 +1,175 @@
+{
+	"name": "Murphy’s",
+	"current": "https://murphysmemphis.wixsite.com/murphysmemphis",
+	"preview": "https://murphysmemphis-website.pages.dev/",
+	"comparison": "https://murphysmemphis-website.pages.dev/site-comparison/",
+	"sides": {
+		"before": "Wix site",
+		"after": "New site"
+	},
+	"measured": {
+		"before": "November 11, 2026",
+		"after": "November 11, 2026",
+		"pairs": 6,
+		"phone": "iPhone 15",
+		"lighthouse": "13.6.0",
+		"runs": 3
+	},
+	"source": {
+		"commit": "91b0b5d",
+		"audit": "docs/discovery/seo-audit/2026-11-11-after-45/result.json",
+		"aeo": "docs/discovery/aeo/2026-11-11-after-45/result.json"
+	},
+	"glance": {
+		"lead": "On a phone, averaged or added up over the same six pairs of pages, the Wix site first.",
+		"cards": {
+			"performance": {
+				"title": "Speed score on a phone",
+				"before": "92",
+				"after": "100",
+				"note": "Lighthouse performance, out of 100. Better on the new site.",
+				"better": "after"
+			},
+			"lcp": {
+				"title": "Time until the page shows",
+				"before": "2.7 s",
+				"after": "1.2 s",
+				"note": "Until the biggest thing on the screen has drawn. Google calls 2.5 seconds or less good: the Wix site makes it on 3 of 6 pages, the new site on 6.",
+				"better": "after"
+			},
+			"weight": {
+				"title": "Downloaded per page",
+				"before": "1.9 MB",
+				"after": "87 KB",
+				"note": "About 22 times less data, which a phone on a weak signal feels most.",
+				"better": "after"
+			},
+			"requests": {
+				"title": "Files fetched per page",
+				"before": "169",
+				"after": "24",
+				"note": "Each is another trip before the page is done. Lighthouse counts each drawing on the new site’s wall as one, though they arrive inside its stylesheet. Better on the new site.",
+				"better": "after"
+			},
+			"seo": {
+				"title": "Search score",
+				"before": "93",
+				"after": "100",
+				"note": "Lighthouse SEO, out of 100: 100 on 1 of 6 Wix pages and 6 of 6 new ones.",
+				"better": "after"
+			},
+			"axe": {
+				"title": "Accessibility failures",
+				"before": "42",
+				"after": "0",
+				"note": "Things on the page failing WCAG 2.2 A and AA, found by the axe scanner on a computer screen. On a phone: 47 on Wix, 0 on the new site. Lighthouse accessibility, out of 100: 94 and 100.",
+				"better": "after"
+			}
+		},
+		"numbers": {
+			"pages": 6,
+			"goodLcpSeconds": 2.5,
+			"lcpSeconds": {
+				"before": 2.7252720833333335,
+				"after": 1.1895578166666667
+			},
+			"lcpGood": {
+				"before": 3,
+				"after": 6
+			},
+			"kilobytes": {
+				"before": 1925,
+				"after": 87
+			},
+			"requests": {
+				"before": 169,
+				"after": 24
+			},
+			"seo": {
+				"before": 93,
+				"after": 100
+			},
+			"seoPerfect": {
+				"before": 1,
+				"after": 6
+			},
+			"axeDesktopNodes": {
+				"before": 42,
+				"after": 0
+			},
+			"axePhoneNodes": {
+				"before": 47,
+				"after": 0
+			},
+			"accessibility": {
+				"before": 94,
+				"after": 100
+			},
+			"performance": {
+				"before": 92,
+				"after": 100
+			},
+			"tbtSeconds": {
+				"before": 0.1035,
+				"after": 0.04983693333333332
+			}
+		}
+	},
+	"ai": {
+		"lead": "People ask ChatGPT, Google’s AI answers and the rest about bars now, and those tools answer by reading websites. To measure how well they can, we took 71 facts your Wix site states (the address, phone, hours, happy hour, what there is to do and every item on the menu) and checked each page of both sites for the facts that page should give: 113 checks over six pages. The pages were read the way a program reads them, without running their scripts.",
+		"cards": [
+			{
+				"title": "From the details for search engines",
+				"before": "0%",
+				"after": "88%",
+				"note": "The bar’s details written into the page for programs to read (structured data). Wix site: 0 of 113 checks. New site: 99 of 113 checks."
+			},
+			{
+				"title": "From the words on the page",
+				"before": "99%",
+				"after": "100%",
+				"note": "The page’s text, read without running any scripts. Wix site: 112 of 113 checks. New site: 113 of 113 checks."
+			},
+			{
+				"title": "From a summary file for AI tools",
+				"before": "none",
+				"after": "100%",
+				"note": "An llms.txt file: a plain list of the site’s pages and facts for AI tools. The new site has one; the Wix site does not. New site: 113 of 113 checks."
+			}
+		],
+		"facts": 71,
+		"totals": {
+			"a": {
+				"before": {
+					"found": 0,
+					"expected": 113
+				},
+				"after": {
+					"found": 99,
+					"expected": 113
+				}
+			},
+			"b": {
+				"before": {
+					"found": 112,
+					"expected": 113
+				},
+				"after": {
+					"found": 113,
+					"expected": 113
+				}
+			},
+			"c": {
+				"before": {
+					"found": null,
+					"expected": 113
+				},
+				"after": {
+					"found": 113,
+					"expected": 113
+				}
+			}
+		},
+		"geoctl": "geoctl is an open-source test of how ready a site is for AI crawlers: whether they are let in, whether the words are there without scripts, and whether the pages can be found. Out of 100, the Wix site scores 87, and geoctl found one of its pages, because Wix does not point crawlers at its page list. The new site scores 90 as it will run once it is yours, over five pages, and 76.5 as it is online today, where it asks every crawler to stay away until you say so."
+	}
+}
