@@ -65,6 +65,54 @@
 				"note": "Things on the page failing WCAG 2.2 A and AA, found by the axe scanner on a computer screen. On a phone: 47 on Wix, 0 on the new site. Lighthouse accessibility, out of 100: 94 and 100.",
 				"better": "after"
 			}
+		},
+		"numbers": {
+			"pages": 6,
+			"goodLcpSeconds": 2.5,
+			"lcpSeconds": {
+				"before": 2.7252720833333335,
+				"after": 1.4013399666666666
+			},
+			"lcpGood": {
+				"before": 3,
+				"after": 6
+			},
+			"kilobytes": {
+				"before": 1925,
+				"after": 87
+			},
+			"requests": {
+				"before": 169,
+				"after": 25
+			},
+			"seo": {
+				"before": 93,
+				"after": 100
+			},
+			"seoPerfect": {
+				"before": 1,
+				"after": 6
+			},
+			"axeDesktopNodes": {
+				"before": 42,
+				"after": 0
+			},
+			"axePhoneNodes": {
+				"before": 47,
+				"after": 0
+			},
+			"accessibility": {
+				"before": 94,
+				"after": 100
+			},
+			"performance": {
+				"before": 92,
+				"after": 87
+			},
+			"tbtSeconds": {
+				"before": 0.1035,
+				"after": 0.5622709
+			}
 		}
 	},
 	"ai": {
@@ -89,6 +137,39 @@
 				"note": "An llms.txt file: a plain list of the site’s pages and facts for AI tools. The new site has one; the Wix site does not. New site: 105 of 113 checks."
 			}
 		],
+		"facts": 71,
+		"totals": {
+			"a": {
+				"before": {
+					"found": 0,
+					"expected": 113
+				},
+				"after": {
+					"found": 15,
+					"expected": 113
+				}
+			},
+			"b": {
+				"before": {
+					"found": 112,
+					"expected": 113
+				},
+				"after": {
+					"found": 110,
+					"expected": 113
+				}
+			},
+			"c": {
+				"before": {
+					"found": null,
+					"expected": 113
+				},
+				"after": {
+					"found": 105,
+					"expected": 113
+				}
+			}
+		},
 		"geoctl": "geoctl is an open-source test of how ready a site is for AI crawlers: whether they are let in, whether the words are there without scripts, and whether the pages can be found. Out of 100, the Wix site scores 87, and geoctl found one of its pages, because Wix does not point crawlers at its page list. The new site scores 88 as it will run once it is yours, over five pages, and 76.5 as it is online today, where it asks every crawler to stay away until you say so."
 	}
 }

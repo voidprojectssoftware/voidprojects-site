@@ -194,11 +194,30 @@ const figures = {
 	},
 	glance: {
 		lead: g.lead(pageCount),
-		cards
+		cards,
+		// The same measurements as numbers, so the offer can say what each one means for the
+		// bar (seconds, data, pages) by computing its sentence rather than typing it.
+		numbers: {
+			pages: pageCount,
+			goodLcpSeconds: lib.GOOD_LCP_MS / 1000,
+			lcpSeconds: h.lcpSeconds,
+			lcpGood: h.lcpGood,
+			kilobytes: h.kilobytes,
+			requests: h.requests,
+			seo: h.seo,
+			seoPerfect: h.seoPerfect,
+			axeDesktopNodes: h.axeDesktopNodes,
+			axePhoneNodes: h.axePhoneNodes,
+			accessibility: h.accessibility,
+			performance: h.performance,
+			tbtSeconds: h.tbtSeconds
+		}
 	},
 	ai: {
 		lead: c.agents.lead(agents.facts, agents.pages.length, agents.totals.b.after.expected),
 		cards: agentCards,
+		facts: agents.facts,
+		totals: Object.fromEntries(agentChannels.map((ch) => [ch, agents.totals[ch]])),
 		geoctl: c.agents.geoctl.body({
 			max: geo.live.max,
 			live: geo.live.score,

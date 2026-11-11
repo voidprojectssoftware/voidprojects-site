@@ -58,6 +58,14 @@ h2 {
 	border-top: 5px solid var(--m-brick);
 }
 
+/* Each concern's heading in the sign's face. */
+:root ol > li h3 {
+	font-family: var(--m-display);
+	font-size: 1.125rem;
+	font-weight: 400;
+	line-height: 1.25;
+}
+
 /* 44px tap targets for the plan picker's Monthly / Annual toggle on this page. */
 :root .toggle button[role='radio'] {
 	min-height: 2.75rem;

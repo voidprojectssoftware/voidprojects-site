@@ -9,67 +9,71 @@
 // published by dropping the "_" alone.
 import { defineOffer } from '$lib/offers/offer.js';
 
+// Group names are the picker's headings. page.svelte finds each group by an add-on id (it
+// must not import this file, which holds `contact`) and adds the group's own copy.
+const CONTENT_GROUP = 'Your events, menu and specials';
+const EMAIL_GROUP = 'Business email';
+
+// The owner, murphysmemphis-website issue #39 (quoted in docs/discovery/add-ons.md):
+// "a $25/month static site", the published PRICING row (src/lib/content/websites.ts).
+const PLAN_MONTHLY = 2500;
+const SELF_MANAGED_MONTHLY = 2500; // SUGGESTED, see `events-self-managed`
+const dollars = (cents: number) => `$${cents / 100}`;
+
 export default defineOffer({
 	prospect: 'Murphy’s', // murphysmemphis-website src/config/business.ts `business.name`
 	// OWNER: set to the day you send the link (YYYY-MM-DD), then drop the "_" from the folder
 	// name. Expiry (sent + 30 days) and the 90-day purge count from it.
 	sent: '',
 	previewUrl: 'https://murphysmemphis-website.pages.dev/',
+	// Each concern is short on purpose: page.svelte shows a screenshot of it beside the words
+	// (EVIDENCE there, keyed by title) and one line on what the new site does about it.
 	concerns: [
 		{
 			// docs/discovery/atlas/observations.md item 1: http://murphysmemphis.com/ answers 301
 			// to an old-style Wix address that answers 404; https:// presents a certificate that
 			// expired 2022-09-12; www answers 404. docs/discovery/web-presence.md, "The domain":
 			// printed on the shirts (owner photo 04); Yahoo Local, 901area and SinglePlatform list
-			// it as the website. fact-validation-2026-11-11.md, "domain working": still false;
-			// Google lists the Wix address, not the domain.
-			title: 'Your own web address leads to an error',
+			// it as the website. fact-validation-2026-11-11.md, "domain working": still false.
+			// The screenshot (public/ev-domain.webp) is http://murphysmemphis.com/ loaded once on
+			// 2026-11-11, which ended on https://murphysmemphis.wix.com/murphysmemphis, status 404.
+			title: 'Your web address leads to an error page',
 			detail:
-				'murphysmemphis.com is printed on your shirts, and Yahoo, 901area and SinglePlatform list it as your website. Typing it ends on an error page, and the secure version makes browsers show a warning first. Google links your free Wix address instead.',
-			impact:
-				'Someone who types the address off a shirt finds nothing and may decide you are closed.'
+				'murphysmemphis.com is on your shirts, and Yahoo, 901area and SinglePlatform list it. Typed into a browser, it ends here.'
 		},
 		{
 			// docs/discovery/atlas/observations.md item 2; fact-validation-2026-11-11.md, the
-			// "Monday-Saturday closes" and "Sunday closes" rows: Wix footer 3am and Yahoo Local
-			// 3:00 AM against Google 1 AM (read 2026-11-10 and 2026-11-11), RJI 1AM and
-			// 901area 01:00 am. Disputed; open question 8.
+			// "Monday-Saturday closes" and "Sunday closes" rows: Wix footer 3am against Google
+			// 1 AM (read 2026-11-10 and 2026-11-11). Disputed; open question 8. Screenshots: the
+			// atlas home page footer (atlas/screens/home-1280x800-full.png) and the Google Maps
+			// listing (client-assets/research/2026-11-10/evidence/gbp2026-11-10-maps-limited-view.png),
+			// cropped to the hours and website rows.
 			title: 'Your closing time depends on where someone looks',
-			detail:
-				'Your website says you close at 3am. Google says 1am, and two other listings agree with Google. At least one of them is wrong.',
-			impact: 'A customer heading over late cannot tell whether you will still be open.'
+			detail: 'Your website says 3am. Google says 1am.'
 		},
 		{
-			// docs/discovery/atlas/observations.md items 4 and 5: the events calendar is empty
+			// docs/discovery/atlas/observations.md item 4: the events calendar is empty
 			// (functionality.md row 3: "Empty for November 2026") while the home page says
-			// "Check out our calendar for live music"; the Facebook link is dead.
-			// docs/discovery/add-ons.md, Songkick row: venue 104096, "0 upcoming, 177 past
-			// concerts", newest 2026-05-23. operations.md: shows are announced on flyers in the
-			// bar. open-questions.md items 15 and 28.
+			// "Check out our calendar for live music"; item 5, the Facebook link is dead.
+			// Screenshot: atlas/screens/facilities-1280x800-full.png (the EVENTS page).
 			title: 'Nobody online can find your next show',
 			detail:
-				'Your website points people to a calendar for live music, and the calendar is empty. The Facebook page it links is gone. Songkick lists 177 past shows at Murphy’s and none coming up. Today your shows are on the flyers in the bar.',
-			impact: 'Bands play, but only people already inside the bar know when.'
+				'Your site sends people to this calendar for live music. It is empty, and the Facebook page it links to is gone.'
 		},
 		{
-			// The weight and file counts are measured (seo-audit/2026-11-11-after-8, shown on
-			// this page from figures.json); the wording here stays without a figure so it cannot
-			// drift from them. docs/discovery/atlas/observations.md items 12 (the Wix
-			// advertisement is the first thing on every page) and 9 (not one photograph of the
-			// bar: logos and stock photos of models).
-			title: 'Your website is mostly Wix, not Murphy’s',
-			detail:
-				'Every page opens with an advertisement for Wix, above your logo. The photos are stock pictures of models, not your room. And each page makes a phone download far more than it shows, as the figures above measure.',
-			impact: 'On a weak signal the page is slow to finish, and what it shows could be any bar.'
+			// docs/discovery/atlas/observations.md item 12 (the Wix advertisement is the first
+			// thing on every page, above the logo). Screenshot: atlas/screens/home-1280x800-full.png.
+			title: 'Wix’s ad comes before your name',
+			detail: 'Every page of your site opens with an advertisement for Wix, above your logo.'
 		},
 		{
 			// docs/discovery/add-ons.md, "Email": "Murphy's has no business email anywhere
 			// public" (the Wix site, Google, every listing, the 2013 site, press, the owner's
 			// photos). atlas/observations.md item 15. open-questions.md items 5 and 27.
+			// Screenshot: atlas/screens/location-1280x800-full.png (the CONTACT page).
 			title: 'There is no email address for the bar',
 			detail:
-				'No email address for Murphy’s appears on your website, your Google listing or any listing we found. A band, a party or a reporter has to call during opening hours.',
-			impact: 'Bookings and questions that would come by email go somewhere else.'
+				'Your Contact page has a phone number and a form, but no email. We found none on Google or any listing either.'
 		}
 	],
 	plans: [
@@ -92,15 +96,16 @@ export default defineOffer({
 				'No late fees, and a reminder about 14 days before each annual renewal',
 				'In our portfolio only if you say yes'
 			],
-			// The owner, murphysmemphis-website issue #39 (quoted in docs/discovery/add-ons.md):
-			// "a $25/month static site", the published PRICING row (src/lib/content/websites.ts).
-			// Annual defaults to ANNUAL_MONTHS_CHARGED (10) x monthly: $250 a year.
-			monthly: 2500
+			// PLAN_MONTHLY, above. Annual defaults to ANNUAL_MONTHS_CHARGED (10) x monthly.
+			monthly: PLAN_MONTHLY
 		}
 	],
 	// Optional add-ons, each priced here and only here (the checkout reads this file, never
 	// the browser). Add-ons sharing a `group` are alternatives: the picker shows them as
-	// radios with "None", and /api/offer-checkout refuses two from one group.
+	// radios with "None", and /api/offer-checkout refuses two from one group. For the
+	// content group, page.svelte relabels "None" as what the plan already includes: we make
+	// the updates, the same day, when they email, text or call (the owner, offer review
+	// 2026-11-11; see the note on it in page.svelte).
 	//
 	// OWNER: EVERY ADD-ON PRICE BELOW IS A SUGGESTION PENDING YOUR DECISION, except that you
 	// confirmed offering the Google Business Profile add-on (its $20 price is still a
@@ -128,42 +133,41 @@ export default defineOffer({
 			monthly: 1500
 		},
 		{
-			id: 'events-by-us',
-			group: 'Your shows',
-			label: 'We post your shows',
-			summary:
-				'Send us each month’s flyer or a list. We put every show on your site, where Google can list it, on your Google listing if we look after it, and on the Memphis Flyer’s calendar. Up to about 12 shows a month, within reason.',
-			// SUGGESTED $25/month (annual 10 x: $250). Cost $0 (a static rebuild; Google posts and
-			// the Flyer's calendar are free to submit); time 5 to 10 minutes a show, 1 to 2 hours
-			// for about 10 shows, an estimate (add-ons.md, "Events", "Published by us").
-			monthly: 2500
+			id: 'events-self-managed',
+			group: CONTENT_GROUP,
+			label: 'Manage it yourself',
+			summary: `A sign-in for you and your staff to add and change shows, menu items and specials on the site yourselves, any time. Brings your plan to ${dollars(PLAN_MONTHLY + SELF_MANAGED_MONTHLY)} a month.`,
+			// The owner (issue #39, and the offer review 2026-11-11): posting to the site
+			// yourself moves the plan to a $50 minimum. Modelled as an alternative in one group
+			// rather than a second plan, so checkout refuses both together and plan + this
+			// add-on is the $50 floor exactly; the summary's figure is that sum, monthly.
+			// SUGGESTED $25/month on top of the plan. Cost $0 to $5 (Workers, D1, Access free
+			// tiers); about an hour a month of upkeep, an estimate; the menu and specials ride on
+			// the same login at no further charge (add-ons.md, "Self-managed" and "Does anything
+			// else move the plan to $50"). Needs server-side code on the site: an ADR and an
+			// owner decision before it is built (add-ons.md, option b). The sign-in page is one
+			// of our services, so per /terms #who-owns-what it stops working if they leave.
+			monthly: SELF_MANAGED_MONTHLY
 		},
 		{
-			id: 'events-self-managed',
-			group: 'Your shows',
-			label: 'You post your shows and specials yourself',
+			id: 'events-by-us',
+			group: CONTENT_GROUP,
+			label: 'We post your events everywhere',
 			summary:
-				'A sign-in page on your site where your staff add, change and remove shows, specials and the “this week” notice themselves. Brings your plan to $50 a month, the minimum for a site you edit yourself.',
-			// The owner's rule (issue #39): events they manage themselves moves the plan to a $50
-			// minimum. Modelled as an alternative to `events-by-us` in one group rather than a
-			// second plan, so checkout refuses both together (a $50 plan plus "we post your
-			// shows" would otherwise be sellable) and $25 plan + $25 here = the $50 floor exactly.
-			// The summary's "$50 a month" is that sum, monthly; annual is 10 x each.
-			// SUGGESTED $25/month on top of the plan. Cost $0 to $5 (Workers, D1, Access free
-			// tiers); about an hour a month of upkeep, an estimate; specials and the "this week"
-			// block ride on the same login at no further charge (add-ons.md, "Self-managed" and
-			// "Does anything else move the plan to $50"). Needs server-side code on the site: an
-			// ADR and an owner decision before it is built (add-ons.md, option b). The sign-in
-			// page is one of our services, so per /terms #who-owns-what it stops working for the
-			// site if they leave.
+				'Send us the month’s flyer or a list. Beyond your site, we post every show to your Google listing (if we look after it), the Memphis Flyer’s calendar and the other event listings we know of. Up to about 12 shows a month, within reason.',
+			// The owner, offer review 2026-11-11: "If they want us to manage the whole thing and
+			// post to any additional event sites we are aware of, we can do that as well."
+			// SUGGESTED $25/month (annual 10 x: $250). Cost $0 (Google posts and the Flyer's
+			// calendar are free to submit); time 5 to 10 minutes a show, 1 to 2 hours for about
+			// 10 shows, an estimate (add-ons.md, "Events", "Published by us").
 			monthly: 2500
 		},
 		{
 			id: 'email-forwarding',
-			group: 'Business email',
+			group: EMAIL_GROUP,
 			label: 'Email addresses that forward',
 			summary:
-				'Addresses at murphysmemphis.com, such as shows@ or info@, that forward to an inbox you already use. We set them up and keep them working.',
+				'Addresses at murphysmemphis.com, such as shows@ or info@, forwarded to an inbox you already have, a personal one included. We set them up and keep them working.',
 			// SUGGESTED $10/month (annual 10 x: $100). Howard's figure. Cost $0 (Cloudflare
 			// Email Routing); needs the domain's DNS on Cloudflare, which launch needs anyway
 			// (add-ons.md, "Email" option 1 and "Domain").
@@ -171,7 +175,7 @@ export default defineOffer({
 		},
 		{
 			id: 'email-mailbox',
-			group: 'Business email',
+			group: EMAIL_GROUP,
 			label: 'A mailbox for each person',
 			summary:
 				'A real mailbox at murphysmemphis.com for each person you choose, on Google Workspace or Microsoft 365. Priced per person. We set it up and manage the subscription.',
