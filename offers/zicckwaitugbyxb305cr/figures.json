@@ -16,8 +16,8 @@
 		"runs": 3
 	},
 	"source": {
-		"commit": "8f13616",
-		"audit": "docs/discovery/seo-audit/2026-11-12-after-68/result.json",
+		"commit": "5fa75ef",
+		"audit": "docs/discovery/seo-audit/2026-11-12-after-70/result.json",
 		"aeo": "docs/discovery/aeo/2026-11-12-after-68/result.json"
 	},
 	"glance": {
@@ -26,7 +26,7 @@
 			"performance": {
 				"title": "Speed score on a phone",
 				"before": "92",
-				"after": "98",
+				"after": "100",
 				"note": "Lighthouse performance, out of 100. Better on the new site.",
 				"better": "after"
 			},
@@ -40,8 +40,8 @@
 			"weight": {
 				"title": "Downloaded per page",
 				"before": "1.9 MB",
-				"after": "83 KB",
-				"note": "About 23 times less data, which a phone on a weak signal feels most.",
+				"after": "92 KB",
+				"note": "About 21 times less data, which a phone on a weak signal feels most.",
 				"better": "after"
 			},
 			"requests": {
@@ -71,7 +71,7 @@
 			"goodLcpSeconds": 2.5,
 			"lcpSeconds": {
 				"before": 2.7252720833333335,
-				"after": 1.1890645
+				"after": 1.2022259999999998
 			},
 			"lcpGood": {
 				"before": 3,
@@ -79,7 +79,7 @@
 			},
 			"kilobytes": {
 				"before": 1925,
-				"after": 83
+				"after": 92
 			},
 			"requests": {
 				"before": 169,
@@ -107,11 +107,11 @@
 			},
 			"performance": {
 				"before": 92,
-				"after": 98
+				"after": 100
 			},
 			"tbtSeconds": {
 				"before": 0.1035,
-				"after": 0.154537725
+				"after": 0.05103675833333333
 			}
 		}
 	},

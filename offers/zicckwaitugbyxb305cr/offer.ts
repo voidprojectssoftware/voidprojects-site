@@ -1,8 +1,8 @@
 // Murphy's (bar and grill, 1589 Madison Ave, Memphis): hosting and upkeep for the rebuilt
 // site at murphysmemphis-website.pages.dev (murphysmemphis-website issue #11). Facts are
 // from that repo's docs/discovery/ at main 4d497dd, cited per concern below; the measured
-// figures (figures.json) are its seo-audit 2026-11-12-after-68 run and its fact recall
-// 2026-11-12-after-68 run, read at main 8f13616. Nobody at Murphy's has been contacted.
+// figures (figures.json) are its seo-audit 2026-11-12-after-70 run and its fact recall
+// 2026-11-12-after-68 run, read at main 5fa75ef. Nobody at Murphy's has been contacted.
 //
 // Published at the owner's request on 2026-11-11 ("Please get the current proposal deployed."),
 // with the add-on prices marked SUGGESTED below as they stood then. `sent` is that date.
