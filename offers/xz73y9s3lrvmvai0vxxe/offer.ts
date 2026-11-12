@@ -72,6 +72,11 @@ export default defineOffer({
 			monthly: 5000
 		}
 	],
+	// Accepted on 12 November 2026, annual. She paid by Cash App outside Stripe after Cash App
+	// Pay through Checkout failed, so the first year is Stripe invoice 2GJIANUP-0001, marked
+	// paid out of band, and the renewal is subscription schedule
+	// sub_sched_1Ub0UdAt6tsNfnqxX3LmHw4j, starting 12 November 2027 with an emailed invoice.
+	accepted: { on: '2026-11-12', planId: 'studio-site', interval: 'year' },
 	contact: {
 		name: 'Angela Di Donna', // site.name, confirmed by her answer of 4 September 2026
 		phone: '(901) 833-0204',
