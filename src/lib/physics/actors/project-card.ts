@@ -98,6 +98,10 @@ export class ProjectCard implements Actor {
 		return this.cfg.threshold;
 	}
 
+	set threshold(value: number) {
+		this.cfg.threshold = value; // applies from the next scroll
+	}
+
 	/**
 	 * Toggle whether the card collides with other bodies. Off makes it a sensor, so
 	 * glyphs pass straight through it instead of being shoved aside — the composition
@@ -136,7 +140,8 @@ export class ProjectCard implements Actor {
 		}
 
 		if (exited && this.state === 'active') this.eject();
-		else if (past && this.state === 'dormant') this.toss();
+		else if (past && !exited && this.state === 'dormant')
+			this.toss(); // once it has left past the exit, it stays gone
 		else if (!past && this.state === 'active') this.eject();
 	}
 

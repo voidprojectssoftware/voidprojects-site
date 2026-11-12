@@ -15,6 +15,12 @@
 			}
 		},
 		{
+			"route": "/llms.txt",
+			"headers": {
+				"Content-Type": "text/plain; charset=utf-8"
+			}
+		},
+		{
 			"route": "/thanks",
 			"headers": {
 				"X-Robots-Tag": "noindex, nofollow, noarchive",
@@ -22,6 +28,9 @@
 			}
 		}
 	],
+	"mimeTypes": {
+		".txt": "text/plain; charset=utf-8"
+	},
 	"platform": {
 		"apiRuntime": "node:22"
 	}

@@ -2,13 +2,14 @@
 	import { SiteHeader } from '$lib/components/site-header/index.js';
 	import { Section } from '$lib/components/voidprojects/section/index.js';
 	import { Post } from '$lib/components/post/index.js';
+	import { PageMeta } from '$lib/components/page-meta/index.js';
+	import { PAGES } from '$lib/seo/site.js';
 
 	let { data } = $props();
 </script>
 
 <svelte:head>
-	<title>From The Void — Blog</title>
-	<meta name="description" content="Engineering write-ups from the Void Projects collective." />
+	<PageMeta meta={PAGES.blog} />
 </svelte:head>
 
 <SiteHeader />
@@ -23,7 +24,7 @@
 				{/each}
 			</div>
 		{:else}
-			<p class="text-foreground/65">No posts yet — check back soon.</p>
+			<p class="text-foreground/65">No posts yet. Check back soon.</p>
 		{/if}
 	</Section>
 </main>

@@ -121,7 +121,7 @@
 			</GlassCard>
 		</div>
 
-		<p class="pt-10 text-sm text-foreground/55">
+		<p class="pt-10 text-sm text-foreground/70">
 			{#if data.portalUrl}
 				<a class={link} href={data.portalUrl} rel="noreferrer">Manage billing</a>: update your card,
 				see invoices or cancel, any time.

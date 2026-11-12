@@ -14,6 +14,8 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { base } from '$app/paths';
+	import { afterNavigate } from '$app/navigation';
+	import { coversContent } from './covers-content.js';
 	import { lstHours, ciToRgb, type GeoLocation } from '$lib/sky/astro.js';
 	import { decode as decodeCatalog } from '$lib/sky/catalog-format.js';
 	import SkyExplainer from './sky-explainer.svelte';
@@ -26,6 +28,19 @@
 	let locating = $state(false);
 	// assigned in onMount once the sky's setLocation is available
 	let requestLocation = $state<() => void>(() => {});
+
+	// The label is fixed at the bottom left, so it steps aside while page copy passes under it.
+	let overContent = $state(false);
+	let labelEl: HTMLElement | undefined = $state();
+	let labelCheck = 0;
+	const checkLabel = () => {
+		if (labelCheck) return;
+		labelCheck = requestAnimationFrame(() => {
+			labelCheck = 0;
+			overContent = !!labelEl && coversContent(labelEl);
+		});
+	};
+	afterNavigate(checkLabel);
 
 	// Reverse-geocode coords to a "City, REGION" string via BigDataCloud's free,
 	// keyless client endpoint. Sends the coordinates to bigdatacloud.net.
@@ -437,7 +452,14 @@
 	<div class="grain absolute inset-0"></div>
 </div>
 
-<div class="fixed bottom-4 left-4 z-10 hidden items-center gap-1.5 dark:sm:flex">
+<svelte:window onscroll={checkLabel} onresize={checkLabel} />
+
+<div
+	bind:this={labelEl}
+	class="fixed bottom-4 left-4 z-10 hidden items-center gap-1.5 transition-opacity duration-300 focus-within:pointer-events-auto focus-within:opacity-100 dark:sm:flex {overContent
+		? 'pointer-events-none opacity-0'
+		: ''}"
+>
 	<button
 		type="button"
 		onclick={() => requestLocation()}

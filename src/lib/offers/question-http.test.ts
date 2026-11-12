@@ -55,7 +55,7 @@ describe('questionResponse', () => {
 		expect(deliver).toHaveBeenCalledWith({
 			name: 'Pat Baker',
 			email: 'pat@test-bakery.example',
-			kind: 'A business',
+			kind: 'A website',
 			message: 'When does the site go live?',
 			offer: { id: 'testofferaaaa0000', business: 'Test Bakery LLC' }
 		});

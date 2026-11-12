@@ -3,14 +3,31 @@
 
 export const CONTACT_EMAIL = 'hello@voidprojects.ai';
 
-// "The site is for" choices on the contact form; /api/contact accepts only these.
+export const REPLY_TIME = 'We reply within one business day.';
+
+// "What do you need?" choices on the contact form; /api/contact accepts only these.
 export const CONTACT_KINDS = [
-	'A business',
+	'A website',
+	'Custom software or automation',
+	'AI strategy or training',
 	'A cause',
-	'Something personal',
 	'Not sure yet'
 ] as const;
 export type ContactKind = (typeof CONTACT_KINDS)[number];
+
+// Short keys for preselecting a kind by link, e.g. /contact?kind=software.
+export const CONTACT_KIND_KEYS: Record<string, ContactKind> = {
+	website: 'A website',
+	software: 'Custom software or automation',
+	strategy: 'AI strategy or training',
+	consulting: 'AI strategy or training',
+	training: 'AI strategy or training',
+	cause: 'A cause',
+	unsure: 'Not sure yet'
+};
+
+// Kinds that are about a website; the team email subject says "Website request" for these.
+export const WEBSITE_KINDS: readonly ContactKind[] = ['A website', 'A cause'];
 
 // Minecraft-style splash on the hero headline; one is picked at random per load.
 export const SPLASHES = [
@@ -127,12 +144,12 @@ export const PRICING: {
 	{
 		figure: '$25/m',
 		spoken: '$25 a month',
-		body: 'for a static site: business or personal pages that don’t change, with your domain at cost. Already paying for a site? We’ll match what you pay now and take over hosting and upkeep. No build fee. No contract. Cancel any time.',
+		body: 'for a static site: pages that don’t change often, with your domain at cost, and we make your changes for you. Switching? A static site moves for $25 a month. If yours needs more, we’ll never charge more than you pay now.',
 		offer: { name: 'Static website', usd: 25, monthly: true }
 	},
 	{
 		figure: 'Quote',
-		body: 'for anything dynamic, like live data, accounts, or bookings, or anything that needs higher reliability or extra care. We price it from what hosting and maintaining it costs us.',
+		body: 'for anything dynamic, like live data, accounts, or bookings we build and host. Billed by the hour for engineering time and support, plus what it costs to host. Linking to a booking service you already use is fine on a static site.',
 		link: { href: '/websites?preset=quote#contact', label: 'Ask for a quote' },
 		offer: { name: 'Dynamic website' }
 	}
@@ -141,11 +158,42 @@ export const PRICING: {
 // The $25/m row, quoted in the /websites head copy.
 export const STATIC_SITE = PRICING.find((p) => p.offer.monthly)!;
 
+// "What's included" after the pricing card: short labels, from this page, the Terms
+// (sections 1 and 7) and the owner's answers on #104. The page pairs each with an icon by key.
+export const STATIC_SITE_INCLUDES = {
+	title: 'What’s included',
+	subtitle: 'With every static site.',
+	items: [
+		{ key: 'build', label: 'No build fee' },
+		{ key: 'firstPass', label: 'A first pass the same day' },
+		{ key: 'preview', label: 'A live preview from the start' },
+		{ key: 'edits', label: 'Small edits included' },
+		{ key: 'hosting', label: 'Hosting, upkeep, and versioned backups' },
+		{ key: 'domain', label: 'Your domain, in your name' },
+		{ key: 'contract', label: 'No contract, cancel any time' },
+		{ key: 'files', label: 'Your site’s files if you leave' }
+	],
+	note: 'The first pass is built from your existing online presence, and you get the preview link before we start, so you can watch it being built. Bigger new features, we quote first.'
+};
+
+// "Switching from your current site?" on /websites.
+export const SWITCHING = {
+	title: 'Switching from your current site?',
+	points: [
+		'You keep your domain.',
+		'We copy over your content and photos.',
+		'We set up redirects so Google keeps finding your pages.',
+		'Your email stays exactly where it is.'
+	],
+	noRights:
+		'Don’t own the rights to your current site? No problem. We build you a new one at no additional charge.'
+};
+
 // Contact form starters, picked by a link's ?preset= key so the URL stays short and
 // shareable. The form only fills an empty message, and the visitor can edit or clear it.
 export const CONTACT_PRESETS: Record<string, { kind: ContactKind; message: string }> = {
 	quote: {
-		kind: 'A business',
+		kind: 'A website',
 		message:
 			'I’d like a quote for a site that needs (live data, accounts, bookings, higher reliability, something else): \n\nAbout my business: '
 	}
@@ -228,10 +276,17 @@ export const CAUSES = {
 			body: 'Get the word out about a cause, an event, or something your community needs to know.'
 		}
 	],
+	free: {
+		title: 'Is it really free?',
+		body: [
+			'Yes. Design, build, hosting, every round of changes, and the domain are all free.',
+			'We say “when we can” because sometimes a request costs more than a small business like ours can cover. If yours might, we tell you early, before anything is built. We will never surprise you with a bill.'
+		]
+	},
 	promise: [
-		'We’ll do our best to build it for free: design, build, and every round of changes.',
+		'It’s free: design, build, hosting, your domain, and every round of changes.',
 		'You get the same engineers and the same process as every other site we build.',
-		'If your site needs something that goes above what we can cover in cost, we will tell you up front and talk it through. Never a surprise.'
+		'If a request would cost more than we can cover, we tell you early and talk it through. Never a surprise bill.'
 	]
 };
 

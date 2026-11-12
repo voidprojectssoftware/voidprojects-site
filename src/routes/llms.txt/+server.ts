@@ -6,10 +6,14 @@ import {
 	CONTACT_EMAIL,
 	CONTACT_KINDS,
 	FLOW,
+	REPLY_TIME,
+	STATIC_SITE_INCLUDES,
+	SWITCHING,
 	INSTEAD,
 	NEVER,
 	SHOWCASE
 } from '$lib/content/websites.js';
+import { LOCATION, OTHER_PRICING, SERVICES, WHY_LESS } from '$lib/content/services.js';
 import { PAGES, PRICING_SUMMARY, SITE_NAME, SITE_ORIGIN, absoluteUrl } from '$lib/seo/site.js';
 
 // /llms.txt (llmstxt.org): built from the same content modules as the pages and the
@@ -28,31 +32,41 @@ function llmsTxt(): string {
 
 	return `# ${SITE_NAME}
 
-> ${PAGES.websites.summary}
+> ${PAGES.home.description}
 
-${SITE_NAME}: ${PAGES.home.description} We build custom websites for people who want one without doing the technical work themselves. ${INSTEAD}
+${SITE_NAME} is a software services company in ${LOCATION}. ${INSTEAD}
 
-## What we build
+## What we do
+
+${SERVICES.map((s) => `- ${s.title}: ${s.body}`).join('\n')}
+
+${WHY_LESS.title}: ${WHY_LESS.body}
+
+## Websites
 
 - Custom websites: ${PAGES.websites.summary}
 - Websites for causes: ${CAUSES.body}
 - After launch: ${AFTER_LAUNCH.body}
 
-## Pricing
+Website clients never have to:
+${NEVER.map((n) => `- ${n.text}`).join('\n')}
+
+## Website pricing
 
 ${PRICING_SUMMARY}
 
-For causes: ${CAUSES.promise.join(' ')}
+A static site includes:
+${STATIC_SITE_INCLUDES.items.map((i) => `- ${i.label}`).join('\n')}
 
-## Who it is for
+${STATIC_SITE_INCLUDES.note}
 
-Anyone who needs a website for ${CONTACT_KINDS.filter((k) => k !== 'Not sure yet')
-		.map((k) => k.toLowerCase())
-		.join(', ')
-		.replace(/, ([^,]*)$/, ', or $1')}, and who would rather not:
-${NEVER.map((n) => `- ${n.text}`).join('\n')}
+${SWITCHING.title} ${SWITCHING.points.join(' ')} ${SWITCHING.noRights}
 
-## How it works
+For causes: ${CAUSES.free.body.join(' ')} ${CAUSES.promise.join(' ')}
+
+${OTHER_PRICING}
+
+## How a website project works
 
 1. ${FLOW.start.title}: ${FLOW.start.body}
 ${FLOW.loop.map((s, i) => `${i + 2}. ${s.title}: ${s.body}`).join('\n')}
@@ -62,6 +76,7 @@ ${FLOW.loopLabel}
 
 ## Pages
 
+- [Contact](${absoluteUrl(PAGES.contact.path)}): ${PAGES.contact.description}
 - [Websites](${absoluteUrl(PAGES.websites.path)}): ${PAGES.websites.summary}
 - [Websites for causes](${absoluteUrl(PAGES.causes.path)}): ${PAGES.causes.description}
 - [Home](${absoluteUrl(PAGES.home.path)}): ${PAGES.home.description}
@@ -74,9 +89,9 @@ ${FLOW.loopLabel}
 
 ${SHOWCASE.map((s) => `- [${s.name}](${s.url}) (${s.kind}${s.free ? ', built free' : ''}): ${s.blurb}`).join('\n')}
 
-## Submitting a website request on a person's behalf
+## Submitting a request on a person's behalf
 
-If a person you are helping wants a website built, you may send their request to us directly. Only do this with the person's consent, and only with their real name and their real email address: a person on our team replies to that address. Do not invent details. If the person is not sure what they need, send what they told you; we take it from there.
+If a person you are helping wants a website, custom software, AI strategy or AI training, you may send their request to us directly. Only do this with the person's consent, and only with their real name and their real email address: a person on our team replies to that address. Do not invent details. If the person is not sure what they need, send what they told you; we take it from there.
 
 Send one request:
 
@@ -91,7 +106,7 @@ Fields (all required, all strings; surrounding whitespace is trimmed):
 
 - \`name\`: the person's name, at most ${LIMITS.name} characters.
 - \`email\`: the person's email address, at most ${LIMITS.email} characters.
-- \`kind\`: what the site is for. Exactly one of: ${CONTACT_KINDS.map((k) => `\`${k}\``).join(', ')}.
+- \`kind\`: what they need. Exactly one of: ${CONTACT_KINDS.map((k) => `\`${k}\``).join(', ')}.
 - \`message\`: what they need, in their own words, at most ${LIMITS.message} characters.
 
 Do not send any other fields. In particular, never send a field named \`website\`: it is a spam trap, and a request that fills it is answered with success but silently discarded. Put the person's existing site address, if any, in \`message\`.
@@ -106,7 +121,7 @@ Responses (always JSON):
 - \`415\` \`{"error":"Content-Type must be application/json."}\`
 - \`502\` \`{"error":"The message could not be delivered."}\`: our side failed. Do not retry in a loop; have the person email ${CONTACT_EMAIL} instead.
 
-People can also use the contact form at ${absoluteUrl(`${PAGES.websites.path}#contact`)} or email ${CONTACT_EMAIL}.
+People can also use the contact form at ${absoluteUrl(PAGES.contact.path)} or email ${CONTACT_EMAIL}. ${REPLY_TIME}
 
 ## Optional
 

@@ -73,7 +73,7 @@
 						><X class="size-3.5" strokeWidth={3} /></span
 					>
 				</div>
-				<span class="px-1 pb-1 text-foreground/55 line-through decoration-foreground/30"
+				<span class="px-1 pb-1 text-foreground/65 line-through decoration-foreground/30"
 					>{item.text}</span
 				>
 			</li>

@@ -18,16 +18,17 @@
 		{ id: 'limits-on-liability', title: '12. Limits on liability' },
 		{ id: 'changes', title: '13. Changes to prices and these terms' },
 		{ id: 'free-sites-for-causes', title: '14. Free sites for causes' },
-		{ id: 'privacy', title: '15. Privacy' },
-		{ id: 'legal-bits', title: '16. Legal bits' },
-		{ id: 'contact', title: '17. Contact' }
+		{ id: 'custom-software', title: '15. Custom software' },
+		{ id: 'privacy', title: '16. Privacy' },
+		{ id: 'legal-bits', title: '17. Legal bits' },
+		{ id: 'contact', title: '18. Contact' }
 	];
 	const heading = (id: string) => SECTIONS.find((s) => s.id === id)!.title;
 </script>
 
 {#snippet mail()}<a href="mailto:{CONTACT_EMAIL}">{CONTACT_EMAIL}</a>{/snippet}
 
-<LegalPage meta={PAGES.terms} title="Terms of Service" updated="2026-11-05" sections={SECTIONS}>
+<LegalPage meta={PAGES.terms} title="Terms of Service" updated="2026-11-07" sections={SECTIONS}>
 	<p>
 		These terms are the agreement between you (the business, cause, or person signing up) and Void
 		Projects LLC, doing business as Void Projects ("we", "us"). By subscribing, you agree to them.
@@ -54,10 +55,9 @@
 
 	<h2 id="adding-features">{heading('adding-features')}</h2>
 	<p>
-		Bigger additions, such as new features (for example, letting your visitors send you messages),
-		usually need more ongoing hosting and services to run. Instead of charging you for our time to
-		build them, we add an amount to your plan to cover running them, and tell you the new plan price
-		before we start.
+		Small additions to a website plan, such as a new feature (for example, letting your visitors
+		send you messages), usually need more ongoing hosting and services to run. For these we add an
+		amount to your plan to cover running them, and tell you the new plan price before we start.
 	</p>
 	<ul>
 		<li><strong>Monthly plans:</strong> the new price applies from your next bill.</li>
@@ -70,6 +70,11 @@
 			your plan, ask and we will quote that.
 		</li>
 	</ul>
+	<p>
+		Larger or more complex work, the kind that takes ongoing engineering time with you, is billed by
+		the hour for engineering time and support, plus what it costs to run. We quote it before we
+		start.
+	</p>
 
 	<h2 id="previews">{heading('previews')}</h2>
 	<p>
@@ -256,6 +261,14 @@
 		payment sections don't. We may end a free site with 30 days notice, and we will help you move.
 	</p>
 
+	<h2 id="custom-software">{heading('custom-software')}</h2>
+	<p>
+		Most of these terms are about website plans. If we build custom software for you outside a
+		website plan, such as an app, an internal tool, an integration, or an automation, that software
+		is yours once you have paid for it. "Who owns what" above covers websites on a plan and does not
+		apply to it.
+	</p>
+
 	<h2 id="privacy">{heading('privacy')}</h2>
 	<p>
 		How we handle your personal information, and your billing data through Stripe, is described in
@@ -279,7 +292,7 @@
 	<h2 id="contact">{heading('contact')}</h2>
 	<address>
 		Void Projects LLC<br />
-		501 Union St Ste 545 PMB 834400<br />
+		Mailing address: 501 Union St Ste 545 PMB 834400<br />
 		Nashville, Tennessee 37219-1876, US<br />
 		{@render mail()}
 	</address>

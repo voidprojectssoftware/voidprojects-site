@@ -2,7 +2,13 @@
 	import { onMount } from 'svelte';
 	import { Button } from '$lib/components/shadcn/ui/button/index.js';
 	import { Section } from '$lib/components/section/index.js';
-	import { ChevronDown } from '@lucide/svelte';
+	import {
+		Blocks,
+		ChevronDown,
+		GraduationCap,
+		MessagesSquare,
+		PanelsTopLeft
+	} from '@lucide/svelte';
 	import {
 		PhysicsStage,
 		GlyphField,
@@ -17,10 +23,21 @@
 	import { SiteHeader } from '$lib/components/site-header/index.js';
 	import { ProfileCard } from '$lib/components/profile-card/index.js';
 	import { GlassCard } from '$lib/components/voidprojects/glass-card/index.js';
+	import { Section as PageSection } from '$lib/components/voidprojects/section/index.js';
+	import type { Component } from 'svelte';
 	import { headshots } from '$lib/assets/headshots.js';
 	import { JsonLd } from '$lib/components/json-ld/index.js';
 	import { PageMeta } from '$lib/components/page-meta/index.js';
 	import { PAGES, organizationJsonLd } from '$lib/seo/site.js';
+	import {
+		CLOSING,
+		HERO_CTA,
+		HERO_LINE,
+		SERVICES,
+		SERVICES_HEADING,
+		SERVICES_INTRO,
+		WHY_LESS
+	} from '$lib/content/services.js';
 
 	const team = [
 		{
@@ -54,7 +71,15 @@
 
 	let heroRef = $state<HTMLElement | null>(null);
 	let githubRef = $state<HTMLElement | null>(null);
+	let servicesRef = $state<HTMLElement | null>(null);
+	let heroFade = $state(1); // hero opacity; drops as the services section scrolls over it
 
+	const SERVICE_ICONS: Record<string, Component> = {
+		strategy: MessagesSquare,
+		software: Blocks,
+		website: PanelsTopLeft,
+		training: GraduationCap
+	};
 	let scrolled = $state(false);
 	// Total page-scroll progress (0-1), mirrored into state so the timeline rail can
 	// track it; the same value is fanned to the physics stage in onScroll.
@@ -62,12 +87,33 @@
 	const DRIFT_THRESHOLD = 0.25;
 	const EXIT_THRESHOLD = 0.75;
 	const sectionVisible = $derived(scrollProgress >= EXIT_THRESHOLD);
+	// Where the glyphs start drifting: re-measured on mount and resize to the point the
+	// services section has covered the hero, so the title scatters out of view instead of
+	// reappearing whole and breaking apart after the visitor has scrolled past it.
+	let driftAt = $state(DRIFT_THRESHOLD);
+	let cardAt = $state(0.5); // the Constellation card's arrival, re-measured with driftAt
+	const drifting = $derived(scrollProgress >= driftAt);
 
 	const heroTitle = 'Void Projects';
 	const titleChars = [...heroTitle];
 
-	const heroSubtitle = 'AI-centric projects from a developer collective.';
+	const heroSubtitle = HERO_LINE;
 	const subtitleChars = [...heroSubtitle];
+
+	// Character indexes grouped into words and single spaces, so each word renders in a
+	// no-wrap box: the letters are separate inline-blocks (for the drift), and without
+	// the box a narrow screen would break a line mid-word.
+	function wordRuns(chars: string[]): number[][] {
+		const runs: number[][] = [];
+		chars.forEach((ch, i) => {
+			const prev = runs.at(-1);
+			if (ch !== ' ' && prev && chars[prev[0]] !== ' ') prev.push(i);
+			else runs.push([i]);
+		});
+		return runs;
+	}
+	const titleRuns = wordRuns(titleChars);
+	const subtitleRuns = wordRuns(subtitleChars);
 
 	// Per-character word membership, so the Constellation graph can bind the letters
 	// of each word into a chain and hook each word back to the card. Spaces get null
@@ -136,14 +182,14 @@
 	// only slightly past its threshold on a normal scroll. Tune to taste.
 	const CARD_ARRIVAL_OFFSET = 0.02;
 
-	// The timeline waypoints, in scroll order: first "The Void" — where the title glyphs
-	// begin drifting apart (the glyph drift threshold), an instant trigger so it takes no
-	// arrival nudge — then one marker per project at the scroll fraction it tosses in at.
-	const timelinePoints = [
-		{ title: 'The Void', threshold: DRIFT_THRESHOLD },
+	// The timeline waypoints, in scroll order: first the services section, which is also
+	// where the title glyphs begin drifting apart (an instant trigger, so no arrival
+	// nudge), then one marker per project at the scroll fraction it tosses in at.
+	const timelinePoints = $derived([
+		{ title: SERVICES_HEADING, threshold: driftAt },
 		...cardDefs.map((d) => ({
 			title: d.title,
-			threshold: d.threshold,
+			threshold: cardAt,
 			arrivalOffset: CARD_ARRIVAL_OFFSET
 		})),
 		// Also needs the arrival nudge, but for the opposite reason: exiting a card is a
@@ -151,7 +197,7 @@
 		// exactly on the threshold — same value as this marker's own — never actually
 		// crosses it and leaves the Constellation graph stuck formed.
 		{ title: 'Meet The Team', threshold: EXIT_THRESHOLD, arrivalOffset: CARD_ARRIVAL_OFFSET }
-	];
+	]);
 
 	// Subtle cursor-repel-with-spring-back at rest. It and the drift take turns on
 	// the same glyphs: drift owns them while free-floating/warping, the nudge owns
@@ -179,7 +225,12 @@
 	// centered on it; tear it down when it leaves. RelationGraph is generic over
 	// bodies, so it links the glyphs, the GitHub button, and the card without any of
 	// them knowing about each other — the composition root wires them up here.
-	const graph = new RelationGraph();
+	// The per-letter "precedes" labels stay faint on desktop and are dropped on phones,
+	// where the words stack tightly; the labels between words carry the reading.
+	const narrowGraph = typeof window !== 'undefined' && window.innerWidth < 768;
+	const graph = new RelationGraph(
+		narrowGraph ? { intraLabelOpacity: 0, hubLabelSize: 14 } : { intraLabelOpacity: 0.22 }
+	);
 	stage.add(graph);
 
 	// Pin the card and blow the glyphs off it in a direction, so the graph stays clear
@@ -217,15 +268,16 @@
 
 	// The spine: the relationship between each consecutive pair of words, a
 	// dependency-grammar reading ("language as a graph"). Aligned to word order
-	// (Void, Projects, AI-centric, projects, from, a, developer, collective).
+	// (Void, Projects, Websites, custom, software, AI, strategy, and, training).
 	const LINK_LABELS = [
 		'modifies', // Void -> Projects
-		'elaborated by', // Projects -> AI-centric
-		'describes', // AI-centric -> projects
-		'extends', // projects -> from
-		'introduces', // from -> a
-		'scopes', // a -> developer
-		'modifies' // developer -> collective
+		'offers', // Projects -> Websites
+		'lists', // Websites -> custom
+		'modifies', // custom -> software
+		'lists', // software -> AI
+		'modifies', // AI -> strategy
+		'joins', // strategy -> and
+		'joins' // and -> training
 	];
 	const constellationCard = cards.find((c) => c.title === 'Constellation');
 
@@ -396,7 +448,8 @@
 		// down keeps that give (a beat of scattered glyphs before the projects arrive);
 		// scrolling back up past it means the projects have all left, so we glide home to
 		// the origin instead of stranding the user in the empty limbo with a broken title.
-		const firstCardThreshold = Math.min(...cards.map((c) => c.actor.threshold));
+		// Re-measured with the services section (measureScene).
+		let firstCardThreshold = Math.min(...cards.map((c) => c.actor.threshold));
 
 		const measure = () => {
 			const y = window.scrollY;
@@ -416,13 +469,45 @@
 
 		let last = measure();
 		let autoReturning = false;
+		let returnTo = 0;
+		// 0 while the services section's text is still below the header line, rising to 1
+		// over the next 150px of scroll; its bottom padding (pb-24) holds no text.
+		const servicesCleared = () => {
+			if (!servicesRef) return 1;
+			const header = document.querySelector('header')?.offsetHeight ?? 0;
+			const bottom = servicesRef.getBoundingClientRect().bottom;
+			return Math.max(0, Math.min(1, (header + 96 - bottom) / 150));
+		};
+		// Share of the viewport below the header that the services section covers (0-1).
+		const servicesCoverage = () => {
+			if (!servicesRef) return 0;
+			const header = document.querySelector('header')?.offsetHeight ?? 0;
+			const r = servicesRef.getBoundingClientRect();
+			const seen = Math.min(r.bottom, window.innerHeight) - Math.max(r.top, header);
+			return Math.max(0, seen) / (window.innerHeight - header);
+		};
+		// The services section sits between the hero and the scene, below the sticky header.
+		const servicesTop = () => {
+			if (!servicesRef) return 0;
+			const header = document.querySelector('header')?.offsetHeight ?? 0;
+			return servicesRef.getBoundingClientRect().top + window.scrollY - header;
+		};
 
 		const onScroll = () => {
 			const { y, progress } = measure();
 			scrolled = y > 0;
 			scrollProgress = progress;
+			if (sectionVisible) graph.deactivate(); // the team takes over; no labels behind it
 			startPhysics();
 			stage.setScrollProgress(progress);
+			// Before the drift the hero dims as the services section covers it. Past it the
+			// scattered title stays hidden until the card brings it into the Constellation
+			// scene, and the letters and labels fade in only once the section's text has
+			// cleared the header, so they never sit over "Why it costs less".
+			if (progress < driftAt) heroFade = 1 - Math.min(1, servicesCoverage() * 3);
+			else if (cardsOnScreen === 0) heroFade = 0;
+			else heroFade = servicesCleared();
+			graph.setOpacity(heroFade);
 			// Re-evaluate after setScrollProgress: a card's onStateChange (fired above)
 			// may have just changed cardsOnScreen, and sectionVisible already reflects
 			// the scrollProgress write above.
@@ -431,17 +516,40 @@
 			if (!reduceMotion) {
 				if (autoReturning) {
 					// Stand down once home, or if the user pushed back down and took over.
-					if (y <= 1 || y > last.y) autoReturning = false;
+					if (y <= returnTo + 1 || y > last.y) autoReturning = false;
 				} else if (last.progress >= firstCardThreshold && progress < firstCardThreshold) {
-					// Crossed up out of the projects: glide to the top so the title reforms at
-					// the origin rather than leaving the user in the scattered-glyph limbo.
+					// Crossed up out of the projects: glide back to the services section (the
+					// title reforms behind it) rather than leaving the user in the scattered-glyph
+					// limbo, and without skipping past the services on the way to the top.
 					autoReturning = true;
-					window.scrollTo({ top: 0, behavior: 'smooth' });
+					returnTo = Math.max(0, servicesTop());
+					window.scrollTo({ top: returnTo, behavior: 'smooth' });
 				}
 			}
 
 			last = { y, progress };
 		};
+
+		// Ties the scene to the services section: the glyphs start drifting once it covers
+		// the hero, and the card tosses in as it leaves, so the scroll goes services, then
+		// straight into the Constellation scene. The card comes in while the section's last
+		// lines are still leaving the top, so there is no empty screen between: desktop pins
+		// it mid-left, below the leaving text, and phones pin it low.
+		const measureScene = () => {
+			const scrollable = document.documentElement.scrollHeight - window.innerHeight;
+			if (scrollable <= 0 || !servicesRef) return;
+			const header = document.querySelector('header')?.offsetHeight ?? 0;
+			const top = servicesTop();
+			const clearAt = window.innerHeight * (window.innerWidth >= 768 ? 0.3 : 0.55);
+			const bottom = top + header + servicesRef.offsetHeight - clearAt;
+			driftAt = Math.min(EXIT_THRESHOLD - 0.2, Math.max(0.02, top / scrollable));
+			cardAt = Math.min(EXIT_THRESHOLD - 0.15, Math.max(driftAt + 0.02, bottom / scrollable));
+			glyphs.setDriftThreshold(driftAt);
+			if (constellationCard) constellationCard.actor.threshold = cardAt;
+			firstCardThreshold = cardAt;
+		};
+		measureScene();
+		window.addEventListener('resize', measureScene);
 
 		window.addEventListener('scroll', onScroll, { passive: true });
 
@@ -483,6 +591,7 @@
 
 		return () => {
 			window.removeEventListener('scroll', onScroll);
+			window.removeEventListener('resize', measureScene);
 			cancelIdle();
 			delete w.driftDebug;
 			delete w.driftState;
@@ -534,118 +643,211 @@
 	>
 {/snippet}
 
-<SiteHeader {scrolled}></SiteHeader>
+{#snippet glyphRun(chars: string[], meta: CharMeta[], run: number[])}<span
+		class="inline-block whitespace-nowrap"
+		>{#each run as i (i)}<span
+				use:driftNode={meta[i]}
+				use:nudge
+				aria-hidden="true"
+				style="display:inline-block;white-space:pre">{chars[i] === ' ' ? '\u00A0' : chars[i]}</span
+			>{/each}</span
+	>{/snippet}
+
+<SiteHeader />
 <main id="main-content" class="flex flex-col">
-	<Section
-		bind:ref={heroRef}
-		glass={false}
-		class="relative sticky top-16 h-[calc(100dvh-4rem)] items-center justify-center gap-3 overflow-clip"
-	>
-		<div class="flex flex-col items-center gap-4">
+	<!-- The sticky hero's scroll range: it releases here, before the closing call to action. -->
+	<div class="flex flex-col">
+		<Section
+			bind:ref={heroRef}
+			glass={false}
+			class="relative sticky top-16 h-[calc(100dvh-4rem)] items-center justify-center gap-3 overflow-clip"
+		>
 			<div
-				class="flex flex-col items-center gap-4 transition-opacity duration-700"
-				class:opacity-0={sectionVisible}
-				class:pointer-events-none={sectionVisible}
+				class="flex flex-col items-center gap-4 transition-opacity duration-500"
+				style:opacity={heroFade}
 			>
-				<h1
-					class="pointer-events-none text-5xl font-bold select-none max-[600px]:text-4xl sm:text-7xl lg:text-8xl"
-					aria-label={heroTitle}
+				<div
+					class="flex flex-col items-center gap-4 transition-opacity duration-700"
+					class:opacity-0={sectionVisible}
+					class:pointer-events-none={sectionVisible}
 				>
-					{#each titleChars as ch, i (i)}<span
-							use:driftNode={titleMeta[i]}
-							use:nudge
-							aria-hidden="true"
-							style="display:inline-block;white-space:pre">{ch === ' ' ? '\u00A0' : ch}</span
-						>{/each}
-				</h1>
-				<p
-					class="pointer-events-none px-2 text-center text-lg select-none sm:text-2xl"
-					aria-label={heroSubtitle}
-				>
-					{#each subtitleChars as ch, i (i)}<span
-							use:driftNode={subtitleMeta[i]}
-							use:nudge
-							aria-hidden="true"
-							style="display:inline-block;white-space:pre">{ch === ' ' ? '\u00A0' : ch}</span
-						>{/each}
-				</p>
-			</div>
-			<!-- Deliberately outside the fading div above: unlike the title/subtitle, the
-			     GitHub button should stay up (and clickable) through the Meet The Team
-			     section - z-20 lifts it above that section's own z-10 panel. -->
-			<div use:drift bind:this={githubRef} class="relative z-20 inline-block">
-				<Button
-					href={GITHUB_URL}
-					target="_blank"
-					rel="noopener noreferrer"
-					draggable={false}
-					variant="ghost"
-					size="lg"
-					class="group/github h-auto cursor-pointer gap-2.5 px-5 py-3 text-xl font-semibold text-primary hover:bg-primary/10 hover:text-primary"
-					onclick={warpToGithub}
-				>
-					<svg
-						class="size-6 transition-transform group-hover/github:scale-110"
-						viewBox="0 0 24 24"
-						fill="currentColor"
-						aria-hidden="true"
+					<h1
+						class="pointer-events-none text-5xl font-bold select-none max-[600px]:text-4xl sm:text-7xl lg:text-8xl"
+						aria-label={heroTitle}
 					>
-						<path
-							d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"
-						/>
-					</svg>
-					Warp to Github
-				</Button>
-			</div>
-		</div>
-		{#each cards as card (card.title)}
-			<ProjectCard
-				actor={card.actor}
-				title={card.title}
-				desc={card.desc}
-				repo={card.repo}
-				class={card.class}
-			/>
-		{/each}
-		<div
-			class="absolute bottom-8 left-1/2 flex -translate-x-1/2 flex-col items-center gap-1 transition-opacity duration-300 select-none"
-			class:opacity-0={scrolled}
-			class:pointer-events-none={scrolled}
-			aria-hidden={scrolled}
-		>
-			<span class="text-sm tracking-wide opacity-70">Scroll for our work</span>
-			<ChevronDown class="size-6 animate-bounce opacity-70" />
-		</div>
-		<div
-			class="absolute inset-0 z-10 mb-10 flex flex-col items-center justify-center transition-opacity duration-700"
-			class:opacity-0={!sectionVisible}
-			class:pointer-events-none={!sectionVisible}
-			aria-hidden={!sectionVisible}
-		>
-			<div
-				class="grid w-full max-w-6xl grid-cols-1 items-start gap-3 px-4 lg:grid-cols-3 lg:gap-6 lg:px-8"
-			>
-				{#each team as member, i (member.name)}
-					<div class="team-float" style:animation-delay="{i * -1.7}s">
-						<GlassCard class="gap-0 bg-background/55 p-4 backdrop-blur-sm lg:p-6">
-							<ProfileCard
-								layout="vertical"
-								src={member.src}
-								alt={member.name}
-								name={member.name}
-								role="Co-Founder"
-								subrole={member.subrole}
-								skills={member.skills}
-								linkedin={member.linkedin}
-								desc={member.desc}
-							/>
-						</GlassCard>
+						{#each titleRuns as run, r (r)}{@render glyphRun(titleChars, titleMeta, run)}{/each}
+					</h1>
+					<p
+						class="pointer-events-none px-2 text-center text-lg select-none sm:text-2xl"
+						aria-label={heroSubtitle}
+					>
+						{#each subtitleRuns as run, r (r)}{@render glyphRun(
+								subtitleChars,
+								subtitleMeta,
+								run
+							)}{/each}
+					</p>
+				</div>
+				<div class="flex flex-wrap items-center justify-center gap-3 pt-2">
+					<!-- Fades once the title scatters: unlike the GitHub button it does not drift. -->
+					<a
+						href="/contact"
+						class="inline-flex h-11 items-center rounded-full bg-primary-strong px-6 text-sm font-semibold text-white transition-opacity duration-300 hover:bg-primary-strong/85"
+						class:opacity-0={drifting}
+						class:pointer-events-none={drifting}
+						tabindex={drifting ? -1 : undefined}>{HERO_CTA}</a
+					>
+					<!-- Deliberately outside the fading div above: unlike the title/subtitle, the
+			     GitHub button should stay up (and clickable) through the Meet The Team
+			     section - z-20 lifts it above that section's own z-10 panel. Below lg it
+			     shows only with the hero: docked under the card or the stacked team cards it
+			     read as a second copy, and it covered the last card. -->
+					<div
+						use:drift
+						bind:this={githubRef}
+						class="relative z-20 inline-block transition-opacity duration-500 {drifting
+							? 'max-lg:pointer-events-none max-lg:opacity-0'
+							: ''}"
+					>
+						<Button
+							href={GITHUB_URL}
+							target="_blank"
+							rel="noopener noreferrer"
+							draggable={false}
+							variant="ghost"
+							class="group/github h-11 cursor-pointer gap-2 rounded-full border border-foreground/15 px-6 text-sm font-semibold text-foreground hover:bg-foreground/5 hover:text-foreground"
+							onclick={warpToGithub}
+						>
+							<svg
+								class="size-4 transition-transform group-hover/github:scale-110"
+								viewBox="0 0 24 24"
+								fill="currentColor"
+								aria-hidden="true"
+							>
+								<path
+									d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"
+								/>
+							</svg>
+							Warp to Github
+						</Button>
 					</div>
+				</div>
+			</div>
+			<!-- Fades as the team arrives, so the ejecting card never shows between their cards. -->
+			<div
+				class="pointer-events-none absolute inset-0 transition-opacity duration-500"
+				class:opacity-0={sectionVisible}
+			>
+				{#each cards as card (card.title)}
+					<ProjectCard
+						actor={card.actor}
+						title={card.title}
+						desc={card.desc}
+						repo={card.repo}
+						class={card.class}
+					/>
 				{/each}
 			</div>
-		</div>
-	</Section>
-	<div class="h-1250"></div>
+			<a
+				href="#services"
+				onclick={(e) => {
+					e.preventDefault();
+					seekTo(driftAt);
+				}}
+				class="absolute bottom-8 left-1/2 flex min-h-11 -translate-x-1/2 flex-col items-center gap-1 transition-opacity duration-300 select-none hover:text-primary"
+				class:opacity-0={scrolled}
+				class:pointer-events-none={scrolled}
+				aria-hidden={scrolled}
+				tabindex={scrolled ? -1 : undefined}
+			>
+				<span class="text-sm tracking-wide opacity-70"
+					>Scroll for {SERVICES_HEADING.toLowerCase()}</span
+				>
+				<ChevronDown class="size-6 animate-bounce opacity-70" />
+			</a>
+			<div
+				class="absolute inset-0 z-10 mb-10 flex flex-col items-center justify-center transition-opacity duration-700"
+				class:opacity-0={!sectionVisible}
+				class:pointer-events-none={!sectionVisible}
+				aria-hidden={!sectionVisible}
+			>
+				<div
+					class="grid w-full max-w-6xl grid-cols-1 items-start gap-3 px-4 lg:grid-cols-3 lg:gap-6 lg:px-8"
+				>
+					{#each team as member, i (member.name)}
+						<div class="team-float" style:animation-delay="{i * -1.7}s">
+							<GlassCard class="gap-0 bg-background/90 p-4 backdrop-blur-sm lg:p-6">
+								<ProfileCard
+									layout="vertical"
+									src={member.src}
+									alt={member.name}
+									name={member.name}
+									role="Co-Founder"
+									subrole={member.subrole}
+									skills={member.skills}
+									linkedin={member.linkedin}
+									desc={member.desc}
+								/>
+							</GlassCard>
+						</div>
+					{/each}
+				</div>
+			</div>
+		</Section>
+		<!-- In flow after the sticky hero, so it scrolls up over it (z-1); the hero fades as it
+	     is covered (heroFade), so the sky shows between the cards and not the title. -->
+		<PageSection bind:ref={servicesRef} wide class="relative z-1 pt-24 pb-24">
+			<div
+				id="services"
+				class="mx-auto flex max-w-2xl scroll-mt-24 flex-col items-center gap-3 pb-10 text-center"
+			>
+				<h2 class="text-3xl font-bold tracking-tight">{SERVICES_HEADING}</h2>
+				<p class="text-lg leading-relaxed text-balance text-foreground/65">{SERVICES_INTRO}</p>
+			</div>
+			<div class="grid w-full gap-5 md:grid-cols-2 xl:grid-cols-4">
+				{#each SERVICES as service (service.key)}
+					{@const Icon = SERVICE_ICONS[service.key]}
+					<GlassCard class="h-full gap-3 p-6">
+						<span class="grid size-10 place-items-center rounded-xl bg-primary/15 text-primary">
+							<Icon class="size-5" aria-hidden="true" />
+						</span>
+						<h3 class="pt-1 text-lg font-semibold">{service.title}</h3>
+						<p class="text-sm leading-relaxed text-foreground/65">{service.body}</p>
+						<div class="mt-auto flex flex-wrap gap-x-4 text-sm">
+							{#each service.links ?? [] as link (link.href)}
+								<a
+									href={link.href}
+									class="inline-flex min-h-11 items-center font-medium text-primary underline-offset-4 hover:underline"
+									>{link.label}</a
+								>
+							{/each}
+							<a
+								href="/contact?kind={service.key}"
+								class="inline-flex min-h-11 items-center font-medium text-primary underline-offset-4 hover:underline"
+								>{service.ask}</a
+							>
+						</div>
+					</GlassCard>
+				{/each}
+			</div>
+			<div class="mx-auto flex max-w-3xl flex-col items-center gap-3 pt-16 text-center">
+				<h3 class="text-2xl font-bold tracking-tight">{WHY_LESS.title}</h3>
+				<p class="text-lg leading-relaxed text-balance text-foreground/65">{WHY_LESS.body}</p>
+			</div>
+		</PageSection>
+		<div class="h-1250"></div>
+	</div>
+	<PageSection wide class="items-center pt-16 pb-28 text-center">
+		<h2 class="text-3xl font-bold tracking-tight">{CLOSING.title}</h2>
+		<p class="max-w-xl pt-3 text-lg leading-relaxed text-balance text-foreground/65">
+			{CLOSING.body}
+		</p>
+		<a
+			href="/contact"
+			class="mt-8 inline-flex h-11 items-center rounded-full bg-primary-strong px-6 text-sm font-semibold text-white hover:bg-primary-strong/85"
+			>{HERO_CTA}</a
+		>
+	</PageSection>
 </main>
 
 <ScrollTimeline

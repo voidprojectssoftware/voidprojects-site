@@ -45,12 +45,12 @@
 	</Section>
 
 	<Section wide class="pb-24">
-		<div class="grid gap-10 lg:grid-cols-[1fr_1.2fr] lg:items-center lg:gap-16">
-			<div class="flex flex-col gap-4">
+		<div class="grid grid-cols-1 gap-10 lg:grid-cols-[1fr_1.2fr] lg:items-center lg:gap-16">
+			<div class="flex min-w-0 flex-col gap-4">
 				<p class="text-sm font-semibold tracking-[0.14em] text-primary uppercase">
 					Where this started
 				</p>
-				<h2 class="text-3xl font-bold tracking-tight sm:text-4xl">{rally.name}</h2>
+				<h2 class="text-3xl font-bold tracking-tight wrap-break-word sm:text-4xl">{rally.name}</h2>
 				<p class="text-lg leading-relaxed text-foreground/70">
 					Hallie is the mother of one of our own. We <a href="/websites" class={link}
 						>built her a site</a
@@ -69,7 +69,7 @@
 				>
 				<a href="/websites" class="text-sm {link}">Website by Void Projects</a>
 			</div>
-			<a href={rally.url} target="_blank" rel="noopener" class="block">
+			<a href={rally.url} target="_blank" rel="noopener" class="block min-w-0">
 				<BrowserFrame
 					src={rally.screenshot}
 					host={rally.host}
@@ -101,7 +101,13 @@
 		</p>
 	</Section>
 
-	<Section wide class="items-center pb-24">
+	<Section wide class="items-center gap-8 pb-24">
+		<GlassCard class="w-full max-w-3xl gap-4 p-6 sm:p-10">
+			<h2 class="text-3xl font-bold tracking-tight">{CAUSES.free.title}</h2>
+			{#each CAUSES.free.body as line (line)}
+				<p class="text-lg leading-relaxed text-foreground/80">{line}</p>
+			{/each}
+		</GlassCard>
 		<GlassCard class="w-full max-w-3xl gap-6 p-6 sm:p-10">
 			<h2 class="text-3xl font-bold tracking-tight">What you can count on</h2>
 			<ul class="flex flex-col gap-4">

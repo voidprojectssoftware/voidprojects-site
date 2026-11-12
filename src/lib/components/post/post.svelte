@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { GlassCard } from '$lib/components/voidprojects/glass-card/index.js';
 	import type { PostMeta } from '$lib/content/types';
-	import { goto } from '$app/navigation';
 
 	// A blog post summary card for the index list: title, blurb, date, and a
 	// "Read more" link through to the full post. The glass-panel look is inherited
@@ -18,17 +17,22 @@
 			new Date(meta.date)
 		)
 	);
-
-	const goToPost = () => goto(`/blog/${slug}`);
 </script>
 
-<GlassCard onclick={goToPost} class="w-full cursor-pointer gap-3 px-6 py-5 {className}">
-	<div class="flex flex-col gap-1">
-		<h3 class="text-xl leading-tight font-semibold tracking-tight text-foreground">{meta.title}</h3>
-		<div class="flex flex-row items-center gap-3">
-			<span class="text-[16px] text-muted-foreground">{meta.author}</span>
-			<time datetime={meta.date} class="text-xs text-muted-foreground">{formattedDate}</time>
+<a
+	href="/blog/{slug}"
+	class="block rounded-4xl focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none {className}"
+>
+	<GlassCard class="w-full gap-3 px-6 py-5">
+		<div class="flex flex-col gap-1">
+			<h3 class="text-xl leading-tight font-semibold tracking-tight text-foreground">
+				{meta.title}
+			</h3>
+			<div class="flex flex-row items-center gap-3">
+				<span class="text-[16px] text-muted-foreground">{meta.author}</span>
+				<time datetime={meta.date} class="text-xs text-muted-foreground">{formattedDate}</time>
+			</div>
 		</div>
-	</div>
-	<p class="text-sm leading-relaxed text-foreground/65">{meta.description}</p>
-</GlassCard>
+		<p class="text-sm leading-relaxed text-foreground/65">{meta.description}</p>
+	</GlassCard>
+</a>
