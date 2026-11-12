@@ -16,9 +16,9 @@
 		"runs": 3
 	},
 	"source": {
-		"commit": "3e5389c",
-		"audit": "docs/discovery/seo-audit/2026-11-11-after-45/result.json",
-		"aeo": "docs/discovery/aeo/2026-11-11-after-58/result.json"
+		"commit": "8f13616",
+		"audit": "docs/discovery/seo-audit/2026-11-12-after-68/result.json",
+		"aeo": "docs/discovery/aeo/2026-11-12-after-68/result.json"
 	},
 	"glance": {
 		"lead": "On a phone, averaged or added up over the same six pairs of pages, the Wix site first.",
@@ -26,7 +26,7 @@
 			"performance": {
 				"title": "Speed score on a phone",
 				"before": "92",
-				"after": "100",
+				"after": "98",
 				"note": "Lighthouse performance, out of 100. Better on the new site.",
 				"better": "after"
 			},
@@ -40,15 +40,15 @@
 			"weight": {
 				"title": "Downloaded per page",
 				"before": "1.9 MB",
-				"after": "87 KB",
-				"note": "About 22 times less data, which a phone on a weak signal feels most.",
+				"after": "83 KB",
+				"note": "About 23 times less data, which a phone on a weak signal feels most.",
 				"better": "after"
 			},
 			"requests": {
 				"title": "Files fetched per page",
 				"before": "169",
-				"after": "24",
-				"note": "Each is another trip before the page is done. Lighthouse counts each drawing on the new site’s wall as one, though they arrive inside its stylesheet. Better on the new site.",
+				"after": "30",
+				"note": "Each is another trip before the page is done. Lighthouse counts each drawing on the new site’s wall and each photograph’s soft preview as one, though they arrive inside its stylesheet and its pages. Better on the new site.",
 				"better": "after"
 			},
 			"seo": {
@@ -71,7 +71,7 @@
 			"goodLcpSeconds": 2.5,
 			"lcpSeconds": {
 				"before": 2.7252720833333335,
-				"after": 1.1895578166666667
+				"after": 1.1890645
 			},
 			"lcpGood": {
 				"before": 3,
@@ -79,11 +79,11 @@
 			},
 			"kilobytes": {
 				"before": 1925,
-				"after": 87
+				"after": 83
 			},
 			"requests": {
 				"before": 169,
-				"after": 24
+				"after": 30
 			},
 			"seo": {
 				"before": 93,
@@ -107,11 +107,11 @@
 			},
 			"performance": {
 				"before": 92,
-				"after": 100
+				"after": 98
 			},
 			"tbtSeconds": {
 				"before": 0.1035,
-				"after": 0.04983693333333332
+				"after": 0.154537725
 			}
 		}
 	},
@@ -170,6 +170,6 @@
 				}
 			}
 		},
-		"geoctl": "geoctl is an open-source test of how ready a site is for AI crawlers: whether they are let in, whether the words are there without scripts, and whether the pages can be found. Out of 100, the Wix site scores 87, and geoctl found one of its pages, because Wix does not point crawlers at its page list. The new site scores 90 as it will run once it is yours, over five pages, and 76.5 as it is online today, where it asks every crawler to stay away until you say so."
+		"geoctl": "geoctl is an open-source test of how ready a site is for AI crawlers: whether they are let in, whether the words are there without scripts, and whether the pages can be found. Out of 100, the Wix site scores 87, and geoctl found one of its pages, because Wix does not point crawlers at its page list. The new site scores 90 as it will run once it is yours, over five pages, and 86.5 as it is online today, where it asks every crawler to stay away until you say so."
 	}
 }
