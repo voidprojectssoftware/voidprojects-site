@@ -46,8 +46,9 @@
 
 	// The hero's side by side. Old: murphysmemphis-website docs/discovery/atlas/screens/
 	// home-1280x800-full.png (the Wix home page at 1280 wide, stored at half scale), its
-	// first 800 rows. New: docs/captures/2026-11-11-issue-58/home-desktop-fold.png (the
-	// rebuild's home page at 1280x800 with Google's hours, ADR 0023), halved to match.
+	// first 800 rows. New: docs/captures/2026-11-12-issue-67/home-desktop-fold.png (the
+	// rebuild's home page at 1280x800 after #67's persona fixes: open now, until when, the
+	// address, Call, Directions, then the Friday special), halved to match.
 	const currentHost = new URL(figures.current).host;
 	const previewHost = $derived(new URL(offer.previewUrl).host);
 
@@ -303,7 +304,7 @@
 					<a href={offer.previewUrl} target="_blank" rel="noopener noreferrer">
 						<img
 							src={asset('new-site.webp')}
-							alt="Open your new site. Its home page: your sign, a brick and plaster wall, today’s hours and the room."
+							alt="Open your new site. Its home page: your sign, a brick and plaster wall, whether you are open now, the address and the room."
 							width="640"
 							height="400"
 							decoding="async"
